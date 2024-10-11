@@ -18,3 +18,11 @@ graphics_task_2:
 graphics_task_3:
 	g++ -std=c++20 ./labs/graphics/task_3.cpp -o task_3.exe -lsfml-graphics -lsfml-window -lsfml-system
 	./task_3.exe
+
+animation_task_1:
+	g++ -std=c++20 ./labs/animation/task_1.cpp -o task_1.exe -lsfml-graphics -lsfml-window -lsfml-system
+	./task_1.exe
+
+animation_task_2:
+	g++ -std=c++20 ./labs/animation/task_2.cpp -o task_2.exe -lsfml-graphics -lsfml-window -lsfml-system
+	./task_2.exe
