@@ -251,3 +251,6 @@ test_output.txt
 #VSCODE files
 .DS_Store
 .vscode/
+
+# CMake build files
+build
