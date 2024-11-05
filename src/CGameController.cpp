@@ -1,24 +1,21 @@
-#include <SFML/Graphics.hpp>
-#include "Entity.h"
-#include "systems/MovementSystem.h"
 #include "CGameController.h"
+#include "Entity.h"
+#include "movement/CMovementSystem.h"
+#include <SFML/Graphics.hpp>
 
 void CGameController::AddEntity(Entity* entity)
 {
 	m_entities.push_back(entity);
 }
 
-void CGameController::Update()
+void CGameController::Init()
 {
-	for (Entity* entity: m_entities)
-	{
-		MovementSystem::update(*entity);
-	}
+	CMovementSystem::Init();
 }
 
 void CGameController::Draw()
 {
-	for (Entity* entity: m_entities)
+	for (Entity* entity : m_entities)
 	{
 		auto& shapeComp = entity->components.shapes[entity->id];
 		if (shapeComp.type == ShapeType::Rectangle)
@@ -26,7 +23,7 @@ void CGameController::Draw()
 			sf::RectangleShape squareShape(shapeComp.size);
 			squareShape.setFillColor(shapeComp.color);
 			squareShape.setPosition(entity->components.positions[entity->id].x,
-					entity->components.positions[entity->id].y);
+				entity->components.positions[entity->id].y);
 			m_window.draw(squareShape);
 		}
 		else if (shapeComp.type == ShapeType::Circle)
@@ -34,37 +31,41 @@ void CGameController::Draw()
 			sf::CircleShape circleShape(shapeComp.radius);
 			circleShape.setFillColor(shapeComp.color);
 			circleShape.setPosition(entity->components.positions[entity->id].x - shapeComp.radius,
-					entity->components.positions[entity->id].y - shapeComp.radius);
+				entity->components.positions[entity->id].y - shapeComp.radius);
 			m_window.draw(circleShape);
 		}
 	}
 }
 
-void CGameController::handleClick(const sf::Vector2f& mousePos)
+std::vector<Entity*> CGameController::GetEntitiesWithShapes()
 {
-	for (Entity* entity: m_entities)
+	std::vector<Entity*> entitiesWithShapes;
+	for (Entity* entity : m_entities)
 	{
-		auto& shapeComp = entity->components.shapes[entity->id];
-		sf::FloatRect bounds;
-
-		if (shapeComp.type == ShapeType::Rectangle)
+		if (!entity->components.shapes.empty())
 		{
-			bounds = sf::FloatRect(entity->components.positions[entity->id].x,
-					entity->components.positions[entity->id].y, shapeComp.size.x, shapeComp.size.y);
-		}
-		else if (shapeComp.type == ShapeType::Circle)
-		{
-			bounds = sf::FloatRect(entity->components.positions[entity->id].x - shapeComp.radius,
-					entity->components.positions[entity->id].y - shapeComp.radius,
-					shapeComp.radius * 2, shapeComp.radius * 2);
-		}
-
-		if (bounds.contains(mousePos))
-		{
-			m_selectedEntity = entity;
-			break;
+			entitiesWithShapes.push_back(entity);
 		}
 	}
+	return entitiesWithShapes;
+}
+
+std::vector<Entity*> CGameController::GetEntitiesWithMovement()
+{
+	std::vector<Entity*> entitiesWithMovement;
+	for (Entity* entity : m_entities)
+	{
+		if (entity->components.velocities.find(entity->id) != entity->components.velocities.end())
+		{
+			entitiesWithMovement.push_back(entity);
+		}
+	}
+	return entitiesWithMovement;
+}
+
+void CGameController::SetSelectedEntity(Entity* entity)
+{
+	m_selectedEntity = entity;
 }
 
 Entity* CGameController::GetSelectedEntity() const

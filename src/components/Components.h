@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Common.h"
+#include <SFML/Graphics.hpp>
 
-const float VELOCITY = 0.1;
+const float VELOCITY = 10;
 
 enum class ShapeType
 {
@@ -26,8 +27,8 @@ struct PositionComponent
 
 struct VelocityComponent
 {
-	float x;
-	float y;
+	float vx;
+	float vy;
 };
 
 using Positions = ComponentMap<PositionComponent>;

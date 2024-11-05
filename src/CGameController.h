@@ -1,25 +1,30 @@
 #pragma once
 
+#include "Entity.h"
+#include "movement/CMovementSystem.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
-#include "Entity.h"
-#include "systems/MovementSystem.h"
 
 class CGameController
 {
 public:
 	explicit CGameController(sf::RenderWindow& window)
-			: m_window(window), m_selectedEntity(nullptr)
+		: m_window(window)
+		, m_selectedEntity(nullptr)
 	{
 	}
 
 	void AddEntity(Entity* entity);
 
-	void Update();
+	static void Init();
 
 	void Draw();
 
-	void handleClick(const sf::Vector2f& mousePos);
+	void SetSelectedEntity(Entity* entity);
+
+	std::vector<Entity*> GetEntitiesWithShapes();
+
+	std::vector<Entity*> GetEntitiesWithMovement();
 
 	[[nodiscard]] Entity* GetSelectedEntity() const;
 
