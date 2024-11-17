@@ -1,5 +1,4 @@
-#include "Common.h"
-#include "Entity.h"
+#include "CEntityManager.h"
 #include <string>
 #include <variant>
 
@@ -11,12 +10,12 @@ enum class EventType
 
 struct EntitySelectedEventData
 {
-	Entity* entity;
+	EntityId id;
 };
 
 struct EntityMovedEventData
 {
-	Entity* entity;
+	EntityId id;
 	std::string direction;
 };
 

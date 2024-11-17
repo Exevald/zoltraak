@@ -17,6 +17,7 @@ add_executable(
 
         src/systems/event/CEventSystem.cpp
         src/systems/movement/CMovementSystem.cpp
+        src/systems/view/CViewSystem.cpp
 
         src/CGameController.cpp
         src/main.cpp

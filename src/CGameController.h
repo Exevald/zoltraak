@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Entity.h"
+#include "CEntityManager.h"
 #include "movement/CMovementSystem.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -8,28 +8,14 @@
 class CGameController
 {
 public:
-	explicit CGameController(sf::RenderWindow& window)
-		: m_window(window)
-		, m_selectedEntity(nullptr)
-	{
-	}
-
-	void AddEntity(Entity* entity);
-
 	static void Init();
 
-	void Draw();
+	static void Draw(sf::RenderWindow& window);
 
-	void SetSelectedEntity(Entity* entity);
+	void SetSelectedEntityId(EntityId id);
 
-	std::vector<Entity*> GetEntitiesWithShapes();
-
-	std::vector<Entity*> GetEntitiesWithMovement();
-
-	[[nodiscard]] Entity* GetSelectedEntity() const;
+	[[nodiscard]] EntityId GetSelectedEntityId() const;
 
 private:
-	Entity* m_selectedEntity;
-	sf::RenderWindow& m_window;
-	std::vector<Entity*> m_entities;
+	EntityId m_selectedEntityId{};
 };

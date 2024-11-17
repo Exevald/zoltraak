@@ -1,9 +1,7 @@
+#include "CEntityManager.h"
 #include "CGameController.h"
-#include "Entity.h"
-#include "events/CEventDispatcher.h"
 #include "systems/event/CEventSystem.h"
 #include <SFML/Graphics.hpp>
-#include <iostream>
 
 void HandleEvents(sf::RenderWindow& window, CGameController& gameController)
 {
@@ -31,16 +29,16 @@ void HandleEvents(sf::RenderWindow& window, CGameController& gameController)
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(1920, 1080), "Zoltraak");
-	CGameController gameController(window);
+	CGameController gameController;
+	auto& entityManager = CEntityManager::GetInstance();
 
-	Entity square(1, 400, 300, 0, 0);
-	square.components.shapes[square.id] = { ShapeType::Rectangle, sf::Color::Red, { 50, 50 }, 0 };
+	EntityId squareEntity = entityManager.CreateEntity();
+	entityManager.AddComponent<PositionComponent>(squareEntity, 400.0f, 300.0f);
+	entityManager.AddComponent<ShapeComponent>(squareEntity, ShapeType::Rectangle, sf::Color::Red, sf::Vector2f(50, 50), 0.0f);
 
-	Entity circle(2, 200, 200, 0, 0);
-	circle.components.shapes[circle.id] = { ShapeType::Circle, sf::Color::Green, { 0, 0 }, 25 };
-
-	gameController.AddEntity(&square);
-	gameController.AddEntity(&circle);
+	EntityId circleEntity = entityManager.CreateEntity();
+	entityManager.AddComponent<PositionComponent>(circleEntity, 200.0f, 200.0f);
+	entityManager.AddComponent<ShapeComponent>(circleEntity, ShapeType::Circle, sf::Color::Green, sf::Vector2f(0, 0), 25.0f);
 
 	CGameController::Init();
 
@@ -49,7 +47,7 @@ int main()
 		HandleEvents(window, gameController);
 
 		window.clear();
-		gameController.Draw();
+		CGameController::Draw(window);
 		window.display();
 	}
 

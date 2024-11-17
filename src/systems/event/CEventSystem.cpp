@@ -3,34 +3,40 @@
 
 void CEventSystem::handleMouseClick(CGameController& gameController, const sf::Vector2f& mousePos)
 {
-	Entity* clickedEntity = nullptr;
+	EntityId clickedEntity = -1;
+	auto& entityManager = CEntityManager::GetInstance();
 
-	for (Entity* entity : gameController.GetEntitiesWithShapes())
+	for (auto entityId : entityManager.GetEntitiesWithComponents<ShapeComponent, PositionComponent>())
 	{
-		auto& shapeComp = entity->components.shapes[entity->id];
+		auto* shapeComp = entityManager.GetComponent<ShapeComponent>(entityId);
+		auto* positionComp = entityManager.GetComponent<PositionComponent>(entityId);
+
+		if (!shapeComp || !positionComp)
+			continue;
+
 		sf::FloatRect bounds;
 
-		if (shapeComp.type == ShapeType::Rectangle)
+		if (shapeComp->type == ShapeType::Rectangle)
 		{
-			bounds = sf::FloatRect(entity->components.positions[entity->id].x,
-				entity->components.positions[entity->id].y,
-				shapeComp.size.x, shapeComp.size.y);
+			bounds = sf::FloatRect(positionComp->x, positionComp->y,
+				shapeComp->size.x, shapeComp->size.y);
 		}
-		else if (shapeComp.type == ShapeType::Circle)
+		else if (shapeComp->type == ShapeType::Circle)
 		{
-			bounds = sf::FloatRect(entity->components.positions[entity->id].x - shapeComp.radius,
-				entity->components.positions[entity->id].y - shapeComp.radius,
-				shapeComp.radius * 2, shapeComp.radius * 2);
+			bounds = sf::FloatRect(positionComp->x - shapeComp->radius,
+				positionComp->y - shapeComp->radius,
+				shapeComp->radius * 2, shapeComp->radius * 2);
 		}
 
 		if (bounds.contains(mousePos))
 		{
-			clickedEntity = entity;
+			clickedEntity = entityId;
 			break;
 		}
 	}
+
 	EntitySelectedEventData selectedData{};
-	selectedData.entity = clickedEntity;
+	selectedData.id = clickedEntity;
 
 	SEvent entitySelectedEvent;
 	entitySelectedEvent.type = EventType::EntitySelected;
@@ -38,13 +44,13 @@ void CEventSystem::handleMouseClick(CGameController& gameController, const sf::V
 
 	CEventDispatcher::GetInstance().Dispatch(entitySelectedEvent);
 
-	gameController.SetSelectedEntity(clickedEntity);
+	gameController.SetSelectedEntityId(clickedEntity);
 }
 
 void CEventSystem::handleKeyPress(CGameController& gameController, sf::Keyboard::Key key)
 {
-	auto selectedEntity = gameController.GetSelectedEntity();
-	if (selectedEntity)
+	EntityId selectedEntityId = gameController.GetSelectedEntityId();
+	if (selectedEntityId != -1)
 	{
 		std::string direction;
 		switch (key)
@@ -64,14 +70,18 @@ void CEventSystem::handleKeyPress(CGameController& gameController, sf::Keyboard:
 		default:
 			break;
 		}
-		EntityMovedEventData entityMovedEventData{};
-		entityMovedEventData.entity = selectedEntity;
-		entityMovedEventData.direction = direction;
 
-		SEvent entityMovedEvent;
-		entityMovedEvent.type = EventType::EntityMoved;
-		entityMovedEvent.data = entityMovedEventData;
+		if (!direction.empty())
+		{
+			EntityMovedEventData entityMovedEventData{};
+			entityMovedEventData.id = selectedEntityId;
+			entityMovedEventData.direction = direction;
 
-		CEventDispatcher::GetInstance().Dispatch(entityMovedEvent);
+			SEvent entityMovedEvent;
+			entityMovedEvent.type = EventType::EntityMoved;
+			entityMovedEvent.data = entityMovedEventData;
+
+			CEventDispatcher::GetInstance().Dispatch(entityMovedEvent);
+		}
 	}
 }

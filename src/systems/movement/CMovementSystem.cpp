@@ -1,6 +1,5 @@
 #include "movement/CMovementSystem.h"
 #include "../../events/CEventDispatcher.h"
-#include <iostream>
 
 void CMovementSystem::Init()
 {
@@ -8,25 +7,30 @@ void CMovementSystem::Init()
 		if (event.type == EventType::EntityMoved)
 		{
 			const auto& movedEventData = std::get<EntityMovedEventData>(event.data);
+			EntityId entityId = movedEventData.id;
+			const std::string& direction = movedEventData.direction;
 
-			Entity* entity = movedEventData.entity;
-			const std::string direction = movedEventData.direction;
+			auto positionComponent = CEntityManager::GetInstance().GetComponent<PositionComponent>(entityId);
+			if (!positionComponent)
+			{
+				return;
+			}
 
 			if (direction == "up")
 			{
-				entity->components.positions[entity->id].y -= VELOCITY;
+				positionComponent->y -= defaultVelocity;
 			}
 			else if (direction == "down")
 			{
-				entity->components.positions[entity->id].y += VELOCITY;
+				positionComponent->y += defaultVelocity;
 			}
 			else if (direction == "left")
 			{
-				entity->components.positions[entity->id].x -= VELOCITY;
+				positionComponent->x -= defaultVelocity;
 			}
 			else if (direction == "right")
 			{
-				entity->components.positions[entity->id].x += VELOCITY;
+				positionComponent->x += defaultVelocity;
 			}
 		}
 	});

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Entity.h"
+#include "CEntityManager.h"
 
 class CMovementSystem
 {
