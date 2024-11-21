@@ -26,3 +26,19 @@ animation_task_1:
 animation_task_2:
 	g++ -std=c++20 ./labs/animation/task_2.cpp -o task_2.exe -lsfml-graphics -lsfml-window -lsfml-system
 	./task_2.exe
+
+events_task_1:
+	g++ -std=c++20 ./labs/events/task_1.cpp -o task_1.exe -lsfml-graphics -lsfml-window -lsfml-system
+	./task_1.exe
+
+events_task_2:
+	g++ -std=c++20 ./labs/events/task_2.cpp -o task_2.exe -lsfml-graphics -lsfml-window -lsfml-system
+	./task_2.exe
+
+complex_tasks_task_1:
+	g++ -std=c++20 ./labs/complex_tasks/task_1.cpp -o task_1.exe -lsfml-graphics -lsfml-window -lsfml-system
+	./task_1.exe
+
+complex_tasks_task_2:
+	g++ -std=c++20 ./labs/complex_tasks/task_2.cpp -o task_2.exe -lsfml-graphics -lsfml-window -lsfml-system
+	./task_2.exe
