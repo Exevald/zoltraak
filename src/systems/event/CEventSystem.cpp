@@ -1,5 +1,4 @@
 #include "event/CEventSystem.h"
-#include "../events/CEventDispatcher.h"
 
 void CEventSystem::handleMouseClick(CGameController& gameController, const sf::Vector2f& mousePos)
 {
@@ -10,9 +9,12 @@ void CEventSystem::handleMouseClick(CGameController& gameController, const sf::V
 	{
 		auto* shapeComp = entityManager.GetComponent<ShapeComponent>(entityId);
 		auto* positionComp = entityManager.GetComponent<PositionComponent>(entityId);
+		auto* selectionComp = entityManager.GetComponent<SelectionComponent>(entityId);
 
-		if (!shapeComp || !positionComp)
+		if (!shapeComp || !positionComp || !selectionComp)
+		{
 			continue;
+		}
 
 		sf::FloatRect bounds;
 

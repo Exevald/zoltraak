@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SFML/Graphics.hpp>
 
 struct IComponent
@@ -9,6 +11,17 @@ enum class ShapeType
 {
 	Rectangle,
 	Circle
+};
+
+enum class CollisionType
+{
+	Character,
+	MovableObject,
+	StaticObject
+};
+
+struct SelectionComponent : IComponent
+{
 };
 
 struct ShapeComponent : IComponent
@@ -43,6 +56,64 @@ struct VelocityComponent : IComponent
 {
 	float vx;
 	float vy;
+
+	VelocityComponent(float vx, float vy)
+		: vx(vx)
+		, vy(vy)
+	{
+	}
 };
 
-const float defaultVelocity = 20.f;
+struct CameraComponent : IComponent
+{
+	float posX;
+	float posY;
+
+	CameraComponent(float posX, float posY)
+		: posX(posX)
+		, posY(posY)
+	{
+	}
+};
+
+struct CollisionComponent : IComponent
+{
+	CollisionType type;
+
+	explicit CollisionComponent(CollisionType type)
+		: type(type)
+	{
+	}
+};
+
+struct MassComponent : IComponent
+{
+	float mass;
+
+	explicit MassComponent(float mass)
+		: mass(mass)
+	{
+	}
+};
+
+struct RotationComponent
+{
+	float angle;
+
+	explicit RotationComponent(float angle)
+		: angle(angle)
+	{
+	}
+};
+
+struct InteractionComponent : IComponent
+{
+	bool canPush;
+	bool canPickUp;
+
+	InteractionComponent(bool canPush, bool canPickUp)
+		: canPush(canPush)
+		, canPickUp(canPickUp)
+	{
+	}
+};

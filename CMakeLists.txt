@@ -18,6 +18,8 @@ add_executable(
         src/systems/event/CEventSystem.cpp
         src/systems/movement/CMovementSystem.cpp
         src/systems/view/CViewSystem.cpp
+        src/systems/collision/CCollisionSystem.cpp
+        src/systems/camera/CCameraSystem.cpp
 
         src/CGameController.cpp
         src/main.cpp

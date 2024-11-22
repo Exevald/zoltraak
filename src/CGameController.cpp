@@ -1,16 +1,21 @@
 #include "CGameController.h"
+#include "camera/CCameraSystem.h"
+#include "collision/CCollisionSystem.h"
 #include "view/CViewSystem.h"
 
-void CGameController::Init()
+void CGameController::InitSystems()
 {
 	CMovementSystem::Init();
+	CCollisionSystem::Init();
 }
 
 void CGameController::Draw(sf::RenderWindow& window)
 {
-	CViewSystem viewSystem(window);
+	static CViewSystem viewSystem(window);
+	static CCameraSystem cameraSystem(window);
 
 	viewSystem.Draw();
+	cameraSystem.Init();
 }
 
 void CGameController::SetSelectedEntityId(EntityId id)

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "CEntityManager.h"
 #include <string>
 #include <variant>

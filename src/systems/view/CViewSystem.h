@@ -13,5 +13,9 @@ public:
 	void Draw();
 
 private:
+	void DrawField();
+	void DrawItems();
+	void DrawHeroCard();
+
 	sf::RenderWindow& m_window;
 };

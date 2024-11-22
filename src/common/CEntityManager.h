@@ -47,6 +47,11 @@ public:
 		componentMap.erase(entityId);
 	}
 
+	std::vector<EntityId> GetAllEntities() const
+	{
+		return { std::vector<EntityId>(m_entities.begin(), m_entities.end()) };
+	}
+
 	template <typename ComponentType>
 	ComponentType* GetComponent(EntityId entityId)
 	{
