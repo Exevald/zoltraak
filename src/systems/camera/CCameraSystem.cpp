@@ -1,7 +1,6 @@
 #include "CCameraSystem.h"
-#include "../../events/CEventDispatcher.h"
+#include "events/CEventDispatcher.h"
 #include "Utils.h"
-#include <iostream>
 
 void CCameraSystem::Init()
 {

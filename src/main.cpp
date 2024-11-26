@@ -41,30 +41,31 @@ int main()
 
 	EntityId hero1 = entityManager.CreateEntity();
 	entityManager.AddComponent<SelectionComponent>(hero1);
+	entityManager.AddComponent<NameComponent>(hero1, "Kris");
+	entityManager.AddComponent<ColorThemeComponent>(hero1, sf::Color(27, 255, 254));
 	entityManager.AddComponent<PositionComponent>(hero1, 1000.0f, 800.0f);
 	entityManager.AddComponent<VelocityComponent>(hero1, DefaultVelocity, DefaultVelocity);
 	entityManager.AddComponent<ShapeComponent>(hero1, ShapeType::Rectangle, sf::Color::Red, sf::Vector2f(50, 50), 0.0f);
 	entityManager.AddComponent<CollisionComponent>(hero1, CollisionType::Character);
 	entityManager.AddComponent<MassComponent>(hero1, 50);
 	entityManager.AddComponent<RotationComponent>(hero1, 0);
+	entityManager.AddComponent<HealthComponent>(hero1, 80, 100);
+	entityManager.AddComponent<ManaComponent>(hero1, 40, 100);
+	entityManager.AddComponent<AvatarComponent>(hero1, "hero1_avatar.png");
 
 	EntityId hero2 = entityManager.CreateEntity();
 	entityManager.AddComponent<SelectionComponent>(hero2);
+	entityManager.AddComponent<NameComponent>(hero2, "Raisel");
+	entityManager.AddComponent<ColorThemeComponent>(hero2, sf::Color(25, 253, 16));
 	entityManager.AddComponent<PositionComponent>(hero2, 1200.0f, 800.0f);
 	entityManager.AddComponent<VelocityComponent>(hero2, DefaultVelocity, DefaultVelocity);
-	entityManager.AddComponent<ShapeComponent>(hero2, ShapeType::Circle, sf::Color::Green, sf::Vector2f(0, 0), 25.0f);
+	entityManager.AddComponent<ShapeComponent>(hero2, ShapeType::Rectangle, sf::Color::Green, sf::Vector2f(50, 50), 0.0f);
 	entityManager.AddComponent<CollisionComponent>(hero2, CollisionType::Character);
 	entityManager.AddComponent<MassComponent>(hero2, 50);
 	entityManager.AddComponent<RotationComponent>(hero2, 0);
-
-	EntityId hero3 = entityManager.CreateEntity();
-	entityManager.AddComponent<SelectionComponent>(hero3);
-	entityManager.AddComponent<PositionComponent>(hero3, 1500.0f, 900.0f);
-	entityManager.AddComponent<VelocityComponent>(hero3, DefaultVelocity, DefaultVelocity);
-	entityManager.AddComponent<ShapeComponent>(hero3, ShapeType::Rectangle, sf::Color::Blue, sf::Vector2f(50, 50), 0.0f);
-	entityManager.AddComponent<CollisionComponent>(hero3, CollisionType::Character);
-	entityManager.AddComponent<MassComponent>(hero3, 50);
-	entityManager.AddComponent<RotationComponent>(hero3, 0);
+	entityManager.AddComponent<HealthComponent>(hero2, 50, 100);
+	entityManager.AddComponent<ManaComponent>(hero2, 90, 100);
+	entityManager.AddComponent<AvatarComponent>(hero2, "hero2_avatar.png");
 
 	EntityId box = entityManager.CreateEntity();
 	entityManager.AddComponent<PositionComponent>(box, 1300.0f, 900.0f);

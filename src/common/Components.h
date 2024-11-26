@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <utility>
 
 struct IComponent
 {
@@ -31,11 +32,41 @@ struct ShapeComponent : IComponent
 	sf::Vector2f size;
 	float radius{};
 
-	ShapeComponent(ShapeType type, const sf::Color& color, const sf::Vector2f& size, float radius)
+	explicit ShapeComponent(ShapeType type, const sf::Color& color, const sf::Vector2f& size, float radius)
 		: type(type)
 		, color(color)
 		, size(size)
 		, radius(radius)
+	{
+	}
+};
+
+struct NameComponent : IComponent
+{
+	std::string name;
+
+	explicit NameComponent(std::string name)
+		: name(std::move(name))
+	{
+	}
+};
+
+struct ColorThemeComponent : IComponent
+{
+	sf::Color colorTheme;
+
+	explicit ColorThemeComponent(sf::Color color)
+		: colorTheme(color)
+	{
+	}
+};
+
+struct AvatarComponent : IComponent
+{
+	std::string avatarFilePath;
+
+	explicit AvatarComponent(std::string avatarFilePath)
+		: avatarFilePath(std::move(avatarFilePath))
 	{
 	}
 };
@@ -114,6 +145,30 @@ struct InteractionComponent : IComponent
 	InteractionComponent(bool canPush, bool canPickUp)
 		: canPush(canPush)
 		, canPickUp(canPickUp)
+	{
+	}
+};
+
+struct HealthComponent : IComponent
+{
+	float currentHealth;
+	float maxHealth;
+
+	explicit HealthComponent(float health, float maxHealth)
+		: currentHealth(health)
+		, maxHealth(maxHealth)
+	{
+	}
+};
+
+struct ManaComponent : IComponent
+{
+	float currentMana;
+	float maxMana;
+
+	explicit ManaComponent(float mana, float maxMana)
+		: currentMana(mana)
+		, maxMana(maxMana)
 	{
 	}
 };

@@ -14,8 +14,10 @@ void CGameController::Draw(sf::RenderWindow& window)
 	static CViewSystem viewSystem(window);
 	static CCameraSystem cameraSystem(window);
 
-	viewSystem.Draw();
+	viewSystem.Init();
 	cameraSystem.Init();
+
+	viewSystem.Draw();
 }
 
 void CGameController::SetSelectedEntityId(EntityId id)

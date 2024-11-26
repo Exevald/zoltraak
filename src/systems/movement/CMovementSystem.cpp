@@ -1,5 +1,5 @@
 #include "movement/CMovementSystem.h"
-#include "../../events/CEventDispatcher.h"
+#include "events/CEventDispatcher.h"
 #include "Utils.h"
 
 void CMovementSystem::Init()
