@@ -16,6 +16,7 @@ struct HeroCard
 	sf::Font heroCardFont;
 	sf::Text heroHealthText;
 	sf::Text heroManaText;
+	sf::Text heroExperienceText;
 };
 
 class CViewSystem
@@ -38,5 +39,4 @@ private:
 
 	sf::RenderWindow& m_window;
 	HeroCard m_heroCard;
-	bool m_isAvatarLoaded;
 };

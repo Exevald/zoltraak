@@ -21,6 +21,7 @@ void CViewSystem::Draw()
 		m_window.draw(m_heroCard.manaBar);
 		m_window.draw(m_heroCard.heroManaText);
 		m_window.draw(m_heroCard.avatarSprite);
+		m_window.draw(m_heroCard.heroExperienceText);
 	}
 }
 
@@ -84,8 +85,9 @@ void CViewSystem::UpdateHeroCard(EntityId selectedEntity)
 	auto* manaComp = entityManager.GetComponent<ManaComponent>(selectedEntity);
 	auto* colorThemeComp = entityManager.GetComponent<ColorThemeComponent>(selectedEntity);
 	auto* avatarComp = entityManager.GetComponent<AvatarComponent>(selectedEntity);
+	auto* experienceComp = entityManager.GetComponent<ExperienceComponent>(selectedEntity);
 
-	if (!healthComp || !manaComp || !colorThemeComp || !avatarComp)
+	if (!healthComp || !manaComp || !colorThemeComp || !avatarComp || !experienceComp)
 	{
 		m_heroCard.visible = false;
 		return;
@@ -128,6 +130,11 @@ void CViewSystem::UpdateHeroCard(EntityId selectedEntity)
 	m_heroCard.heroManaText.setString("MANA");
 	m_heroCard.heroManaText.setCharacterSize(30);
 	m_heroCard.heroManaText.setFillColor(sf::Color::White);
+
+	m_heroCard.heroExperienceText.setFont(font);
+	m_heroCard.heroExperienceText.setString("EXP:  " + std::to_string(experienceComp->experience) + "/" + std::to_string(experienceComp->levelExperienceLimit) + ",  LEVEL: " + std::to_string(experienceComp->currentHeroLevel));
+	m_heroCard.heroExperienceText.setCharacterSize(30);
+	m_heroCard.heroExperienceText.setFillColor(sf::Color::White);
 }
 
 void CViewSystem::UpdateHeroCardPosition()
@@ -150,6 +157,9 @@ void CViewSystem::UpdateHeroCardPosition()
 	m_heroCard.maxManaBar.setPosition(m_heroCard.manaBar.getPosition());
 	m_heroCard.heroManaText.setPosition(viewCenter.x - m_heroCard.shape.getSize().x / 5.2f,
 		viewCenter.y + viewSize.y / 2 - m_heroCard.shape.getSize().y / 1.54f);
+
+	m_heroCard.heroExperienceText.setPosition(viewCenter.x - m_heroCard.shape.getSize().x / 5.6f,
+									 viewCenter.y + viewSize.y / 2 - m_heroCard.shape.getSize().y / 2.3f);
 
 	m_heroCard.avatarSprite.setPosition(viewCenter.x - m_heroCard.shape.getSize().x / 2.4f,
 		viewCenter.y + viewSize.y / 2 - m_heroCard.shape.getSize().y / 1.2f);

@@ -172,3 +172,20 @@ struct ManaComponent : IComponent
 	{
 	}
 };
+
+struct ExperienceComponent : IComponent
+{
+	int experience;
+	int levelExperienceLimit;
+	int currentHeroLevel;
+
+	explicit ExperienceComponent(
+		int experience,
+		int levelExperienceLimit,
+		int currentHeroLevel)
+		: experience(experience)
+		, levelExperienceLimit(levelExperienceLimit)
+		, currentHeroLevel(currentHeroLevel)
+	{
+	}
+};

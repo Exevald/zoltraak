@@ -52,6 +52,7 @@ int main()
 	entityManager.AddComponent<HealthComponent>(hero1, 80, 100);
 	entityManager.AddComponent<ManaComponent>(hero1, 40, 100);
 	entityManager.AddComponent<AvatarComponent>(hero1, "hero1_avatar.png");
+	entityManager.AddComponent<ExperienceComponent>(hero1, 0, 100, 1);
 
 	EntityId hero2 = entityManager.CreateEntity();
 	entityManager.AddComponent<SelectionComponent>(hero2);
@@ -66,6 +67,7 @@ int main()
 	entityManager.AddComponent<HealthComponent>(hero2, 50, 100);
 	entityManager.AddComponent<ManaComponent>(hero2, 90, 100);
 	entityManager.AddComponent<AvatarComponent>(hero2, "hero2_avatar.png");
+	entityManager.AddComponent<ExperienceComponent>(hero2, 0, 100, 1);
 
 	EntityId box = entityManager.CreateEntity();
 	entityManager.AddComponent<PositionComponent>(box, 1300.0f, 900.0f);
