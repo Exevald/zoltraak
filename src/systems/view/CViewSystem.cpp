@@ -2,7 +2,16 @@
 #include "CEntityManager.h"
 #include "Utils.h"
 #include "events/CEventDispatcher.h"
-#include "storage/CAssetsStorage.h"
+#include "storage/CFontStorage.h"
+#include "storage/CTextureStorage.h"
+
+void CViewSystem::Init()
+{
+	CEventDispatcher::GetInstance().Subscribe(EventType::EntitySelected, [this](const SEvent& event) {
+		const auto& selectedEventData = std::get<EntitySelectedEventData>(event.data);
+		UpdateHeroCard(selectedEventData.id);
+	});
+}
 
 void CViewSystem::Draw()
 {
@@ -27,55 +36,184 @@ void CViewSystem::Draw()
 
 void CViewSystem::DrawField()
 {
-	GameFieldSettings gameFieldSettings;
-	static sf::RectangleShape map(sf::Vector2f(float(gameFieldSettings.gameWidth), float(gameFieldSettings.gameHeight)));
-	map.setFillColor(sf::Color::Black);
+	const auto map = CTextureStorage::GetTexture("map_fieldOfHopesAndDreams.png");
+	const auto commonMapItems = CTextureStorage::GetTexture("map_commonItems.png");
 
-	m_window.draw(map);
-}
-
-void CViewSystem::DrawItems()
-{
-	auto& entityManager = CEntityManager::GetInstance();
-	auto entitiesWithShapes = entityManager.GetEntitiesWithComponents<ShapeComponent, PositionComponent>();
-
-	for (EntityId entityId : entitiesWithShapes)
+	for (int i = 0; i < m_level.size(); i++)
 	{
-		const auto* shapeComp = entityManager.GetComponent<ShapeComponent>(entityId);
-		const auto* positionComp = entityManager.GetComponent<PositionComponent>(entityId);
-		const auto* rotationComp = entityManager.GetComponent<RotationComponent>(entityId);
-
-		if (shapeComp && positionComp)
+		auto line = m_level[i];
+		for (int j = 0; j < line.size(); j++)
 		{
-			if (shapeComp->type == ShapeType::Rectangle)
+			auto ch = line[j];
+			switch (ch)
 			{
-				sf::RectangleShape rectangleShape(shapeComp->size);
-				rectangleShape.setFillColor(shapeComp->color);
-				rectangleShape.setPosition(positionComp->x, positionComp->y);
-				if (rotationComp)
-					rectangleShape.setRotation(rotationComp->angle);
-				m_window.draw(rectangleShape);
+			case '0': {
+				sf::RectangleShape rectangle;
+				rectangle.setFillColor(sf::Color::Black);
+				rectangle.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+				rectangle.setSize({ 60, 60 });
+				m_window.draw(rectangle);
+				break;
 			}
-			else if (shapeComp->type == ShapeType::Circle)
+			case '1': {
+				sf::Sprite mapItemSprite;
+				mapItemSprite.setTexture(map);
+				mapItemSprite.setTextureRect(sf::IntRect(316, 15, 20, 20));
+				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+				mapItemSprite.setScale(3.f, 3.f);
+				m_window.draw(mapItemSprite);
+				break;
+			}
+			case '2': {
+				sf::Sprite mapItemSprite;
+				mapItemSprite.setTexture(map);
+				mapItemSprite.setTextureRect(sf::IntRect(22, 78, 20, 20));
+				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+				mapItemSprite.setScale(3.f, 3.f);
+				m_window.draw(mapItemSprite);
+				break;
+			}
+			case '3': {
+				sf::Sprite mapItemSprite;
+				mapItemSprite.setTexture(map);
+				mapItemSprite.setTextureRect(sf::IntRect(1, 78, 20, 20));
+				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+				mapItemSprite.setScale(3.f, 3.f);
+				m_window.draw(mapItemSprite);
+				break;
+			}
+			case '4': {
+				sf::Sprite mapItemSprite;
+				mapItemSprite.setTexture(map);
+				mapItemSprite.setTextureRect(sf::IntRect(85, 78, 20, 20));
+				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+				mapItemSprite.setScale(3.f, 3.f);
+				m_window.draw(mapItemSprite);
+				break;
+			}
+			case '5': {
+				sf::Sprite mapItemSprite;
+				mapItemSprite.setTexture(map);
+				mapItemSprite.setTextureRect(sf::IntRect(22, 36, 20, 20));
+				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+				mapItemSprite.setScale(3.f, 3.f);
+				m_window.draw(mapItemSprite);
+				break;
+			}
+			case '6': {
+				sf::Sprite mapItemSprite;
+				mapItemSprite.setTexture(map);
+				mapItemSprite.setTextureRect(sf::IntRect(64, 57, 20, 20));
+				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+				mapItemSprite.setScale(3.f, 3.f);
+				m_window.draw(mapItemSprite);
+				break;
+			}
+			case '7': {
+				sf::Sprite mapItemSprite;
+				mapItemSprite.setTexture(map);
+				mapItemSprite.setTextureRect(sf::IntRect(64, 36, 20, 20));
+				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+				mapItemSprite.setScale(3.f, 3.f);
+				m_window.draw(mapItemSprite);
+				break;
+			}
+			case '8': {
+				sf::Sprite mapItemSprite;
+				mapItemSprite.setTexture(map);
+				mapItemSprite.setTextureRect(sf::IntRect(1, 57, 20, 20));
+				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+				mapItemSprite.setScale(3.f, 3.f);
+				m_window.draw(mapItemSprite);
+				break;
+			}
+			case '9': {
+				sf::Sprite mapItemSprite;
+				mapItemSprite.setTexture(map);
+				mapItemSprite.setTextureRect(sf::IntRect(1, 36, 20, 20));
+				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+				mapItemSprite.setScale(3.f, 3.f);
+				m_window.draw(mapItemSprite);
+				break;
+			}
+			default:
+				break;
+			}
+		}
+		for (int i = 0; i < m_level.size(); i++)
+		{
+			line = m_level[i];
+			for (int j = 0; j < line.size(); j++)
 			{
-				sf::CircleShape circleShape(shapeComp->radius);
-				circleShape.setFillColor(shapeComp->color);
-				circleShape.setPosition(positionComp->x - shapeComp->radius,
-					positionComp->y - shapeComp->radius);
-				if (rotationComp)
-					circleShape.setRotation(rotationComp->angle);
-				m_window.draw(circleShape);
+				auto ch = line[j];
+				if (ch == '@')
+				{
+					sf::Sprite mapItemSprite;
+					mapItemSprite.setTexture(map);
+					mapItemSprite.setTextureRect(sf::IntRect(316, 78, 60, 60));
+					mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+					mapItemSprite.setScale(3.f, 3.f);
+					m_window.draw(mapItemSprite);
+				}
+				if (ch == '!')
+				{
+					sf::Sprite mapItemSprite;
+					mapItemSprite.setTexture(map);
+					mapItemSprite.setTextureRect(sf::IntRect(22, 36, 20, 20));
+					mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+					mapItemSprite.setScale(3.f, 3.f);
+					m_window.draw(mapItemSprite);
+					mapItemSprite.setTextureRect(sf::IntRect(43, 36, 20, 20));
+					mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+					mapItemSprite.setScale(3.f, 3.f);
+					m_window.draw(mapItemSprite);
+				}
+				if (ch == 'S')
+				{
+					sf::Sprite mapItemSprite;
+					mapItemSprite.setTexture(map);
+					mapItemSprite.setTextureRect(sf::IntRect(1, 141, 191, 109));
+					mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+					mapItemSprite.setScale(3.f, 3.f);
+					m_window.draw(mapItemSprite);
+				}
+				if (ch == 'C')
+				{
+					sf::Sprite mapItemSprite;
+					mapItemSprite.setTexture(commonMapItems);
+					mapItemSprite.setTextureRect(sf::IntRect(42, 190, 40, 60));
+					mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
+					mapItemSprite.setScale(3.f, 3.f);
+					m_window.draw(mapItemSprite);
+				}
 			}
 		}
 	}
 }
 
-void CViewSystem::Init()
+void CViewSystem::DrawItems()
 {
-	CEventDispatcher::GetInstance().Subscribe(EventType::EntitySelected, [this](const SEvent& event) {
-		const auto& selectedEventData = std::get<EntitySelectedEventData>(event.data);
-		UpdateHeroCard(selectedEventData.id);
-	});
+	auto& entityManager = CEntityManager::GetInstance();
+	auto entitiesWithAnimations = entityManager.GetEntitiesWithComponents<AnimationComponent>();
+	auto entitiesWithImages = entityManager.GetEntitiesWithComponents<ImageComponent>();
+
+	for (EntityId entityId : entitiesWithAnimations)
+	{
+		const auto* animComp = entityManager.GetComponent<AnimationComponent>(entityId);
+
+		m_window.draw(animComp->sprite);
+	}
+
+	for (EntityId entityId : entitiesWithImages)
+	{
+		const auto* imageComp = entityManager.GetComponent<ImageComponent>(entityId);
+		const auto* positionComp = entityManager.GetComponent<PositionComponent>(entityId);
+
+		sf::Sprite sprite = imageComp->sprite;
+		sprite.setPosition(positionComp->x, positionComp->y);
+
+		m_window.draw(sprite);
+	}
 }
 
 void CViewSystem::UpdateHeroCard(EntityId selectedEntity)
@@ -100,8 +238,8 @@ void CViewSystem::UpdateHeroCard(EntityId selectedEntity)
 	m_heroCard.shape.setOutlineColor(colorThemeComp->colorTheme);
 	m_heroCard.shape.setOutlineThickness(4);
 
-	auto& texture = CAssetsStorage<sf::Texture>::GetAsset(avatarComp->avatarFilePath);
-	auto& font = CAssetsStorage<sf::Font>::GetAsset("8bitoperator_jve.ttf");
+	auto& texture = CTextureStorage::GetTexture(avatarComp->avatarFilePath);
+	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
 
 	m_heroCard.avatarSprite.setTexture(texture);
 	m_heroCard.avatarSprite.setScale(5.0f, 5.0f);
@@ -159,7 +297,7 @@ void CViewSystem::UpdateHeroCardPosition()
 		viewCenter.y + viewSize.y / 2 - m_heroCard.shape.getSize().y / 1.54f);
 
 	m_heroCard.heroExperienceText.setPosition(viewCenter.x - m_heroCard.shape.getSize().x / 5.6f,
-									 viewCenter.y + viewSize.y / 2 - m_heroCard.shape.getSize().y / 2.3f);
+		viewCenter.y + viewSize.y / 2 - m_heroCard.shape.getSize().y / 2.3f);
 
 	m_heroCard.avatarSprite.setPosition(viewCenter.x - m_heroCard.shape.getSize().x / 2.4f,
 		viewCenter.y + viewSize.y / 2 - m_heroCard.shape.getSize().y / 1.2f);

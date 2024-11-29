@@ -2,6 +2,8 @@
 
 #include "Event.h"
 #include <functional>
+#include <optional>
+#include <unordered_map>
 
 class CEventDispatcher
 {
@@ -14,9 +16,23 @@ public:
 		return Instance;
 	}
 
-	void Subscribe(EventType type, const EventHandler& handler);
+	void Subscribe(EventType type, const EventHandler& handler)
+	{
+		m_handlers[type].push_back(handler);
+	}
 
-	void Dispatch(const SEvent& event);
+	void Dispatch(const SEvent& event)
+	{
+		m_lastEvents[event.type] = event;
+
+		if (m_handlers.find(event.type) != m_handlers.end())
+		{
+			for (const auto& handler : m_handlers[event.type])
+			{
+				handler(event);
+			}
+		}
+	}
 
 	CEventDispatcher(const CEventDispatcher&) = delete;
 	CEventDispatcher& operator=(const CEventDispatcher&) = delete;
@@ -24,4 +40,5 @@ public:
 private:
 	CEventDispatcher() = default;
 	std::unordered_map<EventType, std::vector<EventHandler>> m_handlers;
+	std::unordered_map<EventType, SEvent> m_lastEvents;
 };

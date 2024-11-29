@@ -11,14 +11,22 @@
 class CGameController
 {
 public:
+	static void InitGameSettings(const Level& level);
+
 	static void InitSystems();
 
-	static void Draw(sf::RenderWindow& window);
+	static void Update(float deltaTime);
+
+	static void Draw(sf::RenderWindow& window, Level& level);
 
 	void SetSelectedEntityId(EntityId id);
 
 	[[nodiscard]] EntityId GetSelectedEntityId() const;
 
+	static sf::Vector2f GetWindowSizeSettings();
+
 private:
 	EntityId m_selectedEntityId{};
+	static float m_levelWidth;
+	static float m_levelHeight;
 };

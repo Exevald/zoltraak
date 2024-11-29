@@ -1,6 +1,6 @@
 #include "CCollisionSystem.h"
+#include "../../CGameController.h"
 #include "Utils.h"
-#include <valarray>
 
 void CCollisionSystem::Init()
 {
@@ -16,9 +16,12 @@ void CCollisionSystem::Init()
 void CCollisionSystem::HandleEntityMoved(EntityId movedEntityId, const std::string& direction)
 {
 	auto& entityManager = CEntityManager::GetInstance();
+	auto level = CLevelGenerator::GetLevel("level1.txt");
 
 	auto* positionComp = entityManager.GetComponent<PositionComponent>(movedEntityId);
-	if (!positionComp)
+	auto* animationComp = entityManager.GetComponent<AnimationComponent>(movedEntityId);
+
+	if (!positionComp || !animationComp)
 	{
 		return;
 	}
@@ -40,8 +43,8 @@ void CCollisionSystem::HandleEntityMoved(EntityId movedEntityId, const std::stri
 		}
 
 		if (CheckRectangleCollision(
-				{ positionComp->x, positionComp->y, 50.f, 50.f },
-				{ otherPositionComp->x, otherPositionComp->y, 50.f, 50.f }))
+				{ positionComp->x, positionComp->y, animationComp->sprite.getScale().x * 18 / 1.5f, animationComp->sprite.getScale().y * 37 / 1.5f },
+				{ otherPositionComp->x, otherPositionComp->y, 60.f, 60.f }))
 		{
 			HandleCollision(movedEntityId, otherEntityId, direction);
 		}
@@ -61,57 +64,61 @@ void CCollisionSystem::HandleCollision(EntityId movedEntityId, EntityId otherEnt
 	auto* otherPositionComp = entityManager.GetComponent<PositionComponent>(otherEntityId);
 	auto* velocityComp = entityManager.GetComponent<VelocityComponent>(movedEntityId);
 	auto* otherCollisionComp = entityManager.GetComponent<CollisionComponent>(otherEntityId);
+	auto* animationComp = entityManager.GetComponent<AnimationComponent>(movedEntityId);
 
 	if (!otherCollisionComp || !otherPositionComp)
 	{
 		return;
 	}
 
-	sf::FloatRect movedRect = { positionComp->x, positionComp->y, 50.f, 50.f };
-	sf::FloatRect otherRect = { otherPositionComp->x, otherPositionComp->y, 50.f, 50.f };
-
-	if (movedRect.intersects(otherRect))
+	sf::FloatRect movedRect = { positionComp->x, positionComp->y, animationComp->sprite.getScale().x * 18, animationComp->sprite.getScale().y * 37 / 1.5f };
+	if (direction == "up")
 	{
-		sf::Vector2f penetrationDepth = CalculatePenetrationDepth(movedRect, otherRect);
+		movedRect.top /= 2;
+		movedRect.height /= 2;
+	}
 
-		if (otherCollisionComp->type == CollisionType::MovableObject)
-		{
-			if (std::abs(penetrationDepth.x) < std::abs(penetrationDepth.y))
-			{
-				otherPositionComp->x += penetrationDepth.x;
-			}
-			else
-			{
-				otherPositionComp->y += penetrationDepth.y;
-			}
-		}
+	sf::FloatRect otherRect = { otherPositionComp->x, otherPositionComp->y, 60.f, 60.f };
 
-		float objectMass = 1.0f;
-		if (auto* massComp = entityManager.GetComponent<MassComponent>(otherEntityId))
-		{
-			objectMass = massComp->mass;
-		}
+	sf::Vector2f penetrationDepth = CalculatePenetrationDepth(movedRect, otherRect);
 
-		float adjustedVx = velocityComp->vx / objectMass;
-		float adjustedVy = velocityComp->vx / objectMass;
-
-		if (direction == "up")
+	if (otherCollisionComp->type == CollisionType::MovableObject)
+	{
+		if (std::abs(penetrationDepth.x) < std::abs(penetrationDepth.y))
 		{
-			otherPositionComp->y -= adjustedVy;
+			otherPositionComp->x += penetrationDepth.x;
 		}
-		else if (direction == "down")
+		else
 		{
-			otherPositionComp->y += adjustedVy;
-		}
-		else if (direction == "left")
-		{
-			otherPositionComp->x -= adjustedVx;
-		}
-		else if (direction == "right")
-		{
-			otherPositionComp->x += adjustedVx;
+			otherPositionComp->y += penetrationDepth.y;
 		}
 	}
+
+	float objectMass = 1.0f;
+	if (auto* massComp = entityManager.GetComponent<MassComponent>(otherEntityId))
+	{
+		objectMass = massComp->mass;
+	}
+
+	float adjustedVx = velocityComp->vx / objectMass;
+	float adjustedVy = velocityComp->vy / objectMass;
+	float newX = otherPositionComp->x;
+	float newY = otherPositionComp->y;
+
+	if (direction == "up" || direction == "down")
+	{
+		newY += adjustedVy;
+	}
+	else if (direction == "left" || direction == "right")
+	{
+		newX += adjustedVx;
+	}
+
+	newX = std::max(0.f, std::min(newX, float(CGameController::GetWindowSizeSettings().x) - 20));
+	newY = std::max(0.f, std::min(newY, float(CGameController::GetWindowSizeSettings().y) - 20));
+
+	otherPositionComp->x = newX;
+	otherPositionComp->y = newY;
 }
 
 sf::Vector2f CCollisionSystem::CalculatePenetrationDepth(const sf::FloatRect& rect1, const sf::FloatRect& rect2)

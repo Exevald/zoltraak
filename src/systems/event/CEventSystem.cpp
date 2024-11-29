@@ -1,39 +1,32 @@
 #include "event/CEventSystem.h"
+#include "Utils.h"
 
 void CEventSystem::handleMouseClick(CGameController& gameController, const sf::Vector2f& mousePos)
 {
 	EntityId clickedEntity = -1;
 	auto& entityManager = CEntityManager::GetInstance();
 
-	for (auto entityId : entityManager.GetEntitiesWithComponents<ShapeComponent, PositionComponent>())
+	for (auto entityId : entityManager.GetEntitiesWithComponents<AnimationComponent, PositionComponent, SelectionComponent>())
 	{
-		auto* shapeComp = entityManager.GetComponent<ShapeComponent>(entityId);
+		auto* animationComp = entityManager.GetComponent<AnimationComponent>(entityId);
 		auto* positionComp = entityManager.GetComponent<PositionComponent>(entityId);
 		auto* selectionComp = entityManager.GetComponent<SelectionComponent>(entityId);
 
-		if (!shapeComp || !positionComp || !selectionComp)
+		if (!animationComp || !positionComp || !selectionComp)
 		{
 			continue;
 		}
 
-		sf::FloatRect bounds;
-
-		if (shapeComp->type == ShapeType::Rectangle)
-		{
-			bounds = sf::FloatRect(positionComp->x, positionComp->y,
-				shapeComp->size.x, shapeComp->size.y);
-		}
-		else if (shapeComp->type == ShapeType::Circle)
-		{
-			bounds = sf::FloatRect(positionComp->x - shapeComp->radius,
-				positionComp->y - shapeComp->radius,
-				shapeComp->radius * 2, shapeComp->radius * 2);
-		}
+		sf::FloatRect bounds = animationComp->sprite.getGlobalBounds();
 
 		if (bounds.contains(mousePos))
 		{
 			clickedEntity = entityId;
-			break;
+			selectionComp->isSelected = true;
+		}
+		else
+		{
+			selectionComp->isSelected = false;
 		}
 	}
 
@@ -49,26 +42,43 @@ void CEventSystem::handleMouseClick(CGameController& gameController, const sf::V
 	gameController.SetSelectedEntityId(clickedEntity);
 }
 
+
 void CEventSystem::handleKeyPress(CGameController& gameController, sf::Keyboard::Key key)
 {
+	auto& entityManager = CEntityManager::GetInstance();
 	EntityId selectedEntityId = gameController.GetSelectedEntityId();
+	auto* velocityComp = entityManager.GetComponent<VelocityComponent>(selectedEntityId);
+
+	if (!velocityComp)
+	{
+		return;
+	}
+
 	if (selectedEntityId != -1)
 	{
 		std::string direction;
 		switch (key)
 		{
-		case sf::Keyboard::A:
+		case sf::Keyboard::A: {
 			direction = "left";
+			velocityComp->vx = -DefaultVelocity;
 			break;
-		case sf::Keyboard::D:
+		}
+		case sf::Keyboard::D: {
 			direction = "right";
+			velocityComp->vx = DefaultVelocity;
 			break;
-		case sf::Keyboard::W:
+		}
+		case sf::Keyboard::W: {
 			direction = "up";
+			velocityComp->vy = -DefaultVelocity;
 			break;
-		case sf::Keyboard::S:
+		}
+		case sf::Keyboard::S: {
 			direction = "down";
+			velocityComp->vy = DefaultVelocity;
 			break;
+		}
 		default:
 			break;
 		}

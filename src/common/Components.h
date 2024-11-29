@@ -8,12 +8,6 @@ struct IComponent
 	virtual ~IComponent() = default;
 };
 
-enum class ShapeType
-{
-	Rectangle,
-	Circle
-};
-
 enum class CollisionType
 {
 	Character,
@@ -21,23 +15,54 @@ enum class CollisionType
 	StaticObject
 };
 
-struct SelectionComponent : IComponent
+struct SelectionComponent
 {
+	bool isSelected = false;
 };
 
-struct ShapeComponent : IComponent
+struct AnimationComponent : IComponent
 {
-	ShapeType type = ShapeType::Rectangle;
-	sf::Color color;
-	sf::Vector2f size;
-	float radius{};
+	sf::Sprite sprite;
+	int currentFrameNumber = 0;
+	int totalFrames;
+	float frameDuration;
+	float elapsedTime = 0.f;
+	sf::Vector2i frameSize;
+	int initialSpriteX = 0;
+	int initialSpriteY = 0;
 
-	explicit ShapeComponent(ShapeType type, const sf::Color& color, const sf::Vector2f& size, float radius)
-		: type(type)
-		, color(color)
-		, size(size)
-		, radius(radius)
+	AnimationComponent(const sf::Texture& texture, int initialSpriteX, int initialSpriteY, int totalFrames, sf::Vector2i frameSize, float frameDuration)
+		: totalFrames(totalFrames)
+		, frameSize(frameSize)
+		, frameDuration(frameDuration)
+		, initialSpriteX(initialSpriteX)
+		, initialSpriteY(initialSpriteY)
 	{
+		sprite.setTexture(texture);
+		sprite.setTextureRect(
+			sf::IntRect(
+				initialSpriteX,
+				initialSpriteY,
+				frameSize.x,
+				frameSize.y));
+		sprite.setScale(3.f, 3.f);
+	}
+};
+
+struct ImageComponent : IComponent
+{
+	sf::Sprite sprite;
+
+	explicit ImageComponent(const sf::Texture& texture, int initialSpriteX, int initialSpriteY, sf::Vector2i frameSize)
+	{
+		sprite.setTexture(texture);
+		sprite.setTextureRect(
+			sf::IntRect(
+				initialSpriteX,
+				initialSpriteY,
+				frameSize.x,
+				frameSize.y));
+		sprite.setScale(3.f, 3.f);
 	}
 };
 

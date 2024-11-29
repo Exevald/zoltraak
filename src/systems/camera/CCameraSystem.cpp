@@ -1,6 +1,7 @@
 #include "CCameraSystem.h"
-#include "events/CEventDispatcher.h"
+#include "../CGameController.h"
 #include "Utils.h"
+#include "events/CEventDispatcher.h"
 
 void CCameraSystem::Init()
 {
@@ -16,7 +17,6 @@ void CCameraSystem::Init()
 void CCameraSystem::UpdateCameraPosition(EntityId movedEntityId)
 {
 	WindowSettings windowSettings;
-	GameFieldSettings gameFieldSettings;
 
 	auto& entityManager = CEntityManager::GetInstance();
 	EntityId camera = entityManager.GetEntitiesWithComponents<CameraComponent>().front();
@@ -56,10 +56,9 @@ void CCameraSystem::UpdateCameraPosition(EntityId movedEntityId)
 		cameraY = playerY - windowHalfHeight;
 	}
 
-	cameraX = std::max(windowHalfWidth, std::min(cameraX, float(gameFieldSettings.gameWidth) - windowHalfWidth));
-	cameraY = std::max(windowHalfHeight, std::min(cameraY, float(gameFieldSettings.gameHeight) - windowHalfHeight));
+	cameraX = std::max(windowHalfWidth, std::min(cameraX, float(CGameController::GetWindowSizeSettings().x) - windowHalfWidth));
+	cameraY = std::max(windowHalfHeight, std::min(cameraY, float(CGameController::GetWindowSizeSettings().y) - windowHalfHeight));
 
 	view.setCenter(cameraX, cameraY);
 	m_window.setView(view);
 }
-

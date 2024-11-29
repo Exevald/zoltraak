@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CEntityManager.h"
+#include "level_generator/CLevelGenerator.h"
 #include <SFML/Graphics.hpp>
 
 struct HeroCard
@@ -22,8 +23,9 @@ struct HeroCard
 class CViewSystem
 {
 public:
-	explicit CViewSystem(sf::RenderWindow& window)
+	explicit CViewSystem(sf::RenderWindow& window, Level& level)
 		: m_window(window)
+		, m_level(level)
 	{
 		m_heroCard.visible = false;
 	}
@@ -38,5 +40,6 @@ private:
 	void UpdateHeroCardPosition();
 
 	sf::RenderWindow& m_window;
+	Level& m_level;
 	HeroCard m_heroCard;
 };
