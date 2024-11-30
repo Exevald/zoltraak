@@ -1,7 +1,8 @@
 #include "movement/CMovementSystem.h"
+#include "../CGameController.h"
 #include "Utils.h"
 #include "events/CEventDispatcher.h"
-#include "../CGameController.h"
+#include <iostream>
 
 void CMovementSystem::Init()
 {
@@ -24,8 +25,9 @@ void CMovementSystem::HandleEntityMoved(EntityId movedEntityId, const std::strin
 	auto* positionComponent = entityManager.GetComponent<PositionComponent>(movedEntityId);
 	auto* velocityComponent = entityManager.GetComponent<VelocityComponent>(movedEntityId);
 	auto* animationComponent = entityManager.GetComponent<AnimationComponent>(movedEntityId);
+	auto* imageComponent = entityManager.GetComponent<ImageComponent>(movedEntityId);
 
-	if (!positionComponent || !animationComponent)
+	if (!positionComponent || (!animationComponent && !imageComponent))
 	{
 		return;
 	}
@@ -40,8 +42,16 @@ void CMovementSystem::HandleEntityMoved(EntityId movedEntityId, const std::strin
 	{
 		newX += velocityComponent->vx;
 	}
-	newX = std::max(0.f, std::min(newX, float(CGameController::GetWindowSizeSettings().x) - animationComponent->sprite.getScale().x * 18));
-	newY = std::max(0.f, std::min(newY, float(CGameController::GetWindowSizeSettings().y) - animationComponent->sprite.getScale().y * 37));
+	if (animationComponent)
+	{
+		newX = std::max(0.f, std::min(newX, float(CGameController::GetWindowSizeSettings().x) - animationComponent->sprite.getScale().x * 18));
+		newY = std::max(0.f, std::min(newY, float(CGameController::GetWindowSizeSettings().y) - animationComponent->sprite.getScale().y * 37));
+	}
+	if (imageComponent)
+	{
+		newX = std::max(0.f, std::min(newX, float(CGameController::GetWindowSizeSettings().x) - 22));
+		newY = std::max(0.f, std::min(newY, float(CGameController::GetWindowSizeSettings().y) - 22));
+	}
 
 	positionComponent->x = newX;
 	positionComponent->y = newY;

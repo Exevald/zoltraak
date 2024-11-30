@@ -214,3 +214,7 @@ struct ExperienceComponent : IComponent
 	{
 	}
 };
+
+struct MenuSoulComponent : IComponent
+{
+};

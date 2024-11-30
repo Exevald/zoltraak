@@ -22,8 +22,9 @@ void CCameraSystem::UpdateCameraPosition(EntityId movedEntityId)
 	EntityId camera = entityManager.GetEntitiesWithComponents<CameraComponent>().front();
 	auto* cameraComp = entityManager.GetComponent<CameraComponent>(camera);
 	auto* positionComp = entityManager.GetComponent<PositionComponent>(movedEntityId);
+	auto currentGameState = CGameController::GetCurrentGameState();
 
-	if (!cameraComp || !positionComp)
+	if (!cameraComp || !positionComp || currentGameState == CurrentState::MainMenu)
 	{
 		return;
 	}

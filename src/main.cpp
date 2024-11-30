@@ -5,7 +5,6 @@
 #include "storage/CTextureStorage.h"
 #include "systems/event/CEventSystem.h"
 #include <SFML/Graphics.hpp>
-#include <iostream>
 
 void HandleEvents(sf::RenderWindow& window, CGameController& gameController)
 {
@@ -14,7 +13,7 @@ void HandleEvents(sf::RenderWindow& window, CGameController& gameController)
 
 	while (window.pollEvent(event))
 	{
-		if (event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+		if (event.type == sf::Event::Closed)
 		{
 			window.close();
 		}
@@ -61,10 +60,13 @@ int main()
 
 	auto hero1Sprites = CTextureStorage::GetTexture("hero1_sprites.png");
 	auto hero2Sprites = CTextureStorage::GetTexture("hero2_sprites.png");
+	auto menuSoul = CTextureStorage::GetTexture("menu_soul.png");
+	auto utilsWindows = CTextureStorage::GetTexture("utils_windows.png");
 
 	auto mapTexture = CTextureStorage::GetTexture("map_fieldOfHopesAndDreams.png");
-
 	auto level = CLevelGenerator::GenerateLevel("level1.txt");
+
+	CGameController::SetGameState(CurrentState::MainMenu);
 
 	EntityId hero1 = entityManager.CreateEntity();
 	entityManager.AddComponent<SelectionComponent>(hero1);
@@ -104,6 +106,13 @@ int main()
 	entityManager.AddComponent<RotationComponent>(box, 0);
 	entityManager.AddComponent<ImageComponent>(box, mapTexture, 547, 15, sf::Vector2i(20, 20));
 
+	EntityId soul = entityManager.CreateEntity();
+	entityManager.AddComponent<PositionComponent>(soul, 700, 700);
+	entityManager.AddComponent<MenuSoulComponent>(soul);
+	entityManager.AddComponent<VelocityComponent>(soul, 0, 0);
+	entityManager.AddComponent<ImageComponent>(soul, menuSoul, 0, 0, sf::Vector2i(225, 225));
+	entityManager.AddComponent<SelectionComponent>(soul);
+
 	CGameController::InitSystems();
 	CGameController::InitGameSettings(level);
 
@@ -113,6 +122,9 @@ int main()
 	{
 		HandleEvents(window, gameController);
 		float deltaTime = clock.restart().asSeconds();
+		if (CGameController::GetCurrentGameState() == CurrentState::Player) {
+			CGameController::IncreaseElapsedTime(deltaTime);
+		}
 
 		window.clear();
 		CGameController::Draw(window, level);

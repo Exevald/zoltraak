@@ -14,10 +14,19 @@ set(IMAGES
         ${CMAKE_SOURCE_DIR}/src/res/sprites/hero2_sprites.png
         ${CMAKE_SOURCE_DIR}/src/res/sprites/map_fieldOfHopesAndDreams.png
         ${CMAKE_SOURCE_DIR}/src/res/sprites/map_commonItems.png
+        ${CMAKE_SOURCE_DIR}/src/res/sprites/menu_background.png
+        ${CMAKE_SOURCE_DIR}/src/res/sprites/menu_soul.png
+        ${CMAKE_SOURCE_DIR}/src/res/sprites/utils_windows.png
 )
 
 set(MAPS
         ${CMAKE_SOURCE_DIR}/src/res/maps/level1.txt
+)
+
+set(SAVED
+        ${CMAKE_SOURCE_DIR}/src/res/saved/save1.txt
+        ${CMAKE_SOURCE_DIR}/src/res/saved/save2.txt
+        ${CMAKE_SOURCE_DIR}/src/res/saved/save3.txt
 )
 
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
@@ -65,5 +74,12 @@ foreach (map ${MAPS})
     add_custom_command(
             TARGET zoltraak POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${map} ${CMAKE_BINARY_DIR}/
+    )
+endforeach ()
+
+foreach (save ${SAVED})
+    add_custom_command(
+            TARGET zoltraak POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${save} ${CMAKE_BINARY_DIR}/
     )
 endforeach ()

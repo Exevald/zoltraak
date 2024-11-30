@@ -74,6 +74,13 @@ public:
 		return entities;
 	}
 
+	template <typename ComponentType>
+	bool HasComponent(EntityId entityId)
+	{
+		auto& componentMap = GetComponentMap<ComponentType>();
+		return componentMap.find(entityId) != componentMap.end();
+	}
+
 	CEntityManager(const CEntityManager&) = delete;
 	CEntityManager& operator=(const CEntityManager&) = delete;
 
@@ -89,13 +96,6 @@ private:
 	{
 		static std::unordered_map<EntityId, ComponentType> componentMap;
 		return componentMap;
-	}
-
-	template <typename ComponentType>
-	bool HasComponent(EntityId entityId)
-	{
-		auto& componentMap = GetComponentMap<ComponentType>();
-		return componentMap.find(entityId) != componentMap.end();
 	}
 
 	EntityId m_nextId;
