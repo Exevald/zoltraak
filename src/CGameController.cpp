@@ -16,7 +16,7 @@ int CGameController::m_currentGameSaveNumber = 0;
 
 void CGameController::InitGameSettings(const Level& level)
 {
-	m_levelWidth = float(level[0].size()) * 20 * 3 - 60;
+	m_levelWidth = float(level.front().size()) * 20 * 3 - 60;
 	m_levelHeight = float(level.size()) * 20 * 3 - 60;
 }
 

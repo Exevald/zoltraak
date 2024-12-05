@@ -218,3 +218,13 @@ struct ExperienceComponent : IComponent
 struct MenuSoulComponent : IComponent
 {
 };
+
+struct FightTurnComponent : IComponent
+{
+	bool isEntityTurn;
+
+	explicit FightTurnComponent(bool turn)
+		: isEntityTurn(turn)
+	{
+	}
+};

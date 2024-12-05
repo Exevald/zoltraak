@@ -27,6 +27,8 @@ void CMovementSystem::HandleEntityMoved(EntityId movedEntityId, const std::strin
 	auto* animationComponent = entityManager.GetComponent<AnimationComponent>(movedEntityId);
 	auto* imageComponent = entityManager.GetComponent<ImageComponent>(movedEntityId);
 
+	auto level = CLevelGenerator::GetLevel("level1.txt");
+
 	if (!positionComponent || (!animationComponent && !imageComponent))
 	{
 		return;
@@ -42,10 +44,25 @@ void CMovementSystem::HandleEntityMoved(EntityId movedEntityId, const std::strin
 	{
 		newX += velocityComponent->vx;
 	}
+
+	const float baseTileSize = 20.0f;
+	const float scaleFactor = 3.0f;
+	const float scaledTileSize = baseTileSize * scaleFactor;
+
+	int tileX = static_cast<int>(newX / scaledTileSize);
+	int tileY = static_cast<int>(newY / baseTileSize);
+
+	char tile = level[tileY][tileX];
+
+	if (tile == '5' || tile == '6' || tile == '7' || tile == '8' || tile == '9' || tile == '0')
+	{
+		return;
+	}
+
 	if (animationComponent)
 	{
 		newX = std::max(0.f, std::min(newX, float(CGameController::GetWindowSizeSettings().x) - animationComponent->sprite.getScale().x * 18));
-		newY = std::max(0.f, std::min(newY, float(CGameController::GetWindowSizeSettings().y) - animationComponent->sprite.getScale().y * 37));
+		newY = std::max(0.f, std::min(newY, float(CGameController::GetWindowSizeSettings().y / 3) - animationComponent->sprite.getScale().y * 37));
 	}
 	if (imageComponent)
 	{

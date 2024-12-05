@@ -3,6 +3,7 @@
 #include "CEntityManager.h"
 #include "camera/CCameraSystem.h"
 #include "collision/CCollisionSystem.h"
+#include "level_generator/CLevelGenerator.h"
 #include "movement/CMovementSystem.h"
 #include "view/CViewSystem.h"
 #include <SFML/Graphics.hpp>
@@ -15,6 +16,7 @@ enum class CurrentState
 	Player,
 	PauseMenu,
 	Settings,
+	Fight,
 };
 
 struct SaveInfo

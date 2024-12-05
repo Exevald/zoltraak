@@ -1,8 +1,10 @@
 #pragma once
 
+#include "../../CGameController.h"
 #include "CEntityManager.h"
-#include "level_generator/CLevelGenerator.h"
 #include <SFML/Graphics.hpp>
+
+struct SaveInfo;
 
 struct HeroCard
 {
@@ -47,6 +49,22 @@ struct LevelChoosingMenu
 	std::unordered_map<int, std::vector<sf::Text>> levelCardsInfo;
 };
 
+struct HeroFightCard {
+	sf::RectangleShape area;
+	sf::Sprite heroIcon;
+	sf::Text heroHpText;
+	sf::Text heroHpValue;
+};
+
+struct FightScene
+{
+	sf::Texture backgroundTexture;
+	sf::Sprite background;
+	sf::Sprite infoCard;
+	sf::Text infoText;
+	std::vector<HeroFightCard> heroesFightInfo;
+};
+
 class CViewSystem
 {
 public:
@@ -61,14 +79,30 @@ public:
 	void Init();
 
 private:
+	void DrawMapItem(int x, int y, const sf::Texture& texture, const sf::IntRect& textureRect);
 	void DrawField();
 	void DrawItems();
 	void UpdateHeroCard(EntityId selectedEntity);
 	void UpdateHeroCardPosition();
 	void DrawMainMenu();
 	void DrawLevelChoosingMenu();
+	void DrawLevelChoosingTitle(sf::Font& font);
+	void DrawLevelChoosingBackground();
+	void DrawLevelSaveCards(sf::Font& font);
+	void CreateLevelSaveCards();
+	void DrawLevelSaveCardsInfo(sf::Font& font);
+	void CreateLevelSaveCardInfo(int saveIndex, const SaveInfo& saveInfo, sf::Font& font);
+	void UpdateHeroCardBackground(const ColorThemeComponent* colorThemeComp);
+	void UpdateHeroAvatar(const AvatarComponent* avatarComp);
+	void UpdateHeroHealthBar(const HealthComponent* healthComp, const ColorThemeComponent* colorThemeComp);
+	void UpdateHeroManaBar(const ManaComponent* manaComp);
+	void UpdateHeroInfoText(const ExperienceComponent* experienceComp);
+	void SetupPauseMenuArea();
+	void SetupPauseMenuTitle();
+	void SetupPauseMenuOptions();
 	void DrawMenuSoul();
 	void DrawPauseMenu();
+	void DrawFightScene();
 
 	sf::RenderWindow& m_window;
 	Level& m_level;
@@ -76,4 +110,5 @@ private:
 	MainMenu m_menu;
 	PauseMenu m_pauseMenu;
 	LevelChoosingMenu m_levelChoosingMenu;
+	FightScene m_fightingScene;
 };

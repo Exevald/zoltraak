@@ -17,6 +17,7 @@ set(IMAGES
         ${CMAKE_SOURCE_DIR}/src/res/sprites/menu_background.png
         ${CMAKE_SOURCE_DIR}/src/res/sprites/menu_soul.png
         ${CMAKE_SOURCE_DIR}/src/res/sprites/utils_windows.png
+        ${CMAKE_SOURCE_DIR}/src/res/sprites/fight_background.png
 )
 
 set(MAPS
@@ -42,6 +43,7 @@ add_executable(
         src/common/storage/CTextureStorage.cpp
         src/common/storage/CFontStorage.cpp
         src/common/level_generator/CLevelGenerator.cpp
+        src/common/gif_converter/CGifConverter.cpp
 
         src/systems/event/CEventSystem.cpp
         src/systems/movement/CMovementSystem.cpp

@@ -1,5 +1,4 @@
 #include "CViewSystem.h"
-#include "../CGameController.h"
 #include "CEntityManager.h"
 #include "Utils.h"
 #include "events/CEventDispatcher.h"
@@ -60,6 +59,13 @@ void CViewSystem::Draw()
 		CViewSystem::DrawField();
 		CViewSystem::DrawPauseMenu();
 	}
+	if (currentState == CurrentState::Fight)
+	{
+		sf::View view = m_window.getDefaultView();
+		m_window.setView(view);
+
+		CViewSystem::DrawFightScene();
+	}
 }
 
 void CViewSystem::DrawField()
@@ -84,84 +90,39 @@ void CViewSystem::DrawField()
 				break;
 			}
 			case '1': {
-				sf::Sprite mapItemSprite;
-				mapItemSprite.setTexture(map);
-				mapItemSprite.setTextureRect(sf::IntRect(316, 15, 20, 20));
-				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-				mapItemSprite.setScale(3.f, 3.f);
-				m_window.draw(mapItemSprite);
+				CViewSystem::DrawMapItem(j, i, map, sf::IntRect(316, 15, 20, 20));
 				break;
 			}
 			case '2': {
-				sf::Sprite mapItemSprite;
-				mapItemSprite.setTexture(map);
-				mapItemSprite.setTextureRect(sf::IntRect(22, 78, 20, 20));
-				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-				mapItemSprite.setScale(3.f, 3.f);
-				m_window.draw(mapItemSprite);
+				CViewSystem::DrawMapItem(j, i, map, sf::IntRect(22, 78, 20, 20));
 				break;
 			}
 			case '3': {
-				sf::Sprite mapItemSprite;
-				mapItemSprite.setTexture(map);
-				mapItemSprite.setTextureRect(sf::IntRect(1, 78, 20, 20));
-				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-				mapItemSprite.setScale(3.f, 3.f);
-				m_window.draw(mapItemSprite);
+				CViewSystem::DrawMapItem(j, i, map, sf::IntRect(1, 78, 20, 20));
 				break;
 			}
 			case '4': {
-				sf::Sprite mapItemSprite;
-				mapItemSprite.setTexture(map);
-				mapItemSprite.setTextureRect(sf::IntRect(85, 78, 20, 20));
-				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-				mapItemSprite.setScale(3.f, 3.f);
-				m_window.draw(mapItemSprite);
+				CViewSystem::DrawMapItem(j, i, map, sf::IntRect(85, 78, 20, 20));
 				break;
 			}
 			case '5': {
-				sf::Sprite mapItemSprite;
-				mapItemSprite.setTexture(map);
-				mapItemSprite.setTextureRect(sf::IntRect(22, 36, 20, 20));
-				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-				mapItemSprite.setScale(3.f, 3.f);
-				m_window.draw(mapItemSprite);
+				CViewSystem::DrawMapItem(j, i, map, sf::IntRect(22, 36, 20, 20));
 				break;
 			}
 			case '6': {
-				sf::Sprite mapItemSprite;
-				mapItemSprite.setTexture(map);
-				mapItemSprite.setTextureRect(sf::IntRect(64, 57, 20, 20));
-				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-				mapItemSprite.setScale(3.f, 3.f);
-				m_window.draw(mapItemSprite);
+				CViewSystem::DrawMapItem(j, i, map, sf::IntRect(64, 57, 20, 20));
 				break;
 			}
 			case '7': {
-				sf::Sprite mapItemSprite;
-				mapItemSprite.setTexture(map);
-				mapItemSprite.setTextureRect(sf::IntRect(64, 36, 20, 20));
-				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-				mapItemSprite.setScale(3.f, 3.f);
-				m_window.draw(mapItemSprite);
+				CViewSystem::DrawMapItem(j, i, map, sf::IntRect(64, 36, 20, 20));
 				break;
 			}
 			case '8': {
-				sf::Sprite mapItemSprite;
-				mapItemSprite.setTexture(map);
-				mapItemSprite.setTextureRect(sf::IntRect(1, 57, 20, 20));
-				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-				mapItemSprite.setScale(3.f, 3.f);
-				m_window.draw(mapItemSprite);
+				CViewSystem::DrawMapItem(j, i, map, sf::IntRect(1, 57, 20, 20));
 				break;
 			}
 			case '9': {
-				sf::Sprite mapItemSprite;
-				mapItemSprite.setTexture(map);
-				mapItemSprite.setTextureRect(sf::IntRect(1, 36, 20, 20));
-				mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-				mapItemSprite.setScale(3.f, 3.f);
-				m_window.draw(mapItemSprite);
+				CViewSystem::DrawMapItem(j, i, map, sf::IntRect(1, 36, 20, 20));
 				break;
 			}
 			default:
@@ -174,45 +135,27 @@ void CViewSystem::DrawField()
 			for (int j = 0; j < line.size(); j++)
 			{
 				auto ch = line[j];
-				if (ch == '@')
+				switch (ch)
 				{
-					sf::Sprite mapItemSprite;
-					mapItemSprite.setTexture(map);
-					mapItemSprite.setTextureRect(sf::IntRect(316, 78, 60, 60));
-					mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-					mapItemSprite.setScale(3.f, 3.f);
-					m_window.draw(mapItemSprite);
+				case '@': {
+					CViewSystem::DrawMapItem(j, i, map, sf::IntRect(316, 78, 60, 60));
+					break;
 				}
-				if (ch == '!')
-				{
-					sf::Sprite mapItemSprite;
-					mapItemSprite.setTexture(map);
-					mapItemSprite.setTextureRect(sf::IntRect(22, 36, 20, 20));
-					mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-					mapItemSprite.setScale(3.f, 3.f);
-					m_window.draw(mapItemSprite);
-					mapItemSprite.setTextureRect(sf::IntRect(43, 36, 20, 20));
-					mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-					mapItemSprite.setScale(3.f, 3.f);
-					m_window.draw(mapItemSprite);
+				case '!': {
+					CViewSystem::DrawMapItem(j, i, map, sf::IntRect(22, 36, 20, 20));
+					CViewSystem::DrawMapItem(j, i, map, sf::IntRect(43, 36, 20, 20));
+					break;
 				}
-				if (ch == 'S')
-				{
-					sf::Sprite mapItemSprite;
-					mapItemSprite.setTexture(map);
-					mapItemSprite.setTextureRect(sf::IntRect(1, 141, 191, 109));
-					mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-					mapItemSprite.setScale(3.f, 3.f);
-					m_window.draw(mapItemSprite);
+				case 'S': {
+					CViewSystem::DrawMapItem(j, i, map, sf::IntRect(1, 141, 191, 109));
+					break;
 				}
-				if (ch == 'C')
-				{
-					sf::Sprite mapItemSprite;
-					mapItemSprite.setTexture(commonMapItems);
-					mapItemSprite.setTextureRect(sf::IntRect(42, 190, 40, 60));
-					mapItemSprite.setPosition(float(j) * 20 * 3 - 60, float(i) * 20 * 3 - 60);
-					mapItemSprite.setScale(3.f, 3.f);
-					m_window.draw(mapItemSprite);
+				case 'C': {
+					CViewSystem::DrawMapItem(j, i, map, sf::IntRect(42, 190, 40, 60));
+					break;
+				}
+				default:
+					break;
 				}
 			}
 		}
@@ -265,31 +208,51 @@ void CViewSystem::UpdateHeroCard(EntityId selectedEntity)
 
 	m_heroCard.visible = true;
 
+	CViewSystem::UpdateHeroCardBackground(colorThemeComp);
+	CViewSystem::UpdateHeroAvatar(avatarComp);
+	CViewSystem::UpdateHeroHealthBar(healthComp, colorThemeComp);
+	CViewSystem::UpdateHeroManaBar(manaComp);
+	CViewSystem::UpdateHeroInfoText(experienceComp);
+}
+
+void CViewSystem::UpdateHeroCardBackground(const ColorThemeComponent* colorThemeComp)
+{
 	m_heroCard.shape.setSize({ 700, 200 });
 	m_heroCard.shape.setFillColor(sf::Color::Black);
 	m_heroCard.shape.setOutlineColor(colorThemeComp->colorTheme);
 	m_heroCard.shape.setOutlineThickness(4);
+}
 
+void CViewSystem::UpdateHeroAvatar(const AvatarComponent* avatarComp)
+{
 	auto& texture = CTextureStorage::GetTexture(avatarComp->avatarFilePath);
-	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
-
 	m_heroCard.avatarSprite.setTexture(texture);
 	m_heroCard.avatarSprite.setScale(5.0f, 5.0f);
+}
 
+void CViewSystem::UpdateHeroHealthBar(const HealthComponent* healthComp, const ColorThemeComponent* colorThemeComp)
+{
 	const float maxHealthBarWidth = 200;
-	const float maxManaBarWidth = 200;
-
 	m_heroCard.maxHealthBar.setSize({ maxHealthBarWidth, 20 });
 	m_heroCard.maxHealthBar.setFillColor(sf::Color(117, 2, 7));
 
 	m_heroCard.healthBar.setSize({ maxHealthBarWidth * (healthComp->currentHealth / healthComp->maxHealth), 20 });
 	m_heroCard.healthBar.setFillColor(colorThemeComp->colorTheme);
+}
 
+void CViewSystem::UpdateHeroManaBar(const ManaComponent* manaComp)
+{
+	const float maxManaBarWidth = 200;
 	m_heroCard.maxManaBar.setSize({ maxManaBarWidth, 20 });
 	m_heroCard.maxManaBar.setFillColor(sf::Color(117, 2, 7));
 
 	m_heroCard.manaBar.setSize({ maxManaBarWidth * (manaComp->currentMana / manaComp->maxMana), 20 });
 	m_heroCard.manaBar.setFillColor(sf::Color(248, 158, 69));
+}
+
+void CViewSystem::UpdateHeroInfoText(const ExperienceComponent* experienceComp)
+{
+	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
 
 	m_heroCard.heroHealthText.setFont(font);
 	m_heroCard.heroHealthText.setString("HP");
@@ -425,12 +388,40 @@ void CViewSystem::DrawMenuSoul()
 
 void CViewSystem::DrawPauseMenu()
 {
+	CViewSystem::SetupPauseMenuArea();
+	CViewSystem::SetupPauseMenuTitle();
+	CViewSystem::SetupPauseMenuOptions();
+
+	m_window.draw(m_pauseMenu.pauseMenuArea);
+	m_window.draw(m_pauseMenu.pauseMenuTitle);
+
+	for (int i = 0; i < m_pauseMenu.menuOptions.size(); i++)
+	{
+		if (CGameController::GetCurrentPauseMenuOption() == i)
+		{
+			m_pauseMenu.menuOptions[i].setFillColor(sf::Color::Yellow);
+			m_pauseMenu.menuOptions[i].setCharacterSize(35);
+		}
+		else
+		{
+			m_pauseMenu.menuOptions[i].setFillColor(sf::Color::White);
+			m_pauseMenu.menuOptions[i].setCharacterSize(30);
+		}
+		m_window.draw(m_pauseMenu.menuOptions[i]);
+	}
+}
+
+void CViewSystem::SetupPauseMenuArea()
+{
 	m_pauseMenu.pauseMenuAreaTexture = CTextureStorage::GetTexture("utils_windows.png");
 	m_pauseMenu.pauseMenuArea.setTexture(m_pauseMenu.pauseMenuAreaTexture);
 	m_pauseMenu.pauseMenuArea.setTextureRect(sf::IntRect(841, 21, 260, 146));
 	m_pauseMenu.pauseMenuArea.setPosition(m_window.getView().getCenter().x - 260.f * 3 / 2, m_window.getView().getCenter().y - 73.f * 3 / 2);
 	m_pauseMenu.pauseMenuArea.setScale(3.f, 3.f);
+}
 
+void CViewSystem::SetupPauseMenuTitle()
+{
 	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
 	m_pauseMenu.pauseMenuTitle.setFont(font);
 	m_pauseMenu.pauseMenuTitle.setString("PAUSE");
@@ -439,6 +430,11 @@ void CViewSystem::DrawPauseMenu()
 	const float titleX = m_pauseMenu.pauseMenuArea.getPosition().x + m_pauseMenu.pauseMenuArea.getScale().x * 260 / 2.2f;
 	const float titleY = m_pauseMenu.pauseMenuArea.getPosition().y + 30;
 	m_pauseMenu.pauseMenuTitle.setPosition(titleX, titleY);
+}
+
+void CViewSystem::SetupPauseMenuOptions()
+{
+	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
 
 	if (m_pauseMenu.menuOptions.empty())
 	{
@@ -463,132 +459,65 @@ void CViewSystem::DrawPauseMenu()
 		exitText.setCharacterSize(30);
 		m_pauseMenu.menuOptions.push_back(exitText);
 	}
-
-	m_window.draw(m_pauseMenu.pauseMenuArea);
-	m_window.draw(m_pauseMenu.pauseMenuTitle);
-
-	for (int i = 0; i < m_pauseMenu.menuOptions.size(); i++)
-	{
-		if (CGameController::GetCurrentPauseMenuOption() == i)
-		{
-			m_pauseMenu.menuOptions[i].setFillColor(sf::Color::Yellow);
-			m_pauseMenu.menuOptions[i].setCharacterSize(35);
-		}
-		else
-		{
-			m_pauseMenu.menuOptions[i].setFillColor(sf::Color::White);
-			m_pauseMenu.menuOptions[i].setCharacterSize(30);
-		}
-		m_window.draw(m_pauseMenu.menuOptions[i]);
-	}
 }
 
 void CViewSystem::DrawLevelChoosingMenu()
 {
 	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
 
+	DrawLevelChoosingTitle(font);
+	DrawLevelChoosingBackground();
+
+	if (m_levelChoosingMenu.levelCards.empty())
+	{
+		CreateLevelSaveCards();
+	}
+
+	DrawLevelSaveCards(font);
+	DrawLevelSaveCardsInfo(font);
+}
+
+void CViewSystem::DrawLevelChoosingTitle(sf::Font& font)
+{
 	m_levelChoosingMenu.levelChoosingMenuTitle.setFont(font);
 	m_levelChoosingMenu.levelChoosingMenuTitle.setString("Please select a file:");
 	m_levelChoosingMenu.levelChoosingMenuTitle.setPosition(m_window.getView().getCenter().x - 289.f * 3 / 2, m_window.getView().getCenter().y - 225);
 	m_levelChoosingMenu.levelChoosingMenuTitle.setCharacterSize(40);
+	m_window.draw(m_levelChoosingMenu.levelChoosingMenuTitle);
+}
 
+void CViewSystem::DrawLevelChoosingBackground()
+{
 	m_levelChoosingMenu.backgroundTexture = CTextureStorage::GetTexture("menu_background.png");
 	m_levelChoosingMenu.backgroundSprite.setTexture(m_levelChoosingMenu.backgroundTexture);
-
-	sf::Sprite save1InfoCard;
-	sf::Sprite save2InfoCard;
-	sf::Sprite save3InfoCard;
-
-	if (m_levelChoosingMenu.levelCards.empty())
-	{
-		save1InfoCard.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
-		save1InfoCard.setTextureRect(sf::IntRect(544, 21, 289, 76));
-		save1InfoCard.setPosition(m_window.getView().getCenter().x - 289.f * 3 / 2, m_window.getView().getCenter().y - 150);
-		save1InfoCard.setScale(2.f, 2.f);
-		m_levelChoosingMenu.levelCards.push_back(save1InfoCard);
-
-		save2InfoCard.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
-		save2InfoCard.setTextureRect(sf::IntRect(544, 21, 289, 76));
-		save2InfoCard.setPosition(m_window.getView().getCenter().x - 289.f * 3 / 2, m_window.getView().getCenter().y + 25);
-		save2InfoCard.setScale(2.f, 2.f);
-		m_levelChoosingMenu.levelCards.push_back(save2InfoCard);
-
-		save3InfoCard.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
-		save3InfoCard.setTextureRect(sf::IntRect(544, 21, 289, 76));
-		save3InfoCard.setPosition(m_window.getView().getCenter().x - 289.f * 3 / 2, m_window.getView().getCenter().y + 200);
-		save3InfoCard.setScale(2.f, 2.f);
-		m_levelChoosingMenu.levelCards.push_back(save3InfoCard);
-	}
-
-
-	auto save1Info = CGameController::GetSaveInfo(0);
-	auto save2Info = CGameController::GetSaveInfo(1);
-	auto save3Info = CGameController::GetSaveInfo(2);
-
-	if (m_levelChoosingMenu.levelCardsInfo.empty())
-	{
-
-		sf::Text playerName;
-		playerName.setFont(font);
-		playerName.setCharacterSize(50);
-		playerName.setString(save1Info.PlayerName);
-		playerName.setPosition(save1InfoCard.getPosition().x + 60, save1InfoCard.getPosition().y + 15);
-
-		sf::Text currentLocation;
-		currentLocation.setFont(font);
-		currentLocation.setCharacterSize(40);
-		currentLocation.setString(save1Info.currentLocation);
-		currentLocation.setPosition(save1InfoCard.getPosition().x + 60, save1InfoCard.getPosition().y + 85);
-
-		int minutes = static_cast<int>(save1Info.gameTime) / 60;
-		int seconds = static_cast<int>(save1Info.gameTime) % 60;
-
-		sf::Text passedTime;
-		passedTime.setFont(font);
-		passedTime.setCharacterSize(45);
-		passedTime.setString("Time: " + std::to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + std::to_string(seconds));
-		passedTime.setPosition(save1InfoCard.getPosition().x + 200, save1InfoCard.getPosition().y + 20);
-
-		m_levelChoosingMenu.levelCardsInfo[0].push_back(playerName);
-		m_levelChoosingMenu.levelCardsInfo[0].push_back(currentLocation);
-		m_levelChoosingMenu.levelCardsInfo[0].push_back(passedTime);
-
-		playerName.setString(save2Info.PlayerName);
-		playerName.setPosition(save2InfoCard.getPosition().x + 60, save2InfoCard.getPosition().y + 15);
-
-		currentLocation.setString(save2Info.currentLocation);
-		currentLocation.setPosition(save2InfoCard.getPosition().x + 60, save2InfoCard.getPosition().y + 85);
-
-		minutes = static_cast<int>(save2Info.gameTime) / 60;
-		seconds = static_cast<int>(save2Info.gameTime) % 60;
-
-		passedTime.setString("Time: " + std::to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + std::to_string(seconds));
-		passedTime.setPosition(save2InfoCard.getPosition().x + 200, save2InfoCard.getPosition().y + 20);
-
-		m_levelChoosingMenu.levelCardsInfo[1].push_back(playerName);
-		m_levelChoosingMenu.levelCardsInfo[1].push_back(currentLocation);
-		m_levelChoosingMenu.levelCardsInfo[1].push_back(passedTime);
-
-		playerName.setString(save3Info.PlayerName);
-		playerName.setPosition(save3InfoCard.getPosition().x + 60, save3InfoCard.getPosition().y + 15);
-
-		currentLocation.setString(save3Info.currentLocation);
-		currentLocation.setPosition(save3InfoCard.getPosition().x + 60, save3InfoCard.getPosition().y + 85);
-
-		minutes = static_cast<int>(save3Info.gameTime) / 60;
-		seconds = static_cast<int>(save3Info.gameTime) % 60;
-
-		passedTime.setString("Time: " + std::to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + std::to_string(seconds));
-		passedTime.setPosition(save3InfoCard.getPosition().x + 200, save3InfoCard.getPosition().y + 20);
-
-		m_levelChoosingMenu.levelCardsInfo[2].push_back(playerName);
-		m_levelChoosingMenu.levelCardsInfo[2].push_back(currentLocation);
-		m_levelChoosingMenu.levelCardsInfo[2].push_back(passedTime);
-	}
-
 	m_window.draw(m_levelChoosingMenu.backgroundSprite);
-	m_window.draw(m_levelChoosingMenu.levelChoosingMenuTitle);
+}
 
+void CViewSystem::CreateLevelSaveCards()
+{
+	sf::Sprite save1InfoCard, save2InfoCard, save3InfoCard;
+
+	save1InfoCard.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
+	save1InfoCard.setTextureRect(sf::IntRect(544, 21, 289, 76));
+	save1InfoCard.setPosition(m_window.getView().getCenter().x - 289.f * 3 / 2, m_window.getView().getCenter().y - 150);
+	save1InfoCard.setScale(2.f, 2.f);
+	m_levelChoosingMenu.levelCards.push_back(save1InfoCard);
+
+	save2InfoCard.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
+	save2InfoCard.setTextureRect(sf::IntRect(544, 21, 289, 76));
+	save2InfoCard.setPosition(m_window.getView().getCenter().x - 289.f * 3 / 2, m_window.getView().getCenter().y + 25);
+	save2InfoCard.setScale(2.f, 2.f);
+	m_levelChoosingMenu.levelCards.push_back(save2InfoCard);
+
+	save3InfoCard.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
+	save3InfoCard.setTextureRect(sf::IntRect(544, 21, 289, 76));
+	save3InfoCard.setPosition(m_window.getView().getCenter().x - 289.f * 3 / 2, m_window.getView().getCenter().y + 200);
+	save3InfoCard.setScale(2.f, 2.f);
+	m_levelChoosingMenu.levelCards.push_back(save3InfoCard);
+}
+
+void CViewSystem::DrawLevelSaveCards(sf::Font& font)
+{
 	for (int i = 0; i < m_levelChoosingMenu.levelCards.size(); i++)
 	{
 		if (CGameController::GetCurrentGameSaveNumber() == i)
@@ -601,6 +530,20 @@ void CViewSystem::DrawLevelChoosingMenu()
 		}
 		m_window.draw(m_levelChoosingMenu.levelCards[i]);
 	}
+}
+
+void CViewSystem::DrawLevelSaveCardsInfo(sf::Font& font)
+{
+	auto save1Info = CGameController::GetSaveInfo(0);
+	auto save2Info = CGameController::GetSaveInfo(1);
+	auto save3Info = CGameController::GetSaveInfo(2);
+
+	if (m_levelChoosingMenu.levelCardsInfo.empty())
+	{
+		CreateLevelSaveCardInfo(0, save1Info, font);
+		CreateLevelSaveCardInfo(1, save2Info, font);
+		CreateLevelSaveCardInfo(2, save3Info, font);
+	}
 
 	for (const auto& levelCardInfo : m_levelChoosingMenu.levelCardsInfo)
 	{
@@ -609,4 +552,53 @@ void CViewSystem::DrawLevelChoosingMenu()
 			m_window.draw(text);
 		}
 	}
+}
+
+void CViewSystem::CreateLevelSaveCardInfo(int saveIndex, const SaveInfo& saveInfo, sf::Font& font)
+{
+	sf::Text playerName;
+	playerName.setFont(font);
+	playerName.setCharacterSize(50);
+	playerName.setString(saveInfo.PlayerName);
+	playerName.setPosition(m_levelChoosingMenu.levelCards[saveIndex].getPosition().x + 60, m_levelChoosingMenu.levelCards[saveIndex].getPosition().y + 15);
+
+	sf::Text currentLocation;
+	currentLocation.setFont(font);
+	currentLocation.setCharacterSize(40);
+	currentLocation.setString(saveInfo.currentLocation);
+	currentLocation.setPosition(m_levelChoosingMenu.levelCards[saveIndex].getPosition().x + 60, m_levelChoosingMenu.levelCards[saveIndex].getPosition().y + 85);
+
+	int minutes = static_cast<int>(saveInfo.gameTime) / 60;
+	int seconds = static_cast<int>(saveInfo.gameTime) % 60;
+
+	sf::Text passedTime;
+	passedTime.setFont(font);
+	passedTime.setCharacterSize(45);
+	passedTime.setString("Time: " + std::to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + std::to_string(seconds));
+	passedTime.setPosition(m_levelChoosingMenu.levelCards[saveIndex].getPosition().x + 200, m_levelChoosingMenu.levelCards[saveIndex].getPosition().y + 20);
+
+	m_levelChoosingMenu.levelCardsInfo[saveIndex].push_back(playerName);
+	m_levelChoosingMenu.levelCardsInfo[saveIndex].push_back(currentLocation);
+	m_levelChoosingMenu.levelCardsInfo[saveIndex].push_back(passedTime);
+}
+
+void CViewSystem::DrawMapItem(int x, int y, const sf::Texture& texture, const sf::IntRect& textureRect)
+{
+	sf::Sprite mapItemSprite;
+	mapItemSprite.setTexture(texture);
+	mapItemSprite.setTextureRect(textureRect);
+	mapItemSprite.setPosition(float(x) * 20 * 3 - 60, float(y) * 20 * 3 - 60);
+	mapItemSprite.setScale(3.f, 3.f);
+	m_window.draw(mapItemSprite);
+}
+
+void CViewSystem::DrawFightScene()
+{
+	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
+
+	m_fightingScene.backgroundTexture = CTextureStorage::GetTexture("fight_background.png");
+	m_fightingScene.background.setTexture(m_fightingScene.backgroundTexture);
+	m_fightingScene.background.setScale(6.f, 5.f);
+
+	m_window.draw(m_fightingScene.background);
 }
