@@ -18,6 +18,7 @@ set(IMAGES
         ${CMAKE_SOURCE_DIR}/src/res/sprites/menu_soul.png
         ${CMAKE_SOURCE_DIR}/src/res/sprites/utils_windows.png
         ${CMAKE_SOURCE_DIR}/src/res/sprites/fight_background.png
+        ${CMAKE_SOURCE_DIR}/src/res/sprites/fight_utils.png
 )
 
 set(MAPS
@@ -51,6 +52,7 @@ add_executable(
         src/systems/collision/CCollisionSystem.cpp
         src/systems/camera/CCameraSystem.cpp
         src/systems/animation/CAnimationSystem.cpp
+        src/systems/fight/CFightSystem.cpp
 
         src/CGameController.cpp
         src/main.cpp

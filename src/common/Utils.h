@@ -10,3 +10,9 @@ struct WindowSettings
 	unsigned int windowHeight = 1080;
 	std::string windowTitle = "Zoltraak";
 };
+
+struct BattleAreaSettings
+{
+	int areaWidth = 150;
+	int areaHeight = 149;
+};

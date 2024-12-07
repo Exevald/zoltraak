@@ -26,6 +26,11 @@ struct SaveInfo
 	float gameTime;
 };
 
+enum class FightPhase {
+	CharactersTurn,
+	EnemiesTurn,
+};
+
 class CGameController
 {
 public:
@@ -49,11 +54,19 @@ public:
 
 	static void SetCurrentGameSaveNumber(int saveNumber);
 
+	static void SetCurrentFightActionNumber(int actionNumber);
+
+	static void SetFightPhase(const FightPhase& phase);
+
 	static void IncreaseElapsedTime(float deltaTime);
 
 	static float GetElapsedTIme();
 
 	static SaveInfo GetSaveInfo(int saveNumber);
+
+	static FightPhase GetFightPhase();
+
+	static int GetCurrentFightActionNumber();
 
 	static int GetCurrentMainMenuOption();
 
@@ -76,6 +89,8 @@ private:
 	static int m_currentMainMenuOption;
 	static int m_currentPauseMenuOption;
 	static int m_currentGameSaveNumber;
+	static int m_currentFightActionNumber;
+	static FightPhase m_currentFightPhase;
 
 	static std::string GetSaveFileName(int saveNumber);
 };

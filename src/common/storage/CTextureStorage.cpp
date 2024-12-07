@@ -2,7 +2,7 @@
 
 std::unordered_map<std::string, sf::Texture> CTextureStorage::m_textureCache;
 
-sf::Texture& CTextureStorage::GetTexture(const std::string& filePath)
+sf::Texture& CTextureStorage::GetTexture(const std::string& filePath, const sf::Color& backgroundColor)
 {
 	auto it = m_textureCache.find(filePath);
 	if (it == m_textureCache.end())
@@ -12,8 +12,6 @@ sf::Texture& CTextureStorage::GetTexture(const std::string& filePath)
 		{
 			throw std::runtime_error("Failed to load texture: " + filePath);
 		}
-
-		sf::Color backgroundColor(195, 134, 255);
 		image.createMaskFromColor(backgroundColor);
 
 		sf::Texture texture;

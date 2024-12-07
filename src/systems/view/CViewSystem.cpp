@@ -4,12 +4,17 @@
 #include "events/CEventDispatcher.h"
 #include "storage/CFontStorage.h"
 #include "storage/CTextureStorage.h"
+#include <iostream>
 
 void CViewSystem::Init()
 {
 	CEventDispatcher::GetInstance().Subscribe(EventType::EntitySelected, [this](const SEvent& event) {
 		const auto& selectedEventData = std::get<EntitySelectedEventData>(event.data);
 		UpdateHeroCard(selectedEventData.id);
+	});
+	CEventDispatcher::GetInstance().Subscribe(EventType::FightActionSelected, [this](const SEvent& event) {
+		const auto& fightActionSelectedEventData = std::get<FightActionSelectedEventData>(event.data);
+		m_currentFightAction = fightActionSelectedEventData.selectedAction;
 	});
 }
 
@@ -358,9 +363,9 @@ void CViewSystem::DrawMainMenu()
 void CViewSystem::DrawMenuSoul()
 {
 	auto& entityManager = CEntityManager::GetInstance();
-	auto soulId = entityManager.GetEntitiesWithComponents<MenuSoulComponent>().front();
-	auto* imageComp = entityManager.GetComponent<ImageComponent>(soulId);
-	auto* positionComp = entityManager.GetComponent<PositionComponent>(soulId);
+	auto mainMenuSoulId = entityManager.GetEntitiesWithComponents<MenuSoulComponent>().front();
+	auto* imageComp = entityManager.GetComponent<ImageComponent>(mainMenuSoulId);
+	auto* positionComp = entityManager.GetComponent<PositionComponent>(mainMenuSoulId);
 
 	bool isOptionSelected = false;
 	for (int i = 0; i < m_menu.menuOptions.size(); i++)
@@ -473,7 +478,7 @@ void CViewSystem::DrawLevelChoosingMenu()
 		CreateLevelSaveCards();
 	}
 
-	DrawLevelSaveCards(font);
+	DrawLevelSaveCards();
 	DrawLevelSaveCardsInfo(font);
 }
 
@@ -516,7 +521,7 @@ void CViewSystem::CreateLevelSaveCards()
 	m_levelChoosingMenu.levelCards.push_back(save3InfoCard);
 }
 
-void CViewSystem::DrawLevelSaveCards(sf::Font& font)
+void CViewSystem::DrawLevelSaveCards()
 {
 	for (int i = 0; i < m_levelChoosingMenu.levelCards.size(); i++)
 	{
@@ -594,11 +599,216 @@ void CViewSystem::DrawMapItem(int x, int y, const sf::Texture& texture, const sf
 
 void CViewSystem::DrawFightScene()
 {
-	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
+	const BattleAreaSettings battleAreaSettings;
+	auto& heroCardFont = CFontStorage::GetFont("8bitoperator_jve.ttf");
+
+	auto& entityManager = CEntityManager::GetInstance();
+	auto charactersIds = entityManager.GetEntitiesWithComponents<NameComponent>();
+	auto currentFightPhase = CGameController::GetFightPhase();
 
 	m_fightingScene.backgroundTexture = CTextureStorage::GetTexture("fight_background.png");
 	m_fightingScene.background.setTexture(m_fightingScene.backgroundTexture);
 	m_fightingScene.background.setScale(6.f, 5.f);
 
+	m_fightingScene.fightInfoCard.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
+	m_fightingScene.fightInfoCard.setTextureRect(sf::IntRect(544, 21, 289, 76));
+	m_fightingScene.fightInfoCard.setPosition(float(m_window.getSize().x) / 2 - 289.f * 3 / 2, float(m_window.getSize().y) - 76.f * 3);
+	m_fightingScene.fightInfoCard.setScale(3.f, 3.f);
+
+	m_fightingScene.fightInfoText.setFont(heroCardFont);
+	m_fightingScene.fightInfoText.setCharacterSize(40);
+
+	switch (m_currentFightAction)
+	{
+	case FightAction::Info: {
+		m_fightingScene.fightInfoText.setString("* Bimbim and Bambam blocked the way!");
+		m_fightingScene.fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50, m_fightingScene.fightInfoCard.getPosition().y + 76.f / 2);
+		break;
+	}
+	case FightAction::Attack: {
+		m_fightingScene.fightInfoText.setString("* Attacking!");
+		m_fightingScene.fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50, m_fightingScene.fightInfoCard.getPosition().y + 76.f / 2);
+		break;
+	}
+	case FightAction::Act: {
+		m_fightingScene.fightInfoText.setString("* Acting!");
+		m_fightingScene.fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50, m_fightingScene.fightInfoCard.getPosition().y + 76.f / 2);
+		break;
+	}
+	case FightAction::Inventory: {
+		m_fightingScene.fightInfoText.setString("* Inventory!");
+		m_fightingScene.fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50, m_fightingScene.fightInfoCard.getPosition().y + 76.f / 2);
+		break;
+	}
+	case FightAction::Spare: {
+		m_fightingScene.fightInfoText.setString("* Spare!");
+		m_fightingScene.fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50, m_fightingScene.fightInfoCard.getPosition().y + 76.f / 2);
+		break;
+	}
+	case FightAction::Magic: {
+		break;
+	}
+	}
+
+	m_fightingScene.battleArea.setTexture(CTextureStorage::GetTexture("fight_utils.png", sf::Color(0, 148, 255)));
+	m_fightingScene.battleArea.setTextureRect(sf::IntRect(227, 568, battleAreaSettings.areaWidth, battleAreaSettings.areaHeight));
+	m_fightingScene.battleArea.setPosition(float(m_window.getSize().x) / 2 - 150, float(m_window.getSize().y) / 2 - 200);
+	m_fightingScene.battleArea.setScale(2.f, 2.f);
+
+	auto fightSoul = entityManager.GetEntitiesWithComponents<FightSoulComponent>().front();
+	auto soulPositionComp = entityManager.GetComponent<PositionComponent>(fightSoul);
+
+	m_fightingScene.heroSoul.setTexture(CTextureStorage::GetTexture("menu_soul.png"));
+	m_fightingScene.heroSoul.setPosition(soulPositionComp->x, soulPositionComp->y);
+	m_fightingScene.heroSoul.setScale(0.125f, 0.125f);
+
+	float totalWidth = 289.f * 3;
+	float cardWidth = totalWidth / float(charactersIds.size()) - 10;
+
+	float xOffset = 0.f;
+	float spriteYOffset = 0.f;
+	const float maxHealthBarWidth = 150;
+
 	m_window.draw(m_fightingScene.background);
+	m_window.draw(m_fightingScene.fightInfoCard);
+	m_window.draw(m_fightingScene.fightInfoText);
+
+	if (currentFightPhase == FightPhase::EnemiesTurn)
+	{
+		m_window.draw(m_fightingScene.battleArea);
+		m_window.draw(m_fightingScene.heroSoul);
+	}
+
+	for (auto id : charactersIds)
+	{
+		auto fightTurnComp = entityManager.GetComponent<FightTurnComponent>(id);
+		auto colorThemeComp = entityManager.GetComponent<ColorThemeComponent>(id);
+		auto avatarComp = entityManager.GetComponent<AvatarComponent>(id);
+		auto nameComp = entityManager.GetComponent<NameComponent>(id);
+		auto healthComp = entityManager.GetComponent<HealthComponent>(id);
+		auto animComp = entityManager.GetComponent<AnimationComponent>(id);
+
+		HeroFightCard heroFightCard;
+		heroFightCard.area.setSize({ cardWidth, 70.f });
+		heroFightCard.area.setPosition({ m_fightingScene.fightInfoCard.getPosition().x + xOffset,
+			m_fightingScene.fightInfoCard.getPosition().y - 70 });
+		heroFightCard.area.setFillColor(sf::Color::Black);
+
+		if (fightTurnComp->isEntityTurn)
+		{
+			heroFightCard.area.setPosition({ m_fightingScene.fightInfoCard.getPosition().x + xOffset,
+				m_fightingScene.fightInfoCard.getPosition().y - 140 });
+
+			heroFightCard.area.setOutlineColor(colorThemeComp->colorTheme);
+			heroFightCard.area.setOutlineThickness(2);
+
+			heroFightCard.actionsArea.setPosition({ m_fightingScene.fightInfoCard.getPosition().x + xOffset,
+				m_fightingScene.fightInfoCard.getPosition().y - 70 });
+			heroFightCard.actionsArea.setSize({ cardWidth, 70.f });
+			heroFightCard.actionsArea.setFillColor(sf::Color::Black);
+			heroFightCard.actionsArea.setOutlineColor(colorThemeComp->colorTheme);
+			heroFightCard.actionsArea.setOutlineThickness(2);
+
+			if (heroFightCard.actions.empty())
+			{
+				sf::Sprite attackAction, actAction, itemAction, spareAction, magicAction;
+
+				attackAction.setTexture(CTextureStorage::GetTexture("fight_utils.png", sf::Color(0, 148, 255)));
+				attackAction.setTextureRect(sf::IntRect(1183, 326, 30, 26));
+				attackAction.setPosition(heroFightCard.actionsArea.getPosition().x + 50, heroFightCard.actionsArea.getPosition().y + 10);
+				attackAction.setScale(1.5f, 1.5f);
+				heroFightCard.actions.push_back(attackAction);
+
+				actAction.setTexture(CTextureStorage::GetTexture("fight_utils.png", sf::Color(0, 148, 255)));
+				actAction.setTextureRect(sf::IntRect(1214, 326, 31, 26));
+				actAction.setPosition(heroFightCard.actionsArea.getPosition().x + 120, heroFightCard.actionsArea.getPosition().y + 10);
+				actAction.setScale(1.5f, 1.5f);
+				heroFightCard.actions.push_back(actAction);
+
+				itemAction.setTexture(CTextureStorage::GetTexture("fight_utils.png", sf::Color(0, 148, 255)));
+				itemAction.setTextureRect(sf::IntRect(1247, 326, 30, 26));
+				itemAction.setPosition(heroFightCard.actionsArea.getPosition().x + 190, heroFightCard.actionsArea.getPosition().y + 10);
+				itemAction.setScale(1.5f, 1.5f);
+				heroFightCard.actions.push_back(itemAction);
+
+				spareAction.setTexture(CTextureStorage::GetTexture("fight_utils.png", sf::Color(0, 148, 255)));
+				spareAction.setTextureRect(sf::IntRect(1279, 326, 30, 26));
+				spareAction.setPosition(heroFightCard.actionsArea.getPosition().x + 260, heroFightCard.actionsArea.getPosition().y + 10);
+				spareAction.setScale(1.5f, 1.5f);
+				heroFightCard.actions.push_back(spareAction);
+
+				magicAction.setTexture(CTextureStorage::GetTexture("fight_utils.png", sf::Color(0, 148, 255)));
+				magicAction.setTextureRect(sf::IntRect(1343, 326, 30, 26));
+				magicAction.setPosition(heroFightCard.actionsArea.getPosition().x + 330, heroFightCard.actionsArea.getPosition().y + 10);
+				magicAction.setScale(1.5f, 1.5f);
+				heroFightCard.actions.push_back(magicAction);
+			}
+		}
+
+		heroFightCard.heroIcon.setTexture(CTextureStorage::GetTexture(avatarComp->avatarFilePath));
+		heroFightCard.heroIcon.setPosition(heroFightCard.area.getPosition().x + 20, heroFightCard.area.getPosition().y + 10);
+		heroFightCard.heroIcon.setScale(2.25f, 2.25f);
+
+		heroFightCard.heroName.setFont(heroCardFont);
+		heroFightCard.heroName.setString(nameComp->name);
+		heroFightCard.heroName.setCharacterSize(30);
+		heroFightCard.heroName.setPosition(heroFightCard.area.getPosition().x + 90, heroFightCard.area.getPosition().y + 20);
+
+		heroFightCard.heroMaxHealthBar.setSize({ maxHealthBarWidth, 20 });
+		heroFightCard.heroMaxHealthBar.setPosition({ heroFightCard.area.getPosition().x + 250, heroFightCard.area.getPosition().y + 35 });
+		heroFightCard.heroMaxHealthBar.setFillColor(sf::Color(117, 2, 7));
+
+		heroFightCard.heroHealthBar.setSize({ maxHealthBarWidth * (healthComp->currentHealth / healthComp->maxHealth), 20 });
+		heroFightCard.heroHealthBar.setPosition(heroFightCard.heroMaxHealthBar.getPosition().x, heroFightCard.heroMaxHealthBar.getPosition().y);
+		heroFightCard.heroHealthBar.setFillColor(colorThemeComp->colorTheme);
+
+		heroFightCard.heroHealthText.setFont(heroCardFont);
+		heroFightCard.heroHealthText.setString("HP");
+		heroFightCard.heroHealthText.setCharacterSize(28);
+		heroFightCard.heroHealthText.setPosition({ heroFightCard.area.getPosition().x + 215, heroFightCard.area.getPosition().y + 25 });
+
+		heroFightCard.heroHealthValue.setFont(heroCardFont);
+		heroFightCard.heroHealthValue.setString(std::to_string(int(healthComp->currentHealth)) + "/  " + std::to_string(int(healthComp->maxHealth)));
+		heroFightCard.heroHealthValue.setCharacterSize(28);
+		heroFightCard.heroHealthValue.setPosition({ heroFightCard.area.getPosition().x + 315, heroFightCard.area.getPosition().y - 5 });
+
+		if (animComp)
+		{
+			animComp->sprite.setPosition(300, 350 + spriteYOffset);
+			animComp->sprite.setScale(4.f, 4.f);
+			m_window.draw(animComp->sprite);
+		}
+
+		m_fightingScene.heroesFightInfo[id] = heroFightCard;
+		xOffset += cardWidth + 20;
+		spriteYOffset += 150;
+	}
+
+	for (const auto& info : m_fightingScene.heroesFightInfo)
+	{
+		m_window.draw(info.second.area);
+		m_window.draw(info.second.heroIcon);
+		m_window.draw(info.second.actionsArea);
+		m_window.draw(info.second.heroName);
+		m_window.draw(info.second.heroMaxHealthBar);
+		m_window.draw(info.second.heroHealthBar);
+		m_window.draw(info.second.heroHealthText);
+		m_window.draw(info.second.heroHealthValue);
+
+		for (int i = 0; i < info.second.actions.size(); i++)
+		{
+			auto action = info.second.actions[i];
+			const sf::IntRect spriteBounds = action.getTextureRect();
+			if (CGameController::GetCurrentFightActionNumber() == i)
+			{
+				action.setTextureRect(sf::IntRect(
+					spriteBounds.left,
+					261,
+					spriteBounds.width,
+					spriteBounds.height + 5));
+			}
+
+			m_window.draw(action);
+		}
+	}
 }

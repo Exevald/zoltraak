@@ -2,7 +2,6 @@
 #include "../CGameController.h"
 #include "Utils.h"
 #include "events/CEventDispatcher.h"
-#include <iostream>
 
 void CMovementSystem::Init()
 {
@@ -26,6 +25,9 @@ void CMovementSystem::HandleEntityMoved(EntityId movedEntityId, const std::strin
 	auto* velocityComponent = entityManager.GetComponent<VelocityComponent>(movedEntityId);
 	auto* animationComponent = entityManager.GetComponent<AnimationComponent>(movedEntityId);
 	auto* imageComponent = entityManager.GetComponent<ImageComponent>(movedEntityId);
+	auto* fightSoulComponent = entityManager.GetComponent<FightSoulComponent>(movedEntityId);
+
+	const BattleAreaSettings battleAreaSettings;
 
 	auto level = CLevelGenerator::GetLevel("level1.txt");
 
@@ -68,6 +70,16 @@ void CMovementSystem::HandleEntityMoved(EntityId movedEntityId, const std::strin
 	{
 		newX = std::max(0.f, std::min(newX, float(CGameController::GetWindowSizeSettings().x) - 22));
 		newY = std::max(0.f, std::min(newY, float(CGameController::GetWindowSizeSettings().y) - 22));
+	}
+	if (fightSoulComponent)
+	{
+		newX = std::max(0.f, std::min(newX, 777 + float(battleAreaSettings.areaWidth * 2) - 22));
+		newY = std::max(0.f, std::min(newY, 305 + float(battleAreaSettings.areaHeight * 2) - 22));
+	}
+	if (fightSoulComponent)
+	{
+		newX = std::clamp(newX, 785.f, 785.f + 142.f * 2 - 28.f);
+		newY = std::clamp(newY, 314.f, 314.f + 141.f * 2 - 28.f);
 	}
 
 	positionComponent->x = newX;

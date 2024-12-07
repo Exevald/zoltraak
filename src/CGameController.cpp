@@ -13,6 +13,8 @@ CurrentState CGameController::m_gameState = CurrentState::MainMenu;
 int CGameController::m_currentMainMenuOption = -1;
 int CGameController::m_currentPauseMenuOption = -1;
 int CGameController::m_currentGameSaveNumber = 0;
+int CGameController::m_currentFightActionNumber = 0;
+FightPhase CGameController::m_currentFightPhase = FightPhase::CharactersTurn;
 
 void CGameController::InitGameSettings(const Level& level)
 {
@@ -187,4 +189,24 @@ void CGameController::IncreaseElapsedTime(float deltaTime)
 float CGameController::GetElapsedTIme()
 {
 	return m_elapsedTime;
+}
+
+void CGameController::SetCurrentFightActionNumber(int actionNumber)
+{
+	m_currentFightActionNumber = actionNumber;
+}
+
+int CGameController::GetCurrentFightActionNumber()
+{
+	return m_currentFightActionNumber;
+}
+
+void CGameController::SetFightPhase(const FightPhase& phase)
+{
+	m_currentFightPhase = phase;
+}
+
+FightPhase CGameController::GetFightPhase()
+{
+	return m_currentFightPhase;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <unordered_map>
 #include <utility>
 
 struct IComponent
@@ -22,30 +23,42 @@ struct SelectionComponent
 
 struct AnimationComponent : IComponent
 {
-	sf::Sprite sprite;
-	int currentFrameNumber = 0;
-	int totalFrames;
-	float frameDuration;
-	float elapsedTime = 0.f;
-	sf::Vector2i frameSize;
-	int initialSpriteX = 0;
-	int initialSpriteY = 0;
+	struct AnimationData
+	{
+		int totalFrames{};
+		float frameDuration{};
+		sf::Vector2i frameSize;
+		int initialSpriteX{};
+		int initialSpriteY{};
+	};
 
-	AnimationComponent(const sf::Texture& texture, int initialSpriteX, int initialSpriteY, int totalFrames, sf::Vector2i frameSize, float frameDuration)
-		: totalFrames(totalFrames)
-		, frameSize(frameSize)
-		, frameDuration(frameDuration)
-		, initialSpriteX(initialSpriteX)
-		, initialSpriteY(initialSpriteY)
+	sf::Sprite sprite;
+	std::unordered_map<std::string, AnimationData> animations;
+	std::string currentAnimation;
+	int currentFrameNumber = 0;
+	float elapsedTime = 0.f;
+
+	explicit AnimationComponent(const sf::Texture& texture)
 	{
 		sprite.setTexture(texture);
-		sprite.setTextureRect(
-			sf::IntRect(
-				initialSpriteX,
-				initialSpriteY,
-				frameSize.x,
-				frameSize.y));
 		sprite.setScale(3.f, 3.f);
+	}
+
+	void AddAnimation(const std::string& name, int initialSpriteX, int initialSpriteY, int totalFrames, sf::Vector2i frameSize, float frameDuration)
+	{
+		animations[name] = { totalFrames, frameDuration, frameSize, initialSpriteX, initialSpriteY };
+	}
+
+	void SetAnimation(const std::string& name)
+	{
+		if (animations.find(name) != animations.end() && currentAnimation != name)
+		{
+			currentAnimation = name;
+			currentFrameNumber = 0;
+			elapsedTime = 0.f;
+			auto& animData = animations[name];
+			sprite.setTextureRect(sf::IntRect(animData.initialSpriteX, animData.initialSpriteY, animData.frameSize.x, animData.frameSize.y));
+		}
 	}
 };
 
@@ -216,6 +229,10 @@ struct ExperienceComponent : IComponent
 };
 
 struct MenuSoulComponent : IComponent
+{
+};
+
+struct FightSoulComponent : IComponent
 {
 };
 

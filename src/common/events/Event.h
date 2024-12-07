@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CEntityManager.h"
+#include "actions/Actions.h"
 #include <string>
 #include <variant>
 
@@ -8,6 +9,7 @@ enum class EventType
 {
 	EntitySelected,
 	EntityMoved,
+	FightActionSelected
 };
 
 struct EntitySelectedEventData
@@ -21,7 +23,12 @@ struct EntityMovedEventData
 	std::string direction;
 };
 
-using EventData = std::variant<EntitySelectedEventData, EntityMovedEventData>;
+struct FightActionSelectedEventData {
+	EntityId id;
+	FightAction selectedAction;
+};
+
+using EventData = std::variant<EntitySelectedEventData, EntityMovedEventData, FightActionSelectedEventData>;
 
 struct SEvent
 {

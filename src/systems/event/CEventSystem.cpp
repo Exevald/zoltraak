@@ -57,11 +57,79 @@ void CEventSystem::handleKeyPress(CGameController& gameController, sf::Keyboard:
 	auto& entityManager = CEntityManager::GetInstance();
 	EntityId selectedEntityId = gameController.GetSelectedEntityId();
 	auto* velocityComp = entityManager.GetComponent<VelocityComponent>(selectedEntityId);
+	auto* animationComp = entityManager.GetComponent<AnimationComponent>(selectedEntityId);
 
 	auto currentMainMenuOption = CGameController::GetCurrentMainMenuOption();
 	auto currentPauseMenuOption = CGameController::GetCurrentPauseMenuOption();
 	auto currentGameState = CGameController::GetCurrentGameState();
 	auto currentGameSaveNumber = CGameController::GetCurrentGameSaveNumber();
+	auto currentFightPhase = CGameController::GetFightPhase();
+
+	if (currentGameState == CurrentState::Fight && currentFightPhase == FightPhase::CharactersTurn)
+	{
+		switch (key)
+		{
+		case sf::Keyboard::A: {
+			auto newFightAction = CGameController::GetCurrentFightActionNumber() - 1;
+			if (newFightAction < 0)
+			{
+				newFightAction = 0;
+			}
+			CGameController::SetCurrentFightActionNumber(newFightAction);
+			break;
+		}
+		case sf::Keyboard::D: {
+			auto newFightAction = CGameController::GetCurrentFightActionNumber() + 1;
+			if (newFightAction > 4)
+			{
+				newFightAction = 4;
+			}
+			CGameController::SetCurrentFightActionNumber(newFightAction);
+			break;
+		}
+		case sf::Keyboard::Enter: {
+			FightAction selectedFightAction;
+			switch (CGameController::GetCurrentFightActionNumber())
+			{
+			case 0: {
+				selectedFightAction = FightAction::Attack;
+				break;
+			}
+			case 1: {
+				selectedFightAction = FightAction::Act;
+				break;
+			}
+			case 2: {
+				selectedFightAction = FightAction::Inventory;
+				break;
+			}
+			case 3: {
+				selectedFightAction = FightAction::Spare;
+				break;
+			}
+			case 4: {
+				selectedFightAction = FightAction::Magic;
+				break;
+			}
+			default:
+				break;
+			}
+
+			SEvent fightActionSelectedEvent;
+			FightActionSelectedEventData eventData{};
+
+			eventData.id = selectedEntityId;
+			eventData.selectedAction = selectedFightAction;
+			fightActionSelectedEvent.type = EventType::FightActionSelected;
+			fightActionSelectedEvent.data = eventData;
+
+			CEventDispatcher::GetInstance().Dispatch(fightActionSelectedEvent);
+			break;
+		}
+		default:
+			break;
+		}
+	}
 
 	if (currentGameState == CurrentState::PauseMenu)
 	{
@@ -194,21 +262,37 @@ void CEventSystem::handleKeyPress(CGameController& gameController, sf::Keyboard:
 			}
 		}
 		case sf::Keyboard::A: {
+			if (animationComp)
+			{
+				animationComp->SetAnimation("walk_left");
+			}
 			direction = "left";
 			velocityComp->vx = -DefaultVelocity;
 			break;
 		}
 		case sf::Keyboard::D: {
+			if (animationComp)
+			{
+				animationComp->SetAnimation("walk_right");
+			}
 			direction = "right";
 			velocityComp->vx = DefaultVelocity;
 			break;
 		}
 		case sf::Keyboard::W: {
+			if (animationComp)
+			{
+				animationComp->SetAnimation("walk_up");
+			}
 			direction = "up";
 			velocityComp->vy = -DefaultVelocity;
 			break;
 		}
 		case sf::Keyboard::S: {
+			if (animationComp)
+			{
+				animationComp->SetAnimation("walk_down");
+			}
 			direction = "down";
 			velocityComp->vy = DefaultVelocity;
 			break;

@@ -77,28 +77,44 @@ int main()
 	entityManager.AddComponent<CollisionComponent>(hero1, CollisionType::Character);
 	entityManager.AddComponent<MassComponent>(hero1, 50);
 	entityManager.AddComponent<RotationComponent>(hero1, 0);
-	entityManager.AddComponent<HealthComponent>(hero1, 80, 100);
+	entityManager.AddComponent<HealthComponent>(hero1, 100, 100);
 	entityManager.AddComponent<ManaComponent>(hero1, 40, 100);
 	entityManager.AddComponent<AvatarComponent>(hero1, "hero1_avatar.png");
 	entityManager.AddComponent<ExperienceComponent>(hero1, 0, 100, 1);
-	entityManager.AddComponent<AnimationComponent>(hero1, hero1Sprites, 101, 6, 4, sf::Vector2i(18, 37), 0.2f);
-	entityManager.AddComponent<FightTurnComponent>(hero1, true);
+	entityManager.AddComponent<AnimationComponent>(hero1, hero1Sprites);
+	entityManager.AddComponent<FightTurnComponent>(hero1, false);
+
+	auto* hero1AnimComp = entityManager.GetComponent<AnimationComponent>(hero1);
+	hero1AnimComp->AddAnimation("idle", 6, 1563, 6, sf::Vector2i(35, 37), 0.15f);
+	hero1AnimComp->AddAnimation("walk_up", 101, 139, 4, sf::Vector2i(18, 37), 0.25f);
+	hero1AnimComp->AddAnimation("walk_down", 101, 7, 4, sf::Vector2i(18, 37), 0.25f);
+	hero1AnimComp->AddAnimation("walk_left", 101, 51, 4, sf::Vector2i(18, 37), 0.25f);
+	hero1AnimComp->AddAnimation("walk_right", 101, 95, 4, sf::Vector2i(18, 37), 0.25f);
+	hero1AnimComp->SetAnimation("idle");
 
 	EntityId hero2 = entityManager.CreateEntity();
 	entityManager.AddComponent<SelectionComponent>(hero2);
-	entityManager.AddComponent<NameComponent>(hero2, "Raisel");
+	entityManager.AddComponent<NameComponent>(hero2, "Ralsei");
 	entityManager.AddComponent<ColorThemeComponent>(hero2, sf::Color(25, 253, 16));
 	entityManager.AddComponent<PositionComponent>(hero2, 1200.0f, 800.0f);
 	entityManager.AddComponent<VelocityComponent>(hero2, 0, 0);
 	entityManager.AddComponent<CollisionComponent>(hero2, CollisionType::Character);
 	entityManager.AddComponent<MassComponent>(hero2, 50);
 	entityManager.AddComponent<RotationComponent>(hero2, 0);
-	entityManager.AddComponent<HealthComponent>(hero2, 50, 100);
+	entityManager.AddComponent<HealthComponent>(hero2, 100, 100);
 	entityManager.AddComponent<ManaComponent>(hero2, 90, 100);
 	entityManager.AddComponent<AvatarComponent>(hero2, "hero2_avatar.png");
 	entityManager.AddComponent<ExperienceComponent>(hero2, 80, 100, 1);
-	entityManager.AddComponent<AnimationComponent>(hero2, hero2Sprites, 5, 104, 4, sf::Vector2i(22, 42), 0.2f);
+	entityManager.AddComponent<AnimationComponent>(hero2, hero2Sprites);
 	entityManager.AddComponent<FightTurnComponent>(hero2, true);
+
+	auto* hero2AnimComp = entityManager.GetComponent<AnimationComponent>(hero2);
+	hero2AnimComp->AddAnimation("idle", 5, 505, 5, sf::Vector2i(49, 40), 0.15f);
+	hero2AnimComp->AddAnimation("walk_up", 0, 37, 4, sf::Vector2i(18, 37), 0.2f);
+	hero2AnimComp->AddAnimation("walk_down", 5, 104, 4, sf::Vector2i(22, 42), 0.2f);
+	hero2AnimComp->AddAnimation("walk_left", 0, 111, 4, sf::Vector2i(18, 37), 0.2f);
+	hero2AnimComp->AddAnimation("walk_right", 0, 148, 4, sf::Vector2i(18, 37), 0.2f);
+	hero2AnimComp->SetAnimation("idle");
 
 	EntityId box = entityManager.CreateEntity();
 	entityManager.AddComponent<PositionComponent>(box, 1300.0f, 900.0f);
@@ -108,12 +124,17 @@ int main()
 	entityManager.AddComponent<RotationComponent>(box, 0);
 	entityManager.AddComponent<ImageComponent>(box, mapTexture, 547, 15, sf::Vector2i(20, 20));
 
-	EntityId soul = entityManager.CreateEntity();
-	entityManager.AddComponent<PositionComponent>(soul, 700, 700);
-	entityManager.AddComponent<MenuSoulComponent>(soul);
-	entityManager.AddComponent<VelocityComponent>(soul, 0, 0);
-	entityManager.AddComponent<ImageComponent>(soul, menuSoul, 0, 0, sf::Vector2i(225, 225));
-	entityManager.AddComponent<SelectionComponent>(soul);
+	EntityId mainMenuSoul = entityManager.CreateEntity();
+	entityManager.AddComponent<PositionComponent>(mainMenuSoul, 700, 700);
+	entityManager.AddComponent<MenuSoulComponent>(mainMenuSoul);
+	entityManager.AddComponent<VelocityComponent>(mainMenuSoul, 0, 0);
+	entityManager.AddComponent<ImageComponent>(mainMenuSoul, menuSoul, 0, 0, sf::Vector2i(225, 225));
+
+	EntityId fightSoul = entityManager.CreateEntity();
+	entityManager.AddComponent<PositionComponent>(fightSoul, 890, 418);
+	entityManager.AddComponent<VelocityComponent>(fightSoul, 0, 0);
+	entityManager.AddComponent<ImageComponent>(fightSoul, menuSoul, 0, 0, sf::Vector2i(225, 225));
+	entityManager.AddComponent<FightSoulComponent>(fightSoul);
 
 	CGameController::InitSystems();
 	CGameController::InitGameSettings(level);
@@ -122,6 +143,17 @@ int main()
 
 	while (window.isOpen())
 	{
+		if (CGameController::GetCurrentGameState() == CurrentState::MainMenu)
+		{
+			auto playerSoulId = entityManager.GetEntitiesWithComponents<MenuSoulComponent>().front();
+			gameController.SetSelectedEntityId(playerSoulId);
+		}
+		if (CGameController::GetCurrentGameState() == CurrentState::Fight)
+		{
+			auto fightSoulId = entityManager.GetEntitiesWithComponents<FightSoulComponent>().front();
+			gameController.SetSelectedEntityId(fightSoulId);
+		}
+
 		HandleEvents(window, gameController);
 		float deltaTime = clock.restart().asSeconds();
 		if (CGameController::GetCurrentGameState() == CurrentState::Player)

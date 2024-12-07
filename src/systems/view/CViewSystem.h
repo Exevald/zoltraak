@@ -2,6 +2,7 @@
 
 #include "../../CGameController.h"
 #include "CEntityManager.h"
+#include "Utils.h"
 #include <SFML/Graphics.hpp>
 
 struct SaveInfo;
@@ -49,20 +50,28 @@ struct LevelChoosingMenu
 	std::unordered_map<int, std::vector<sf::Text>> levelCardsInfo;
 };
 
-struct HeroFightCard {
+struct HeroFightCard
+{
+	sf::Text heroName;
 	sf::RectangleShape area;
 	sf::Sprite heroIcon;
-	sf::Text heroHpText;
-	sf::Text heroHpValue;
+	sf::Text heroHealthText;
+	sf::Text heroHealthValue;
+	sf::RectangleShape heroHealthBar;
+	sf::RectangleShape heroMaxHealthBar;
+	sf::RectangleShape actionsArea;
+	std::vector<sf::Sprite> actions;
 };
 
 struct FightScene
 {
 	sf::Texture backgroundTexture;
 	sf::Sprite background;
-	sf::Sprite infoCard;
-	sf::Text infoText;
-	std::vector<HeroFightCard> heroesFightInfo;
+	sf::Sprite fightInfoCard;
+	sf::Text fightInfoText;
+	std::unordered_map<int, HeroFightCard> heroesFightInfo;
+	sf::Sprite heroSoul;
+	sf::Sprite battleArea;
 };
 
 class CViewSystem
@@ -88,7 +97,7 @@ private:
 	void DrawLevelChoosingMenu();
 	void DrawLevelChoosingTitle(sf::Font& font);
 	void DrawLevelChoosingBackground();
-	void DrawLevelSaveCards(sf::Font& font);
+	void DrawLevelSaveCards();
 	void CreateLevelSaveCards();
 	void DrawLevelSaveCardsInfo(sf::Font& font);
 	void CreateLevelSaveCardInfo(int saveIndex, const SaveInfo& saveInfo, sf::Font& font);
@@ -111,4 +120,5 @@ private:
 	PauseMenu m_pauseMenu;
 	LevelChoosingMenu m_levelChoosingMenu;
 	FightScene m_fightingScene;
+	FightAction m_currentFightAction = FightAction::Info;
 };
