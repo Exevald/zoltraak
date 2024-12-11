@@ -52,14 +52,14 @@ void CMovementSystem::HandleEntityMoved(EntityId movedEntityId, const std::strin
 	const float scaledTileSize = baseTileSize * scaleFactor;
 
 	int tileX = static_cast<int>(newX / scaledTileSize);
-	int tileY = static_cast<int>(newY / baseTileSize);
+	int tileY = static_cast<int>(newY / scaledTileSize);
 
 	char tile = level[tileY][tileX];
-
-	if (tile == '5' || tile == '6' || tile == '7' || tile == '8' || tile == '9' || tile == '0')
-	{
-		return;
-	}
+//
+//	if (tile == '5' || tile == '6' || tile == '7' || tile == '8' || tile == '9' || tile == '0')
+//	{
+//		return;
+//	}
 
 	if (animationComponent)
 	{

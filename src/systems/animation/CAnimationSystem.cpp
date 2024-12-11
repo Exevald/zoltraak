@@ -1,6 +1,7 @@
 #include "CAnimationSystem.h"
+#include "../../CGameController.h"
 
-void CAnimationSystem::Update(float deltaTime)
+void CAnimationSystem::Update()
 {
 	auto& entityManager = CEntityManager::GetInstance();
 
@@ -15,7 +16,7 @@ void CAnimationSystem::Update(float deltaTime)
 		}
 
 		auto& animData = animComp->animations[animComp->currentAnimation];
-		animComp->elapsedTime += deltaTime;
+		animComp->elapsedTime += CGameController::GetDeltaTime();
 
 		while (animComp->elapsedTime >= animData.frameDuration)
 		{

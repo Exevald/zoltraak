@@ -53,6 +53,7 @@ add_executable(
         src/systems/camera/CCameraSystem.cpp
         src/systems/animation/CAnimationSystem.cpp
         src/systems/fight/CFightSystem.cpp
+        src/systems/inventory/CInventorySystem.cpp
 
         src/CGameController.cpp
         src/main.cpp

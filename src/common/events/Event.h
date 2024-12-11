@@ -9,7 +9,8 @@ enum class EventType
 {
 	EntitySelected,
 	EntityMoved,
-	FightActionSelected
+	FightActionSelected,
+	ActiveFightCharacterUpdated,
 };
 
 struct EntitySelectedEventData
@@ -23,12 +24,18 @@ struct EntityMovedEventData
 	std::string direction;
 };
 
-struct FightActionSelectedEventData {
+struct FightActionSelectedEventData
+{
 	EntityId id;
 	FightAction selectedAction;
 };
 
-using EventData = std::variant<EntitySelectedEventData, EntityMovedEventData, FightActionSelectedEventData>;
+struct ActiveFightCharacterUpdatedEventData
+{
+	EntityId id;
+};
+
+using EventData = std::variant<EntitySelectedEventData, EntityMovedEventData, FightActionSelectedEventData, ActiveFightCharacterUpdatedEventData>;
 
 struct SEvent
 {

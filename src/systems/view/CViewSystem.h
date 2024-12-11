@@ -9,7 +9,7 @@ struct SaveInfo;
 
 struct HeroCard
 {
-	bool visible = false;
+	bool isVisible = false;
 	sf::RectangleShape shape;
 	sf::Texture avatarTexture;
 	sf::Sprite avatarSprite;
@@ -68,7 +68,7 @@ struct FightScene
 	sf::Texture backgroundTexture;
 	sf::Sprite background;
 	sf::Sprite fightInfoCard;
-	sf::Text fightInfoText;
+	std::vector<sf::Text> fightInfoText;
 	std::unordered_map<int, HeroFightCard> heroesFightInfo;
 	sf::Sprite heroSoul;
 	sf::Sprite battleArea;
@@ -81,7 +81,7 @@ public:
 		: m_window(window)
 		, m_level(level)
 	{
-		m_heroCard.visible = false;
+		m_heroCard.isVisible = false;
 	}
 
 	void Draw();
@@ -112,6 +112,13 @@ private:
 	void DrawMenuSoul();
 	void DrawPauseMenu();
 	void DrawFightScene();
+	void UpdateActiveFightUserInfo(EntityId entity);
+	void SetFightInfo();
+	void SetAttackBar(const sf::Vector2f& fightInfoCardPosition);
+	void SetSpareText();
+	void SetActActions();
+	void SetFightInventory();
+	void SetMagicText();
 
 	sf::RenderWindow& m_window;
 	Level& m_level;
@@ -121,4 +128,6 @@ private:
 	LevelChoosingMenu m_levelChoosingMenu;
 	FightScene m_fightingScene;
 	FightAction m_currentFightAction = FightAction::Info;
+	int m_activeFightHero = 2;
+	bool m_isAttackBarActive = false;
 };

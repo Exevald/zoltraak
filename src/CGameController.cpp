@@ -2,9 +2,19 @@
 #include "animation/CAnimationSystem.h"
 #include "camera/CCameraSystem.h"
 #include "collision/CCollisionSystem.h"
+#include "fight/CFightSystem.h"
+#include "inventory/CInventorySystem.h"
 #include "view/CViewSystem.h"
 #include <fstream>
 #include <iostream>
+
+namespace
+{
+constexpr int TILE_SIZE = 20;
+constexpr int SCALE_FACTOR = 3;
+constexpr int MARGIN = 60;
+const std::array<std::string, 3> SAVE_FILES = { "save1.txt", "save2.txt", "save3.txt" };
+} // namespace
 
 float CGameController::m_elapsedTime = 0;
 float CGameController::m_levelWidth = 0;
@@ -15,17 +25,20 @@ int CGameController::m_currentPauseMenuOption = -1;
 int CGameController::m_currentGameSaveNumber = 0;
 int CGameController::m_currentFightActionNumber = 0;
 FightPhase CGameController::m_currentFightPhase = FightPhase::CharactersTurn;
+sf::Clock CGameController::m_clock;
+float CGameController::m_deltaTime = 0.f;
 
 void CGameController::InitGameSettings(const Level& level)
 {
-	m_levelWidth = float(level.front().size()) * 20 * 3 - 60;
-	m_levelHeight = float(level.size()) * 20 * 3 - 60;
+	m_levelWidth = float(level.front().size()) * TILE_SIZE * SCALE_FACTOR - MARGIN;
+	m_levelHeight = float(level.size()) * TILE_SIZE * SCALE_FACTOR - MARGIN;
 }
 
 void CGameController::InitSystems()
 {
 	CMovementSystem::Init();
 	CCollisionSystem::Init();
+	CFightSystem::Init();
 }
 
 void CGameController::Draw(sf::RenderWindow& window, Level& level)
@@ -35,13 +48,14 @@ void CGameController::Draw(sf::RenderWindow& window, Level& level)
 
 	viewSystem.Init();
 	cameraSystem.Init();
-
 	viewSystem.Draw();
 }
 
-void CGameController::Update(float deltaTime)
+void CGameController::Update()
 {
-	CAnimationSystem::Update(deltaTime);
+	CAnimationSystem::Update();
+	CFightSystem::Update();
+	CInventorySystem::Update();
 }
 
 void CGameController::SetSelectedEntityId(EntityId id)
@@ -91,6 +105,10 @@ int CGameController::GetCurrentPauseMenuOption()
 
 void CGameController::SetCurrentGameSaveNumber(int saveNumber)
 {
+	if (saveNumber < 0 || saveNumber >= SAVE_FILES.size())
+	{
+		throw std::invalid_argument("Invalid save number");
+	}
 	m_currentGameSaveNumber = saveNumber;
 }
 
@@ -101,89 +119,59 @@ int CGameController::GetCurrentGameSaveNumber()
 
 void CGameController::SaveGameInfo(int saveNumber, const SaveInfo& info)
 {
-	std::string fileName;
-	switch (saveNumber)
-	{
-	case 0: {
-		fileName = "save1.txt";
-		break;
-	}
-	case 1: {
-		fileName = "save2.txt";
-		break;
-	}
-	case 2: {
-		fileName = "save3.txt";
-		break;
-	}
-	default:
-		throw std::invalid_argument("invalid save number");
-	}
+	std::string fileName = GetSaveFileName(saveNumber);
 
-	std::ofstream outputFile;
-	outputFile.open(fileName, std::ios::out | std::ios::trunc);
+	std::ofstream outputFile(fileName, std::ios::out | std::ios::trunc);
 	if (!outputFile.is_open())
 	{
 		throw std::runtime_error("Failed to open " + fileName + " for writing");
 	}
 
-	outputFile << info.PlayerName << std::endl;
-	outputFile << info.currentLocation << std::endl;
-	outputFile << info.gameTime << std::endl;
+	outputFile << info.PlayerName << "\n"
+			   << info.currentLocation << "\n"
+			   << info.gameTime << "\n";
 
-	if (!outputFile.flush())
+	if (!outputFile)
 	{
-		throw std::runtime_error("Failed to save data on disk");
+		throw std::runtime_error("Failed to write data to " + fileName);
 	}
 }
 
 SaveInfo CGameController::GetSaveInfo(int saveNumber)
 {
-	std::string fileName = CGameController::GetSaveFileName(saveNumber);
+	std::string fileName = GetSaveFileName(saveNumber);
 
-	std::ifstream inputFile;
-	inputFile.open(fileName);
+	std::ifstream inputFile(fileName);
 	if (!inputFile.is_open())
 	{
 		throw std::runtime_error("Failed to open " + fileName + " for reading");
 	}
 
 	SaveInfo info;
-
 	std::getline(inputFile, info.PlayerName);
 	std::getline(inputFile, info.currentLocation);
 	inputFile >> info.gameTime;
+
+	if (inputFile.fail())
+	{
+		throw std::runtime_error("Failed to read data from " + fileName);
+	}
 
 	return info;
 }
 
 std::string CGameController::GetSaveFileName(int saveNumber)
 {
-	std::string fileName;
-	switch (saveNumber)
+	if (saveNumber < 0 || saveNumber >= SAVE_FILES.size())
 	{
-	case 0: {
-		fileName = "save1.txt";
-		break;
+		throw std::invalid_argument("Invalid save number");
 	}
-	case 1: {
-		fileName = "save2.txt";
-		break;
-	}
-	case 2: {
-		fileName = "save3.txt";
-		break;
-	}
-	default:
-		throw std::invalid_argument("invalid save number");
-	}
-
-	return fileName;
+	return SAVE_FILES[saveNumber];
 }
 
-void CGameController::IncreaseElapsedTime(float deltaTime)
+void CGameController::IncreaseElapsedTime()
 {
-	m_elapsedTime += deltaTime;
+	m_elapsedTime += CGameController::GetDeltaTime();
 }
 
 float CGameController::GetElapsedTIme()
@@ -206,7 +194,17 @@ void CGameController::SetFightPhase(const FightPhase& phase)
 	m_currentFightPhase = phase;
 }
 
-FightPhase CGameController::GetFightPhase()
+FightPhase CGameController::GetCurrentFightPhase()
 {
 	return m_currentFightPhase;
+}
+
+void CGameController::UpdateDeltaTime()
+{
+	m_deltaTime = m_clock.restart().asSeconds();
+}
+
+float CGameController::GetDeltaTime()
+{
+	return m_deltaTime;
 }

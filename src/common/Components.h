@@ -238,10 +238,33 @@ struct FightSoulComponent : IComponent
 
 struct FightTurnComponent : IComponent
 {
-	bool isEntityTurn;
+	bool hasEntityActed;
+	bool isHeroTurn;
 
-	explicit FightTurnComponent(bool turn)
-		: isEntityTurn(turn)
+	explicit FightTurnComponent(bool hasActed, bool isHeroTurn)
+		: hasEntityActed(hasActed)
+		, isHeroTurn(isHeroTurn)
 	{
 	}
+};
+
+enum class ItemType
+{
+	HealingPotion,
+	ManaPotion,
+	DamagePotion,
+	DefensePotion,
+};
+
+struct InventoryItem
+{
+	std::string name;
+	ItemType type;
+	int quantity;
+};
+
+struct InventoryComponent : IComponent
+{
+	std::vector<InventoryItem> items;
+	int size;
 };

@@ -66,7 +66,7 @@ int main()
 	auto mapTexture = CTextureStorage::GetTexture("map_fieldOfHopesAndDreams.png");
 	auto level = CLevelGenerator::GenerateLevel("level1.txt");
 
-	CGameController::SetGameState(CurrentState::Fight);
+	CGameController::SetGameState(CurrentState::MainMenu);
 
 	EntityId hero1 = entityManager.CreateEntity();
 	entityManager.AddComponent<SelectionComponent>(hero1);
@@ -82,7 +82,7 @@ int main()
 	entityManager.AddComponent<AvatarComponent>(hero1, "hero1_avatar.png");
 	entityManager.AddComponent<ExperienceComponent>(hero1, 0, 100, 1);
 	entityManager.AddComponent<AnimationComponent>(hero1, hero1Sprites);
-	entityManager.AddComponent<FightTurnComponent>(hero1, false);
+	entityManager.AddComponent<FightTurnComponent>(hero1, false, false);
 
 	auto* hero1AnimComp = entityManager.GetComponent<AnimationComponent>(hero1);
 	hero1AnimComp->AddAnimation("idle", 6, 1563, 6, sf::Vector2i(35, 37), 0.15f);
@@ -106,7 +106,7 @@ int main()
 	entityManager.AddComponent<AvatarComponent>(hero2, "hero2_avatar.png");
 	entityManager.AddComponent<ExperienceComponent>(hero2, 80, 100, 1);
 	entityManager.AddComponent<AnimationComponent>(hero2, hero2Sprites);
-	entityManager.AddComponent<FightTurnComponent>(hero2, true);
+	entityManager.AddComponent<FightTurnComponent>(hero2, false, true);
 
 	auto* hero2AnimComp = entityManager.GetComponent<AnimationComponent>(hero2);
 	hero2AnimComp->AddAnimation("idle", 5, 505, 5, sf::Vector2i(49, 40), 0.15f);
@@ -155,15 +155,15 @@ int main()
 		}
 
 		HandleEvents(window, gameController);
-		float deltaTime = clock.restart().asSeconds();
+		CGameController::UpdateDeltaTime();
 		if (CGameController::GetCurrentGameState() == CurrentState::Player)
 		{
-			CGameController::IncreaseElapsedTime(deltaTime);
+			CGameController::IncreaseElapsedTime();
 		}
 
 		window.clear();
 		CGameController::Draw(window, level);
-		CGameController::Update(deltaTime);
+		CGameController::Update();
 		window.display();
 	}
 

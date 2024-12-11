@@ -89,7 +89,6 @@ private:
 		: m_nextId(0)
 	{
 	}
-	~CEntityManager() = default;
 
 	template <typename ComponentType>
 	std::unordered_map<EntityId, ComponentType>& GetComponentMap()

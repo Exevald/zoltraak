@@ -12,9 +12,15 @@ void CViewSystem::Init()
 		const auto& selectedEventData = std::get<EntitySelectedEventData>(event.data);
 		UpdateHeroCard(selectedEventData.id);
 	});
+
 	CEventDispatcher::GetInstance().Subscribe(EventType::FightActionSelected, [this](const SEvent& event) {
 		const auto& fightActionSelectedEventData = std::get<FightActionSelectedEventData>(event.data);
 		m_currentFightAction = fightActionSelectedEventData.selectedAction;
+	});
+
+	CEventDispatcher::GetInstance().Subscribe(EventType::ActiveFightCharacterUpdated, [this](const SEvent& event) {
+		const auto& activeFightCharacterUpdatedEventData = std::get<ActiveFightCharacterUpdatedEventData>(event.data);
+		CViewSystem::UpdateActiveFightUserInfo(activeFightCharacterUpdatedEventData.id);
 	});
 }
 
@@ -41,7 +47,7 @@ void CViewSystem::Draw()
 		CViewSystem::DrawField();
 		CViewSystem::DrawItems();
 
-		if (m_heroCard.visible)
+		if (m_heroCard.isVisible)
 		{
 			UpdateHeroCardPosition();
 
@@ -182,7 +188,7 @@ void CViewSystem::DrawItems()
 
 	for (EntityId entityId : entitiesWithImages)
 	{
-		if (entityManager.HasComponent<MenuSoulComponent>(entityId))
+		if (entityManager.HasComponent<MenuSoulComponent>(entityId) || entityManager.HasComponent<FightSoulComponent>(entityId))
 		{
 			continue;
 		}
@@ -207,11 +213,11 @@ void CViewSystem::UpdateHeroCard(EntityId selectedEntity)
 
 	if (!healthComp || !manaComp || !colorThemeComp || !avatarComp || !experienceComp)
 	{
-		m_heroCard.visible = false;
+		m_heroCard.isVisible = false;
 		return;
 	}
 
-	m_heroCard.visible = true;
+	m_heroCard.isVisible = true;
 
 	CViewSystem::UpdateHeroCardBackground(colorThemeComp);
 	CViewSystem::UpdateHeroAvatar(avatarComp);
@@ -601,10 +607,10 @@ void CViewSystem::DrawFightScene()
 {
 	const BattleAreaSettings battleAreaSettings;
 	auto& heroCardFont = CFontStorage::GetFont("8bitoperator_jve.ttf");
-
 	auto& entityManager = CEntityManager::GetInstance();
+
 	auto charactersIds = entityManager.GetEntitiesWithComponents<NameComponent>();
-	auto currentFightPhase = CGameController::GetFightPhase();
+	auto currentFightPhase = CGameController::GetCurrentFightPhase();
 
 	m_fightingScene.backgroundTexture = CTextureStorage::GetTexture("fight_background.png");
 	m_fightingScene.background.setTexture(m_fightingScene.backgroundTexture);
@@ -614,41 +620,6 @@ void CViewSystem::DrawFightScene()
 	m_fightingScene.fightInfoCard.setTextureRect(sf::IntRect(544, 21, 289, 76));
 	m_fightingScene.fightInfoCard.setPosition(float(m_window.getSize().x) / 2 - 289.f * 3 / 2, float(m_window.getSize().y) - 76.f * 3);
 	m_fightingScene.fightInfoCard.setScale(3.f, 3.f);
-
-	m_fightingScene.fightInfoText.setFont(heroCardFont);
-	m_fightingScene.fightInfoText.setCharacterSize(40);
-
-	switch (m_currentFightAction)
-	{
-	case FightAction::Info: {
-		m_fightingScene.fightInfoText.setString("* Bimbim and Bambam blocked the way!");
-		m_fightingScene.fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50, m_fightingScene.fightInfoCard.getPosition().y + 76.f / 2);
-		break;
-	}
-	case FightAction::Attack: {
-		m_fightingScene.fightInfoText.setString("* Attacking!");
-		m_fightingScene.fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50, m_fightingScene.fightInfoCard.getPosition().y + 76.f / 2);
-		break;
-	}
-	case FightAction::Act: {
-		m_fightingScene.fightInfoText.setString("* Acting!");
-		m_fightingScene.fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50, m_fightingScene.fightInfoCard.getPosition().y + 76.f / 2);
-		break;
-	}
-	case FightAction::Inventory: {
-		m_fightingScene.fightInfoText.setString("* Inventory!");
-		m_fightingScene.fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50, m_fightingScene.fightInfoCard.getPosition().y + 76.f / 2);
-		break;
-	}
-	case FightAction::Spare: {
-		m_fightingScene.fightInfoText.setString("* Spare!");
-		m_fightingScene.fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50, m_fightingScene.fightInfoCard.getPosition().y + 76.f / 2);
-		break;
-	}
-	case FightAction::Magic: {
-		break;
-	}
-	}
 
 	m_fightingScene.battleArea.setTexture(CTextureStorage::GetTexture("fight_utils.png", sf::Color(0, 148, 255)));
 	m_fightingScene.battleArea.setTextureRect(sf::IntRect(227, 568, battleAreaSettings.areaWidth, battleAreaSettings.areaHeight));
@@ -671,7 +642,35 @@ void CViewSystem::DrawFightScene()
 
 	m_window.draw(m_fightingScene.background);
 	m_window.draw(m_fightingScene.fightInfoCard);
-	m_window.draw(m_fightingScene.fightInfoText);
+
+	switch (m_currentFightAction)
+	{
+	case FightAction::Info: {
+		CViewSystem::SetFightInfo();
+		break;
+	}
+	case FightAction::Attack: {
+		m_isAttackBarActive = true;
+		CViewSystem::SetAttackBar(m_fightingScene.fightInfoCard.getPosition());
+		break;
+	}
+	case FightAction::Act: {
+		CViewSystem::SetActActions();
+		break;
+	}
+	case FightAction::Inventory: {
+		CViewSystem::SetFightInventory();
+		break;
+	}
+	case FightAction::Spare: {
+		CViewSystem::SetSpareText();
+		break;
+	}
+	case FightAction::Magic: {
+		CViewSystem::SetMagicText();
+		break;
+	}
+	}
 
 	if (currentFightPhase == FightPhase::EnemiesTurn)
 	{
@@ -694,7 +693,7 @@ void CViewSystem::DrawFightScene()
 			m_fightingScene.fightInfoCard.getPosition().y - 70 });
 		heroFightCard.area.setFillColor(sf::Color::Black);
 
-		if (fightTurnComp->isEntityTurn)
+		if (fightTurnComp->isHeroTurn)
 		{
 			heroFightCard.area.setPosition({ m_fightingScene.fightInfoCard.getPosition().x + xOffset,
 				m_fightingScene.fightInfoCard.getPosition().y - 140 });
@@ -811,4 +810,107 @@ void CViewSystem::DrawFightScene()
 			m_window.draw(action);
 		}
 	}
+}
+
+void CViewSystem::UpdateActiveFightUserInfo(EntityId entity)
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	auto inventoryComp = entityManager.GetComponent<InventoryComponent>(entity);
+
+	if (!inventoryComp)
+	{
+		return;
+	}
+
+	m_activeFightHero = entity;
+}
+
+void CViewSystem::SetAttackBar(const sf::Vector2f& fightInfoCardPosition)
+{
+	static sf::RectangleShape attackBar;
+	static sf::RectangleShape movingIndicator;
+	static float indicatorSpeed = 500.f;
+	static float barWidth = 300.f;
+	static float barHeight = 50.f;
+
+	auto& entityManager = CEntityManager::GetInstance();
+	auto colorThemeComp = entityManager.GetComponent<ColorThemeComponent>(m_activeFightHero);
+
+	if (!m_isAttackBarActive)
+	{
+		return;
+	}
+
+	if (attackBar.getSize().x == 0)
+	{
+		attackBar.setSize({ barWidth, barHeight });
+		attackBar.setFillColor(sf::Color::Black);
+		attackBar.setOutlineColor(colorThemeComp->colorTheme);
+		attackBar.setOutlineThickness(2);
+		attackBar.setPosition(
+			fightInfoCardPosition.x + 20,
+			fightInfoCardPosition.y + barHeight / 2);
+
+		movingIndicator.setSize({ 10.f, barHeight });
+		movingIndicator.setFillColor(sf::Color::White);
+		movingIndicator.setPosition(attackBar.getPosition());
+	}
+
+	movingIndicator.move(indicatorSpeed * CGameController::GetDeltaTime(), 0);
+	if (movingIndicator.getPosition().x > attackBar.getPosition().x + barWidth || movingIndicator.getPosition().x < attackBar.getPosition().x)
+	{
+		indicatorSpeed = -indicatorSpeed;
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+	{
+		m_isAttackBarActive = false;
+
+		float indicatorPos = movingIndicator.getPosition().x - attackBar.getPosition().x;
+		float damageMultiplier = 0.5f;
+
+		if (indicatorPos > barWidth * 0.4f && indicatorPos < barWidth * 0.6f)
+		{
+			damageMultiplier = 2.f;
+		}
+		else if (indicatorPos > barWidth * 0.3f && indicatorPos < barWidth * 0.7f)
+		{
+			damageMultiplier = 1.f;
+		}
+
+		std::cout << "Damage multiplier: " << damageMultiplier << std::endl;
+		m_currentFightAction = FightAction::Info;
+	}
+
+	m_window.draw(attackBar);
+	m_window.draw(movingIndicator);
+}
+
+void CViewSystem::SetActActions()
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	std::cout << "Act\n";
+}
+
+void CViewSystem::SetFightInventory()
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	std::cout << "Inventory\n";
+}
+
+void CViewSystem::SetFightInfo()
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	std::cout << "Fight info\n";
+}
+
+void CViewSystem::SetSpareText()
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	std::cout << "Spare\n";
+}
+
+void CViewSystem::SetMagicText()
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	std::cout << "Magic\n";
 }

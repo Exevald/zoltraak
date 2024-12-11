@@ -5,5 +5,5 @@
 class CAnimationSystem
 {
 public:
-	static void Update(float deltaTime);
+	static void Update();
 };

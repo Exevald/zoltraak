@@ -17,6 +17,7 @@ enum class CurrentState
 	PauseMenu,
 	Settings,
 	Fight,
+	Inventory,
 };
 
 struct SaveInfo
@@ -26,59 +27,42 @@ struct SaveInfo
 	float gameTime;
 };
 
-enum class FightPhase {
+enum class FightPhase
+{
 	CharactersTurn,
 	EnemiesTurn,
+	BattleEnded,
 };
 
 class CGameController
 {
 public:
 	static void InitGameSettings(const Level& level);
-
 	static void InitSystems();
-
-	static void Update(float deltaTime);
-
+	static void Update();
 	static void Draw(sf::RenderWindow& window, Level& level);
-
 	void SetSelectedEntityId(EntityId id);
-
 	static void SaveGameInfo(int saveNumber, const SaveInfo& info);
-
 	static void SetGameState(const CurrentState& state);
-
 	static void SetCurrentMainMenuOption(int option);
-
 	static void SetCurrentPauseMenuOption(int option);
-
 	static void SetCurrentGameSaveNumber(int saveNumber);
-
 	static void SetCurrentFightActionNumber(int actionNumber);
-
 	static void SetFightPhase(const FightPhase& phase);
-
-	static void IncreaseElapsedTime(float deltaTime);
+	static void IncreaseElapsedTime();
+	static void UpdateDeltaTime();
 
 	static float GetElapsedTIme();
-
 	static SaveInfo GetSaveInfo(int saveNumber);
-
-	static FightPhase GetFightPhase();
-
+	static FightPhase GetCurrentFightPhase();
 	static int GetCurrentFightActionNumber();
-
 	static int GetCurrentMainMenuOption();
-
 	static int GetCurrentPauseMenuOption();
-
 	static int GetCurrentGameSaveNumber();
-
 	[[nodiscard]] EntityId GetSelectedEntityId() const;
-
 	static sf::Vector2f GetWindowSizeSettings();
-
 	static CurrentState GetCurrentGameState();
+	static float GetDeltaTime();
 
 private:
 	EntityId m_selectedEntityId{};
@@ -91,6 +75,8 @@ private:
 	static int m_currentGameSaveNumber;
 	static int m_currentFightActionNumber;
 	static FightPhase m_currentFightPhase;
+	static sf::Clock m_clock;
+	static float m_deltaTime;
 
 	static std::string GetSaveFileName(int saveNumber);
 };

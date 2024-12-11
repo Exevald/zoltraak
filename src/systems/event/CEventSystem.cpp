@@ -1,5 +1,6 @@
 #include "event/CEventSystem.h"
 #include "Utils.h"
+#include "fight/CFightSystem.h"
 #include <iostream>
 
 void CEventSystem::handleMouseClick(CGameController& gameController, const sf::Vector2f& mousePos)
@@ -63,7 +64,7 @@ void CEventSystem::handleKeyPress(CGameController& gameController, sf::Keyboard:
 	auto currentPauseMenuOption = CGameController::GetCurrentPauseMenuOption();
 	auto currentGameState = CGameController::GetCurrentGameState();
 	auto currentGameSaveNumber = CGameController::GetCurrentGameSaveNumber();
-	auto currentFightPhase = CGameController::GetFightPhase();
+	auto currentFightPhase = CGameController::GetCurrentFightPhase();
 
 	if (currentGameState == CurrentState::Fight && currentFightPhase == FightPhase::CharactersTurn)
 	{
