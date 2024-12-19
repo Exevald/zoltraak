@@ -19,7 +19,7 @@ void CFightSystem::Update()
 
 	if (currentFightPhase == FightPhase::EnemiesTurn && m_isEnemiesTurnActive)
 	{
-		if (m_enemiesTurnClock.getElapsedTime().asSeconds() >= 3.f)
+		if (m_enemiesTurnClock.getElapsedTime().asSeconds() >= 15.f)
 		{
 			m_isEnemiesTurnActive = false;
 			EndEnemiesTurn();

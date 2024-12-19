@@ -51,6 +51,11 @@ public:
 	static void SetFightPhase(const FightPhase& phase);
 	static void IncreaseElapsedTime();
 	static void UpdateDeltaTime();
+	static void SetCurrentInventoryMenuPosition(int position);
+	static void SetCurrentInventorySectionNumber(int sectionNumber);
+	static void SetSelectedInventoryItemNumber(int itemNumber);
+	static void UpdateHeroInventory(EntityId heroId, const std::vector<InventoryItem>& items);
+	static void RemoveItemFromHeroInventory(EntityId heroId, int itemIndex);
 
 	static float GetElapsedTIme();
 	static SaveInfo GetSaveInfo(int saveNumber);
@@ -60,9 +65,13 @@ public:
 	static int GetCurrentPauseMenuOption();
 	static int GetCurrentGameSaveNumber();
 	[[nodiscard]] EntityId GetSelectedEntityId() const;
-	static sf::Vector2f GetWindowSizeSettings();
+	static sf::Vector2f GetGameSizeSettings();
 	static CurrentState GetCurrentGameState();
 	static float GetDeltaTime();
+	static int GetCurrentInventoryMenuPosition();
+	static int GetCurrentInventorySectionNumber();
+	static int GetSelectedInventoryItemNumber();
+	static std::unordered_map<EntityId, std::vector<InventoryItem>> GetAllHeroesInventory();
 
 private:
 	EntityId m_selectedEntityId{};
@@ -77,6 +86,10 @@ private:
 	static FightPhase m_currentFightPhase;
 	static sf::Clock m_clock;
 	static float m_deltaTime;
+	static int m_currentInventoryMenuPosition;
+	static int m_currentInventorySectionNumber;
+	static int m_selectedInventoryItemNumber;
+	static std::unordered_map<EntityId, std::vector<InventoryItem>> m_allHeroesInventory;
 
 	static std::string GetSaveFileName(int saveNumber);
 };

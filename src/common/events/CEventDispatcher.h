@@ -34,6 +34,16 @@ public:
 		}
 	}
 
+	std::optional<SEvent> GetLastEvent(const EventType& type) const
+	{
+		auto it = m_lastEvents.find(type);
+		if (it != m_lastEvents.end())
+		{
+			return it->second;
+		}
+		return std::nullopt;
+	}
+
 	CEventDispatcher(const CEventDispatcher&) = delete;
 	CEventDispatcher& operator=(const CEventDispatcher&) = delete;
 

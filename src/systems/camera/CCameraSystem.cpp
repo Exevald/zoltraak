@@ -57,8 +57,8 @@ void CCameraSystem::UpdateCameraPosition(EntityId movedEntityId)
 		cameraY = playerY - windowHalfHeight;
 	}
 
-	cameraX = std::max(windowHalfWidth, std::min(cameraX, float(CGameController::GetWindowSizeSettings().x) - windowHalfWidth));
-	cameraY = std::max(windowHalfHeight, std::min(cameraY, float(CGameController::GetWindowSizeSettings().y) - windowHalfHeight));
+	cameraX = std::max(windowHalfWidth, std::min(cameraX, float(CGameController::GetGameSizeSettings().x) - windowHalfWidth));
+	cameraY = std::max(windowHalfHeight, std::min(cameraY, float(CGameController::GetGameSizeSettings().y) - windowHalfHeight));
 
 	view.setCenter(cameraX, cameraY);
 	m_window.setView(view);

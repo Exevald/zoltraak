@@ -50,7 +50,7 @@ struct LevelChoosingMenu
 	std::unordered_map<int, std::vector<sf::Text>> levelCardsInfo;
 };
 
-struct HeroFightCard
+struct HeroInfoCard
 {
 	sf::Text heroName;
 	sf::RectangleShape area;
@@ -69,9 +69,25 @@ struct FightScene
 	sf::Sprite background;
 	sf::Sprite fightInfoCard;
 	std::vector<sf::Text> fightInfoText;
-	std::unordered_map<int, HeroFightCard> heroesFightInfo;
+	std::unordered_map<int, HeroInfoCard> heroesFightInfo;
 	sf::Sprite heroSoul;
 	sf::Sprite battleArea;
+};
+
+struct Inventory
+{
+	sf::Sprite sectionTitle;
+	std::vector<sf::Sprite> inventorySections;
+	sf::Sprite inventoryMenu;
+	sf::Text money;
+	std::vector<sf::Sprite> heroIcons;
+	sf::Sprite inventoryMenuSoul;
+	sf::Text heroDescription;
+	std::vector<sf::Text> heroStats;
+	std::vector<sf::Text> inventoryItemMenuActions;
+	std::unordered_map<int, sf::Text> inventoryItems;
+	std::unordered_map<int, HeroInfoCard> heroesInfo;
+	sf::Text heroName;
 };
 
 class CViewSystem
@@ -95,12 +111,12 @@ private:
 	void UpdateHeroCardPosition();
 	void DrawMainMenu();
 	void DrawLevelChoosingMenu();
-	void DrawLevelChoosingTitle(sf::Font& font);
+	void DrawLevelChoosingTitle();
 	void DrawLevelChoosingBackground();
 	void DrawLevelSaveCards();
 	void CreateLevelSaveCards();
-	void DrawLevelSaveCardsInfo(sf::Font& font);
-	void CreateLevelSaveCardInfo(int saveIndex, const SaveInfo& saveInfo, sf::Font& font);
+	void DrawLevelSaveCardsInfo();
+	void CreateLevelSaveCardInfo(int saveIndex, const SaveInfo& saveInfo);
 	void UpdateHeroCardBackground(const ColorThemeComponent* colorThemeComp);
 	void UpdateHeroAvatar(const AvatarComponent* avatarComp);
 	void UpdateHeroHealthBar(const HealthComponent* healthComp, const ColorThemeComponent* colorThemeComp);
@@ -119,6 +135,8 @@ private:
 	void SetActActions();
 	void SetFightInventory();
 	void SetMagicText();
+	void DrawInventory();
+	void UpdateInventoryItems();
 
 	sf::RenderWindow& m_window;
 	Level& m_level;
@@ -127,7 +145,10 @@ private:
 	PauseMenu m_pauseMenu;
 	LevelChoosingMenu m_levelChoosingMenu;
 	FightScene m_fightingScene;
+	Inventory m_inventory;
 	FightAction m_currentFightAction = FightAction::Info;
 	int m_activeFightHero = 2;
 	bool m_isAttackBarActive = false;
+	InventoryState m_currentInventoryState = InventoryState::MenuSectionSelection;
+	InventoryAction m_currentInventoryItemAction = InventoryAction::Use;
 };

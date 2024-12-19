@@ -49,7 +49,7 @@ void CMovementSystem::HandleEntityMoved(EntityId movedEntityId, const std::strin
 
 	const float baseTileSize = 20.0f;
 	const float scaleFactor = 3.0f;
-	const float scaledTileSize = baseTileSize * scaleFactor;
+	const float scaledTileSize = baseTileSize ;
 
 	int tileX = static_cast<int>(newX / scaledTileSize);
 	int tileY = static_cast<int>(newY / scaledTileSize);
@@ -63,13 +63,13 @@ void CMovementSystem::HandleEntityMoved(EntityId movedEntityId, const std::strin
 
 	if (animationComponent)
 	{
-		newX = std::max(0.f, std::min(newX, float(CGameController::GetWindowSizeSettings().x) - animationComponent->sprite.getScale().x * 18));
-		newY = std::max(0.f, std::min(newY, float(CGameController::GetWindowSizeSettings().y / 3) - animationComponent->sprite.getScale().y * 37));
+		newX = std::max(0.f, std::min(newX, float(CGameController::GetGameSizeSettings().x) - animationComponent->sprite.getScale().x * 18));
+		newY = std::max(0.f, std::min(newY, float(CGameController::GetGameSizeSettings().y) - animationComponent->sprite.getScale().y * 37));
 	}
 	if (imageComponent)
 	{
-		newX = std::max(0.f, std::min(newX, float(CGameController::GetWindowSizeSettings().x) - 22));
-		newY = std::max(0.f, std::min(newY, float(CGameController::GetWindowSizeSettings().y) - 22));
+		newX = std::max(0.f, std::min(newX, float(CGameController::GetGameSizeSettings().x) - 22));
+		newY = std::max(0.f, std::min(newY, float(CGameController::GetGameSizeSettings().y) - 22));
 	}
 	if (fightSoulComponent)
 	{

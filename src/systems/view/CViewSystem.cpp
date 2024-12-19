@@ -1,10 +1,12 @@
 #include "CViewSystem.h"
 #include "CEntityManager.h"
 #include "Utils.h"
+#include "assets_storage/CFontStorage.h"
+#include "assets_storage/CTextureStorage.h"
 #include "events/CEventDispatcher.h"
-#include "storage/CFontStorage.h"
-#include "storage/CTextureStorage.h"
 #include <iostream>
+
+auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
 
 void CViewSystem::Init()
 {
@@ -21,6 +23,20 @@ void CViewSystem::Init()
 	CEventDispatcher::GetInstance().Subscribe(EventType::ActiveFightCharacterUpdated, [this](const SEvent& event) {
 		const auto& activeFightCharacterUpdatedEventData = std::get<ActiveFightCharacterUpdatedEventData>(event.data);
 		CViewSystem::UpdateActiveFightUserInfo(activeFightCharacterUpdatedEventData.id);
+	});
+
+	CEventDispatcher::GetInstance().Subscribe(EventType::InventoryActionChanged, [this](const SEvent& event) {
+		const auto& inventoryActionChangedEventData = std::get<InventoryActionChangedEventData>(event.data);
+		m_currentInventoryItemAction = inventoryActionChangedEventData.selectedAction;
+	});
+
+	CEventDispatcher::GetInstance().Subscribe(EventType::InventoryStateChanged, [this](const SEvent& event) {
+		const auto& inventoryStateChangedEventData = std::get<InventoryStateChangedEventData>(event.data);
+		m_currentInventoryState = inventoryStateChangedEventData.changedState;
+	});
+
+	CEventDispatcher::GetInstance().Subscribe(EventType::InventoryItemUsed, [this](const SEvent& event) {
+		CViewSystem::UpdateInventoryItems();
 	});
 }
 
@@ -76,6 +92,13 @@ void CViewSystem::Draw()
 		m_window.setView(view);
 
 		CViewSystem::DrawFightScene();
+	}
+	if (currentState == CurrentState::Inventory)
+	{
+		sf::View view = m_window.getDefaultView();
+		m_window.setView(view);
+
+		CViewSystem::DrawInventory();
 	}
 }
 
@@ -263,8 +286,6 @@ void CViewSystem::UpdateHeroManaBar(const ManaComponent* manaComp)
 
 void CViewSystem::UpdateHeroInfoText(const ExperienceComponent* experienceComp)
 {
-	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
-
 	m_heroCard.heroHealthText.setFont(font);
 	m_heroCard.heroHealthText.setString("HP");
 	m_heroCard.heroHealthText.setCharacterSize(30);
@@ -311,8 +332,6 @@ void CViewSystem::UpdateHeroCardPosition()
 
 void CViewSystem::DrawMainMenu()
 {
-	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
-
 	m_menu.backgroundTexture = CTextureStorage::GetTexture("menu_background.png");
 	m_menu.backgroundSprite.setTexture(m_menu.backgroundTexture);
 
@@ -433,7 +452,6 @@ void CViewSystem::SetupPauseMenuArea()
 
 void CViewSystem::SetupPauseMenuTitle()
 {
-	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
 	m_pauseMenu.pauseMenuTitle.setFont(font);
 	m_pauseMenu.pauseMenuTitle.setString("PAUSE");
 	m_pauseMenu.pauseMenuTitle.setCharacterSize(40);
@@ -445,8 +463,6 @@ void CViewSystem::SetupPauseMenuTitle()
 
 void CViewSystem::SetupPauseMenuOptions()
 {
-	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
-
 	if (m_pauseMenu.menuOptions.empty())
 	{
 		sf::Text resumeGameText;
@@ -474,9 +490,7 @@ void CViewSystem::SetupPauseMenuOptions()
 
 void CViewSystem::DrawLevelChoosingMenu()
 {
-	auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
-
-	DrawLevelChoosingTitle(font);
+	DrawLevelChoosingTitle();
 	DrawLevelChoosingBackground();
 
 	if (m_levelChoosingMenu.levelCards.empty())
@@ -485,10 +499,10 @@ void CViewSystem::DrawLevelChoosingMenu()
 	}
 
 	DrawLevelSaveCards();
-	DrawLevelSaveCardsInfo(font);
+	DrawLevelSaveCardsInfo();
 }
 
-void CViewSystem::DrawLevelChoosingTitle(sf::Font& font)
+void CViewSystem::DrawLevelChoosingTitle()
 {
 	m_levelChoosingMenu.levelChoosingMenuTitle.setFont(font);
 	m_levelChoosingMenu.levelChoosingMenuTitle.setString("Please select a file:");
@@ -543,7 +557,7 @@ void CViewSystem::DrawLevelSaveCards()
 	}
 }
 
-void CViewSystem::DrawLevelSaveCardsInfo(sf::Font& font)
+void CViewSystem::DrawLevelSaveCardsInfo()
 {
 	auto save1Info = CGameController::GetSaveInfo(0);
 	auto save2Info = CGameController::GetSaveInfo(1);
@@ -551,9 +565,9 @@ void CViewSystem::DrawLevelSaveCardsInfo(sf::Font& font)
 
 	if (m_levelChoosingMenu.levelCardsInfo.empty())
 	{
-		CreateLevelSaveCardInfo(0, save1Info, font);
-		CreateLevelSaveCardInfo(1, save2Info, font);
-		CreateLevelSaveCardInfo(2, save3Info, font);
+		CreateLevelSaveCardInfo(0, save1Info);
+		CreateLevelSaveCardInfo(1, save2Info);
+		CreateLevelSaveCardInfo(2, save3Info);
 	}
 
 	for (const auto& levelCardInfo : m_levelChoosingMenu.levelCardsInfo)
@@ -565,7 +579,7 @@ void CViewSystem::DrawLevelSaveCardsInfo(sf::Font& font)
 	}
 }
 
-void CViewSystem::CreateLevelSaveCardInfo(int saveIndex, const SaveInfo& saveInfo, sf::Font& font)
+void CViewSystem::CreateLevelSaveCardInfo(int saveIndex, const SaveInfo& saveInfo)
 {
 	sf::Text playerName;
 	playerName.setFont(font);
@@ -606,7 +620,6 @@ void CViewSystem::DrawMapItem(int x, int y, const sf::Texture& texture, const sf
 void CViewSystem::DrawFightScene()
 {
 	const BattleAreaSettings battleAreaSettings;
-	auto& heroCardFont = CFontStorage::GetFont("8bitoperator_jve.ttf");
 	auto& entityManager = CEntityManager::GetInstance();
 
 	auto charactersIds = entityManager.GetEntitiesWithComponents<NameComponent>();
@@ -687,7 +700,7 @@ void CViewSystem::DrawFightScene()
 		auto healthComp = entityManager.GetComponent<HealthComponent>(id);
 		auto animComp = entityManager.GetComponent<AnimationComponent>(id);
 
-		HeroFightCard heroFightCard;
+		HeroInfoCard heroFightCard;
 		heroFightCard.area.setSize({ cardWidth, 70.f });
 		heroFightCard.area.setPosition({ m_fightingScene.fightInfoCard.getPosition().x + xOffset,
 			m_fightingScene.fightInfoCard.getPosition().y - 70 });
@@ -748,7 +761,7 @@ void CViewSystem::DrawFightScene()
 		heroFightCard.heroIcon.setPosition(heroFightCard.area.getPosition().x + 20, heroFightCard.area.getPosition().y + 10);
 		heroFightCard.heroIcon.setScale(2.25f, 2.25f);
 
-		heroFightCard.heroName.setFont(heroCardFont);
+		heroFightCard.heroName.setFont(font);
 		heroFightCard.heroName.setString(nameComp->name);
 		heroFightCard.heroName.setCharacterSize(30);
 		heroFightCard.heroName.setPosition(heroFightCard.area.getPosition().x + 90, heroFightCard.area.getPosition().y + 20);
@@ -761,12 +774,12 @@ void CViewSystem::DrawFightScene()
 		heroFightCard.heroHealthBar.setPosition(heroFightCard.heroMaxHealthBar.getPosition().x, heroFightCard.heroMaxHealthBar.getPosition().y);
 		heroFightCard.heroHealthBar.setFillColor(colorThemeComp->colorTheme);
 
-		heroFightCard.heroHealthText.setFont(heroCardFont);
+		heroFightCard.heroHealthText.setFont(font);
 		heroFightCard.heroHealthText.setString("HP");
 		heroFightCard.heroHealthText.setCharacterSize(28);
 		heroFightCard.heroHealthText.setPosition({ heroFightCard.area.getPosition().x + 215, heroFightCard.area.getPosition().y + 25 });
 
-		heroFightCard.heroHealthValue.setFont(heroCardFont);
+		heroFightCard.heroHealthValue.setFont(font);
 		heroFightCard.heroHealthValue.setString(std::to_string(int(healthComp->currentHealth)) + "/  " + std::to_string(int(healthComp->maxHealth)));
 		heroFightCard.heroHealthValue.setCharacterSize(28);
 		heroFightCard.heroHealthValue.setPosition({ heroFightCard.area.getPosition().x + 315, heroFightCard.area.getPosition().y - 5 });
@@ -913,4 +926,269 @@ void CViewSystem::SetMagicText()
 {
 	auto& entityManager = CEntityManager::GetInstance();
 	std::cout << "Magic\n";
+}
+
+void CViewSystem::DrawInventory()
+{
+	auto& entityManager = CEntityManager::GetInstance();
+
+	auto characters = entityManager.GetEntitiesWithComponents<NameComponent>();
+	auto currentInventorySectionNumber = CGameController::GetCurrentInventorySectionNumber();
+	auto entityWithMoneyId = entityManager.GetEntitiesWithComponents<MoneyComponent>().front();
+	auto moneyComp = entityManager.GetComponent<MoneyComponent>(entityWithMoneyId);
+	auto heroesWithInventory = entityManager.GetEntitiesWithComponents<InventoryComponent>();
+
+	for (auto heroId : heroesWithInventory)
+	{
+		auto heroInventory = entityManager.GetComponent<InventoryComponent>(heroId);
+		CGameController::UpdateHeroInventory(heroId, heroInventory->items);
+	}
+
+	m_inventory.sectionTitle.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
+	m_inventory.sectionTitle.setPosition(float(m_window.getSize().x) / 5, 50);
+	m_inventory.sectionTitle.setScale(3.f, 3.f);
+
+	m_inventory.money.setFont(font);
+	m_inventory.money.setString("MONEY:   $ " + std::to_string(moneyComp->money));
+	m_inventory.money.setCharacterSize(50);
+	m_inventory.money.setPosition(float(m_window.getSize().x) * 3 / 5 + 100, 50);
+
+	if (m_inventory.inventorySections.empty())
+	{
+		sf::Sprite itemsInventorySection;
+		itemsInventorySection.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
+		itemsInventorySection.setTextureRect(sf::IntRect(80, 75, 33, 24));
+		itemsInventorySection.setPosition(float(m_window.getSize().x) / 5 + 250, 45);
+		itemsInventorySection.setScale(3.f, 3.f);
+
+		sf::Sprite equipInventorySection;
+		equipInventorySection.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
+		equipInventorySection.setTextureRect(sf::IntRect(80, 100, 33, 24));
+		equipInventorySection.setPosition(itemsInventorySection.getPosition().x + 200, 45);
+		equipInventorySection.setScale(3.f, 3.f);
+
+		sf::Sprite powerInventorySection;
+		powerInventorySection.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
+		powerInventorySection.setTextureRect(sf::IntRect(80, 125, 33, 24));
+		powerInventorySection.setPosition(equipInventorySection.getPosition().x + 200, 45);
+		powerInventorySection.setScale(3.f, 3.f);
+
+		m_inventory.inventorySections.push_back(itemsInventorySection);
+		m_inventory.inventorySections.push_back(equipInventorySection);
+		m_inventory.inventorySections.push_back(powerInventorySection);
+	}
+
+	m_inventory.inventoryMenu.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
+	m_inventory.inventoryMenu.setPosition(float(m_window.getSize().x) / 4.5f, 200);
+	m_inventory.inventoryMenu.setScale(4.f, 4.f);
+
+	m_inventory.inventoryMenuSoul.setTexture(CTextureStorage::GetTexture("menu_soul.png"));
+	m_inventory.inventoryMenuSoul.setScale(0.125f, 0.125f);
+
+	switch (currentInventorySectionNumber)
+	{
+	case 0: {
+		m_inventory.sectionTitle.setTextureRect(sf::IntRect(117, 78, 35, 18));
+		m_inventory.inventoryMenu.setTextureRect(sf::IntRect(841, 21, 260, 146));
+		if (m_currentInventoryState == InventoryState::ItemActionSelection || m_currentInventoryState == InventoryState::ItemSelection)
+		{
+			if (m_currentInventoryItemAction == InventoryAction::Use)
+			{
+				m_inventory.inventoryMenuSoul.setPosition(m_inventory.inventoryMenu.getPosition().x + 310, m_inventory.inventoryMenu.getPosition().y + 92);
+			}
+			if (m_currentInventoryItemAction == InventoryAction::Drop)
+			{
+				m_inventory.inventoryMenuSoul.setPosition(m_inventory.inventoryMenu.getPosition().x + 560, m_inventory.inventoryMenu.getPosition().y + 92);
+			}
+		}
+		break;
+	}
+	case 1: {
+		m_inventory.sectionTitle.setTextureRect(sf::IntRect(117, 103, 35, 18));
+		m_inventory.inventoryMenu.setTextureRect(sf::IntRect(841, 171, 270, 170));
+		m_inventory.inventoryMenuSoul.setPosition(m_inventory.inventoryMenu.getPosition().x + 200, m_inventory.inventoryMenu.getPosition().y + 92);
+		break;
+	}
+	case 2: {
+		m_inventory.sectionTitle.setTextureRect(sf::IntRect(117, 128, 35, 18));
+		m_inventory.inventoryMenu.setTextureRect(sf::IntRect(841, 346, 270, 170));
+		m_inventory.inventoryMenuSoul.setPosition(m_inventory.inventoryMenu.getPosition().x + 200, m_inventory.inventoryMenu.getPosition().y + 92);
+		break;
+	}
+	default:
+		break;
+	}
+
+	if (m_inventory.inventoryItemMenuActions.empty())
+	{
+		sf::Text useInventoryItemText;
+		useInventoryItemText.setFont(font);
+		useInventoryItemText.setCharacterSize(50);
+		useInventoryItemText.setString("USE");
+		useInventoryItemText.setPosition(m_inventory.inventoryMenu.getPosition().x + 350, m_inventory.inventoryMenu.getPosition().y + 70);
+
+		sf::Text dropInventoryItemText;
+		dropInventoryItemText.setFont(font);
+		dropInventoryItemText.setCharacterSize(50);
+		dropInventoryItemText.setString("DROP");
+		dropInventoryItemText.setPosition(m_inventory.inventoryMenu.getPosition().x + 600, m_inventory.inventoryMenu.getPosition().y + 70);
+
+		m_inventory.inventoryItemMenuActions.push_back(useInventoryItemText);
+		m_inventory.inventoryItemMenuActions.push_back(dropInventoryItemText);
+	}
+
+	const float totalWidth = 289 * 3;
+	const float cardWidth = totalWidth / float(characters.size()) - 10;
+	float xOffset = 0;
+	const float maxHealthBarWidth = 150;
+
+	for (auto id : characters)
+	{
+		auto colorThemeComp = entityManager.GetComponent<ColorThemeComponent>(id);
+		auto avatarComp = entityManager.GetComponent<AvatarComponent>(id);
+		auto nameComp = entityManager.GetComponent<NameComponent>(id);
+		auto healthComp = entityManager.GetComponent<HealthComponent>(id);
+
+		HeroInfoCard heroFightCard;
+		heroFightCard.area.setSize({ cardWidth, 70.f });
+		heroFightCard.area.setPosition({ m_inventory.inventoryMenu.getPosition().x + 80 + xOffset,
+			m_inventory.inventoryMenu.getPosition().y + 750 });
+		heroFightCard.area.setFillColor(sf::Color::Black);
+		heroFightCard.area.setOutlineThickness(2);
+		heroFightCard.area.setOutlineColor(colorThemeComp->colorTheme);
+
+		heroFightCard.heroIcon.setTexture(CTextureStorage::GetTexture(avatarComp->avatarFilePath));
+		heroFightCard.heroIcon.setPosition(heroFightCard.area.getPosition().x + 20, heroFightCard.area.getPosition().y + 10);
+		heroFightCard.heroIcon.setScale(2.25f, 2.25f);
+
+		heroFightCard.heroName.setFont(font);
+		heroFightCard.heroName.setString(nameComp->name);
+		heroFightCard.heroName.setCharacterSize(30);
+		heroFightCard.heroName.setPosition(heroFightCard.area.getPosition().x + 90, heroFightCard.area.getPosition().y + 20);
+
+		heroFightCard.heroMaxHealthBar.setSize({ maxHealthBarWidth, 20 });
+		heroFightCard.heroMaxHealthBar.setPosition({ heroFightCard.area.getPosition().x + 250, heroFightCard.area.getPosition().y + 35 });
+		heroFightCard.heroMaxHealthBar.setFillColor(sf::Color(117, 2, 7));
+
+		heroFightCard.heroHealthBar.setSize({ maxHealthBarWidth * (healthComp->currentHealth / healthComp->maxHealth), 20 });
+		heroFightCard.heroHealthBar.setPosition(heroFightCard.heroMaxHealthBar.getPosition().x, heroFightCard.heroMaxHealthBar.getPosition().y);
+		heroFightCard.heroHealthBar.setFillColor(colorThemeComp->colorTheme);
+
+		heroFightCard.heroHealthText.setFont(font);
+		heroFightCard.heroHealthText.setString("HP");
+		heroFightCard.heroHealthText.setCharacterSize(28);
+		heroFightCard.heroHealthText.setPosition({ heroFightCard.area.getPosition().x + 215, heroFightCard.area.getPosition().y + 25 });
+
+		heroFightCard.heroHealthValue.setFont(font);
+		heroFightCard.heroHealthValue.setString(std::to_string(int(healthComp->currentHealth)) + "/  " + std::to_string(int(healthComp->maxHealth)));
+		heroFightCard.heroHealthValue.setCharacterSize(28);
+		heroFightCard.heroHealthValue.setPosition({ heroFightCard.area.getPosition().x + 315, heroFightCard.area.getPosition().y - 5 });
+
+		m_inventory.heroesInfo[id] = heroFightCard;
+		xOffset += cardWidth + 50;
+	}
+
+	CViewSystem::UpdateInventoryItems();
+
+	for (int i = 0; i < m_inventory.inventorySections.size(); i++)
+	{
+		auto section = m_inventory.inventorySections[i];
+		const sf::IntRect spriteBounds = section.getTextureRect();
+		int newSpiteLeftBound = spriteBounds.left;
+		if (CGameController::GetCurrentInventorySectionNumber() == i)
+		{
+			newSpiteLeftBound -= 37;
+			if (CGameController::GetCurrentInventoryMenuPosition() == 0)
+			{
+				newSpiteLeftBound -= 37;
+			}
+		}
+
+		section.setTextureRect(sf::IntRect(
+			newSpiteLeftBound,
+			spriteBounds.top,
+			spriteBounds.width,
+			spriteBounds.height));
+
+		m_window.draw(section);
+	}
+
+	m_window.draw(m_inventory.inventoryMenu);
+	m_window.draw(m_inventory.sectionTitle);
+	m_window.draw(m_inventory.money);
+
+	if (m_currentInventoryState == InventoryState::ItemActionSelection)
+	{
+		m_window.draw(m_inventory.inventoryMenuSoul);
+	}
+
+	if (currentInventorySectionNumber == 0)
+	{
+		for (const auto& inventoryItemMenuAction : m_inventory.inventoryItemMenuActions)
+		{
+			m_window.draw(inventoryItemMenuAction);
+		}
+
+		for (int i = 0; i < m_inventory.inventoryItems.size(); i++)
+		{
+			auto inventoryItem = m_inventory.inventoryItems[i];
+			if (m_currentInventoryState == InventoryState::ItemSelection)
+			{
+				if (CGameController::GetSelectedInventoryItemNumber() == i)
+				{
+					inventoryItem.setFillColor(sf::Color::Yellow);
+				}
+			}
+
+			m_window.draw(inventoryItem);
+		}
+	}
+
+	if (currentInventorySectionNumber == 1)
+	{
+	}
+
+	for (const auto& info : m_inventory.heroesInfo)
+	{
+		m_window.draw(info.second.area);
+		m_window.draw(info.second.heroIcon);
+		m_window.draw(info.second.heroName);
+		m_window.draw(info.second.heroMaxHealthBar);
+		m_window.draw(info.second.heroHealthBar);
+		m_window.draw(info.second.heroHealthText);
+		m_window.draw(info.second.heroHealthValue);
+	}
+}
+
+void CViewSystem::UpdateInventoryItems()
+{
+	float row = 0;
+	float column = 0;
+	int itemIndex = 0;
+	m_inventory.inventoryItems.clear();
+	int inventoryItemsSize = 0;
+
+	for (const auto& [entityId, entityInventoryItems] : CGameController::GetAllHeroesInventory())
+	{
+		for (const auto& inventoryItem : entityInventoryItems)
+		{
+			sf::Text inventoryItemText;
+			inventoryItemText.setFont(font);
+			inventoryItemText.setString(inventoryItem.name);
+			inventoryItemText.setCharacterSize(45);
+			inventoryItemText.setPosition(m_inventory.inventoryMenu.getPosition().x + 200 + column * 370, m_inventory.inventoryMenu.getPosition().y + 150 + row * 50);
+			inventoryItemText.setFillColor(sf::Color(125, 125, 125));
+
+			m_inventory.inventoryItems[itemIndex] = inventoryItemText;
+
+			row++;
+			itemIndex++;
+			inventoryItemsSize++;
+			if (row > 5)
+			{
+				row = 0;
+				column++;
+			}
+		}
+	}
 }

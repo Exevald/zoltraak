@@ -2,6 +2,7 @@
 #include "animation/CAnimationSystem.h"
 #include "camera/CCameraSystem.h"
 #include "collision/CCollisionSystem.h"
+#include "event/CEventSystem.h"
 #include "fight/CFightSystem.h"
 #include "inventory/CInventorySystem.h"
 #include "view/CViewSystem.h"
@@ -27,6 +28,10 @@ int CGameController::m_currentFightActionNumber = 0;
 FightPhase CGameController::m_currentFightPhase = FightPhase::CharactersTurn;
 sf::Clock CGameController::m_clock;
 float CGameController::m_deltaTime = 0.f;
+int CGameController::m_currentInventoryMenuPosition = 0;
+int CGameController::m_currentInventorySectionNumber = 0;
+int CGameController::m_selectedInventoryItemNumber = 0;
+std::unordered_map<EntityId, std::vector<InventoryItem>> CGameController::m_allHeroesInventory;
 
 void CGameController::InitGameSettings(const Level& level)
 {
@@ -36,9 +41,11 @@ void CGameController::InitGameSettings(const Level& level)
 
 void CGameController::InitSystems()
 {
+	CEventSystem::Init();
 	CMovementSystem::Init();
 	CCollisionSystem::Init();
 	CFightSystem::Init();
+	CInventorySystem::Init();
 }
 
 void CGameController::Draw(sf::RenderWindow& window, Level& level)
@@ -68,7 +75,7 @@ EntityId CGameController::GetSelectedEntityId() const
 	return m_selectedEntityId;
 }
 
-sf::Vector2f CGameController::GetWindowSizeSettings()
+sf::Vector2f CGameController::GetGameSizeSettings()
 {
 	return { m_levelWidth, m_levelHeight };
 }
@@ -207,4 +214,59 @@ void CGameController::UpdateDeltaTime()
 float CGameController::GetDeltaTime()
 {
 	return m_deltaTime;
+}
+
+void CGameController::SetCurrentInventoryMenuPosition(int position)
+{
+	m_currentInventoryMenuPosition = position;
+}
+
+int CGameController::GetCurrentInventoryMenuPosition()
+{
+	return m_currentInventoryMenuPosition;
+}
+
+void CGameController::SetCurrentInventorySectionNumber(int sectionNumber)
+{
+	m_currentInventorySectionNumber = sectionNumber;
+}
+
+int CGameController::GetCurrentInventorySectionNumber()
+{
+	return m_currentInventorySectionNumber;
+}
+
+void CGameController::SetSelectedInventoryItemNumber(int itemNumber)
+{
+	m_selectedInventoryItemNumber = itemNumber;
+}
+
+int CGameController::GetSelectedInventoryItemNumber()
+{
+	return m_selectedInventoryItemNumber;
+}
+
+void CGameController::UpdateHeroInventory(EntityId heroId, const std::vector<InventoryItem>& items)
+{
+	m_allHeroesInventory[heroId] = items;
+}
+
+std::unordered_map<EntityId, std::vector<InventoryItem>> CGameController::GetAllHeroesInventory()
+{
+	return m_allHeroesInventory;
+}
+
+void CGameController::RemoveItemFromHeroInventory(EntityId heroId, int itemIndex)
+{
+	auto it = m_allHeroesInventory.find(heroId);
+	if (it == m_allHeroesInventory.end())
+	{
+		return;
+	}
+	if (itemIndex < 0 || itemIndex >= it->second.size())
+	{
+		return;
+	}
+
+	it->second.erase(it->second.begin() + itemIndex);
 }

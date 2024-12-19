@@ -1,8 +1,9 @@
 #include "CEntityManager.h"
 #include "CGameController.h"
+#include "assets_storage/CTextureStorage.h"
 #include "common/Utils.h"
 #include "common/level_generator/CLevelGenerator.h"
-#include "storage/CTextureStorage.h"
+#include "inventory/items_factory/CInventoryItemsFactory.h"
 #include "systems/event/CEventSystem.h"
 #include <SFML/Graphics.hpp>
 
@@ -21,13 +22,13 @@ void HandleEvents(sf::RenderWindow& window, CGameController& gameController)
 		if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
 		{
 			sf::Vector2f mousePos = window.mapPixelToCoords(sf::Vector2i(event.mouseButton.x, event.mouseButton.y));
-			CEventSystem::handleMouseClick(gameController, mousePos);
+			CEventSystem::HandleMouseClick(gameController, mousePos);
 		}
 
 		if (event.type == sf::Event::KeyPressed)
 		{
 			movementKeyPressed = true;
-			CEventSystem::handleKeyPress(gameController, event.key.code);
+			CEventSystem::HandleKeyPress(gameController, event.key.code);
 		}
 	}
 
@@ -53,6 +54,7 @@ int main()
 		windowSettings.windowTitle);
 	window.setFramerateLimit(30);
 	CGameController gameController;
+	CInventoryItemsFactory factory;
 	auto& entityManager = CEntityManager::GetInstance();
 
 	EntityId camera = entityManager.CreateEntity();
@@ -66,7 +68,20 @@ int main()
 	auto mapTexture = CTextureStorage::GetTexture("map_fieldOfHopesAndDreams.png");
 	auto level = CLevelGenerator::GenerateLevel("level1.txt");
 
-	CGameController::SetGameState(CurrentState::MainMenu);
+	CGameController::SetGameState(CurrentState::Inventory);
+
+	factory.RegisterItem(ItemType::HealingPotion, [](int ownerId) {
+		return std::make_unique<InventoryItem>("Heal potion", ItemType::HealingPotion, ownerId);
+	});
+	factory.RegisterItem(ItemType::DamagePotion, [](int ownerId) {
+		return std::make_unique<InventoryItem>("Damage potion", ItemType::DamagePotion, ownerId);
+	});
+	factory.RegisterItem(ItemType::DefensePotion, [](int ownerId) {
+		return std::make_unique<InventoryItem>("Defence potion", ItemType::DefensePotion, ownerId);
+	});
+	factory.RegisterItem(ItemType::ManaPotion, [](int ownerId) {
+		return std::make_unique<InventoryItem>("Mana potion", ItemType::ManaPotion, ownerId);
+	});
 
 	EntityId hero1 = entityManager.CreateEntity();
 	entityManager.AddComponent<SelectionComponent>(hero1);
@@ -77,12 +92,19 @@ int main()
 	entityManager.AddComponent<CollisionComponent>(hero1, CollisionType::Character);
 	entityManager.AddComponent<MassComponent>(hero1, 50);
 	entityManager.AddComponent<RotationComponent>(hero1, 0);
-	entityManager.AddComponent<HealthComponent>(hero1, 100, 100);
+	entityManager.AddComponent<HealthComponent>(hero1, 50, 100);
 	entityManager.AddComponent<ManaComponent>(hero1, 40, 100);
 	entityManager.AddComponent<AvatarComponent>(hero1, "hero1_avatar.png");
 	entityManager.AddComponent<ExperienceComponent>(hero1, 0, 100, 1);
 	entityManager.AddComponent<AnimationComponent>(hero1, hero1Sprites);
 	entityManager.AddComponent<FightTurnComponent>(hero1, false, false);
+	entityManager.AddComponent<MoneyComponent>(hero1, 100);
+
+	std::vector<InventoryItem> hero1InventoryItems;
+	hero1InventoryItems.push_back(*factory.CreateInventoryItem(ItemType::HealingPotion, hero1));
+	hero1InventoryItems.push_back(*factory.CreateInventoryItem(ItemType::HealingPotion, hero1));
+
+	entityManager.AddComponent<InventoryComponent>(hero1, hero1InventoryItems, 6);
 
 	auto* hero1AnimComp = entityManager.GetComponent<AnimationComponent>(hero1);
 	hero1AnimComp->AddAnimation("idle", 6, 1563, 6, sf::Vector2i(35, 37), 0.15f);
@@ -101,12 +123,18 @@ int main()
 	entityManager.AddComponent<CollisionComponent>(hero2, CollisionType::Character);
 	entityManager.AddComponent<MassComponent>(hero2, 50);
 	entityManager.AddComponent<RotationComponent>(hero2, 0);
-	entityManager.AddComponent<HealthComponent>(hero2, 100, 100);
+	entityManager.AddComponent<HealthComponent>(hero2, 30, 100);
 	entityManager.AddComponent<ManaComponent>(hero2, 90, 100);
 	entityManager.AddComponent<AvatarComponent>(hero2, "hero2_avatar.png");
 	entityManager.AddComponent<ExperienceComponent>(hero2, 80, 100, 1);
 	entityManager.AddComponent<AnimationComponent>(hero2, hero2Sprites);
 	entityManager.AddComponent<FightTurnComponent>(hero2, false, true);
+
+	std::vector<InventoryItem> hero2InventoryItems;
+	hero2InventoryItems.push_back(*factory.CreateInventoryItem(ItemType::ManaPotion, hero2));
+	hero2InventoryItems.push_back(*factory.CreateInventoryItem(ItemType::DamagePotion, hero2));
+
+	entityManager.AddComponent<InventoryComponent>(hero2, hero2InventoryItems, 6);
 
 	auto* hero2AnimComp = entityManager.GetComponent<AnimationComponent>(hero2);
 	hero2AnimComp->AddAnimation("idle", 5, 505, 5, sf::Vector2i(49, 40), 0.15f);
@@ -125,7 +153,7 @@ int main()
 	entityManager.AddComponent<ImageComponent>(box, mapTexture, 547, 15, sf::Vector2i(20, 20));
 
 	EntityId mainMenuSoul = entityManager.CreateEntity();
-	entityManager.AddComponent<PositionComponent>(mainMenuSoul, 700, 700);
+	entityManager.AddComponent<PositionComponent>(mainMenuSoul, window.getSize().x / 2 + 20, window.getSize().y / 2 + 140);
 	entityManager.AddComponent<MenuSoulComponent>(mainMenuSoul);
 	entityManager.AddComponent<VelocityComponent>(mainMenuSoul, 0, 0);
 	entityManager.AddComponent<ImageComponent>(mainMenuSoul, menuSoul, 0, 0, sf::Vector2i(225, 225));

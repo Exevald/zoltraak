@@ -17,3 +17,16 @@ enum class FightAction
 	Spare,
 	Magic
 };
+
+enum class InventoryState
+{
+	MenuSectionSelection,
+	ItemActionSelection,
+	ItemSelection,
+};
+
+enum class InventoryAction
+{
+	Use,
+	Drop,
+};

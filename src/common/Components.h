@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Utils.h"
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
 #include <utility>
@@ -248,23 +249,24 @@ struct FightTurnComponent : IComponent
 	}
 };
 
-enum class ItemType
-{
-	HealingPotion,
-	ManaPotion,
-	DamagePotion,
-	DefensePotion,
-};
-
-struct InventoryItem
-{
-	std::string name;
-	ItemType type;
-	int quantity;
-};
-
 struct InventoryComponent : IComponent
 {
 	std::vector<InventoryItem> items;
 	int size;
+
+	explicit InventoryComponent(const std::vector<InventoryItem>& items, int size)
+		: items(items)
+		, size(size)
+	{
+	}
+};
+
+struct MoneyComponent : IComponent
+{
+	int money;
+
+	explicit MoneyComponent(int money)
+		: money(money)
+	{
+	}
 };

@@ -41,8 +41,8 @@ include_directories(
 add_executable(
         zoltraak
 
-        src/common/storage/CTextureStorage.cpp
-        src/common/storage/CFontStorage.cpp
+        src/common/assets_storage/CTextureStorage.cpp
+        src/common/assets_storage/CFontStorage.cpp
         src/common/level_generator/CLevelGenerator.cpp
         src/common/gif_converter/CGifConverter.cpp
 

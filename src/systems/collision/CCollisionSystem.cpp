@@ -114,8 +114,8 @@ void CCollisionSystem::HandleCollision(EntityId movedEntityId, EntityId otherEnt
 		newX += adjustedVx;
 	}
 
-	newX = std::max(0.f, std::min(newX, float(CGameController::GetWindowSizeSettings().x) - 20));
-	newY = std::max(0.f, std::min(newY, float(CGameController::GetWindowSizeSettings().y) - 20));
+	newX = std::max(0.f, std::min(newX, float(CGameController::GetGameSizeSettings().x) - 20));
+	newY = std::max(0.f, std::min(newY, float(CGameController::GetGameSizeSettings().y) - 20));
 
 	otherPositionComp->x = newX;
 	otherPositionComp->y = newY;
