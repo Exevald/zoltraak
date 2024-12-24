@@ -32,6 +32,9 @@ int CGameController::m_currentInventoryMenuPosition = 0;
 int CGameController::m_currentInventorySectionNumber = 0;
 int CGameController::m_selectedInventoryItemNumber = 0;
 std::unordered_map<EntityId, std::vector<InventoryItem>> CGameController::m_allHeroesInventory;
+int CGameController::m_activeInventoryCharacterNumber = 1;
+EquipmentType CGameController::m_currentEquipmentType = EquipmentType::Weapon;
+int CGameController::m_currentEquipmentItemNumber = 0;
 
 void CGameController::InitGameSettings(const Level& level)
 {
@@ -269,4 +272,34 @@ void CGameController::RemoveItemFromHeroInventory(EntityId heroId, int itemIndex
 	}
 
 	it->second.erase(it->second.begin() + itemIndex);
+}
+
+void CGameController::SetActiveInventoryCharacterNumber(int activeCharacterNumber)
+{
+	m_activeInventoryCharacterNumber = activeCharacterNumber;
+}
+
+int CGameController::GetActiveInventoryCharacterNumber()
+{
+	return m_activeInventoryCharacterNumber;
+}
+
+void CGameController::SetCurrentInventoryEquipmentType(const EquipmentType& type)
+{
+	m_currentEquipmentType = type;
+}
+
+EquipmentType CGameController::GetCurrentEquipmentType()
+{
+	return m_currentEquipmentType;
+}
+
+void CGameController::SetCurrentInventoryEquipmentItemNumber(int number)
+{
+	m_currentEquipmentItemNumber = number;
+}
+
+int CGameController::GetCurrentEquipmentItemNumber()
+{
+	return m_currentEquipmentItemNumber;
 }

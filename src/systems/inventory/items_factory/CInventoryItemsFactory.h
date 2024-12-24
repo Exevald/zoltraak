@@ -1,30 +1,40 @@
-#pragma once
-
-#include "../../../common/Utils.h"
-#include <functional>
-#include <memory>
-#include <unordered_map>
-
 class CInventoryItemsFactory
 {
 public:
-	std::unique_ptr<InventoryItem> CreateInventoryItem(const ItemType& itemType, int ownerId) const
+	template <typename T>
+	void RegisterItem(const std::string& name, std::function<std::unique_ptr<T>(int)> creator)
 	{
-		auto it = creators.find(itemType);
-		if (it != creators.end())
+		if (m_creators.find(name) != m_creators.end())
 		{
-			return it->second(ownerId);
+			throw std::runtime_error("Item with name '" + name + "' is already registered.");
 		}
-		return nullptr;
+
+		m_creators[name] = [creator](int ownerId) -> std::unique_ptr<InventoryItem> {
+			return creator(ownerId);
+		};
+
+		m_registeredTypes[name] = typeid(T).hash_code();
 	}
 
-	void RegisterItem(const ItemType& itemType, std::function<std::unique_ptr<InventoryItem>(int)> creator)
+	template <typename T>
+	std::unique_ptr<T> CreateInventoryItem(const std::string& name, int ownerId) const
 	{
-		creators[itemType] = std::move(creator);
+		auto it = m_creators.find(name);
+		if (it != m_creators.end())
+		{
+			if (m_registeredTypes.at(name) != typeid(T).hash_code())
+			{
+				throw std::runtime_error("Type mismatch for item '" + name + "'.");
+			}
+
+			return std::unique_ptr<T>(static_cast<T*>(it->second(ownerId).release()));
+		}
+		throw std::runtime_error("Item '" + name + "' not found in the factory.");
 	}
 
 	~CInventoryItemsFactory() = default;
 
 private:
-	std::unordered_map<ItemType, std::function<std::unique_ptr<InventoryItem>(int)>> creators;
+	std::unordered_map<std::string, std::function<std::unique_ptr<InventoryItem>(int)>> m_creators;
+	std::unordered_map<std::string, size_t> m_registeredTypes;
 };

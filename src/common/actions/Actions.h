@@ -18,15 +18,23 @@ enum class FightAction
 	Magic
 };
 
+enum class EquipmentType
+{
+	Weapon,
+	Shield,
+};
+
 enum class InventoryState
 {
 	MenuSectionSelection,
 	ItemActionSelection,
 	ItemSelection,
+	EquipmentTypeSelection,
+	EquipmentItemSelection,
 };
 
 enum class InventoryAction
 {
 	Use,
-	Drop,
+	Destroy,
 };

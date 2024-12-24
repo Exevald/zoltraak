@@ -56,6 +56,9 @@ public:
 	static void SetSelectedInventoryItemNumber(int itemNumber);
 	static void UpdateHeroInventory(EntityId heroId, const std::vector<InventoryItem>& items);
 	static void RemoveItemFromHeroInventory(EntityId heroId, int itemIndex);
+	static void SetActiveInventoryCharacterNumber(int activeCharacterNumber);
+	static void SetCurrentInventoryEquipmentType(const EquipmentType& type);
+	static void SetCurrentInventoryEquipmentItemNumber(int number);
 
 	static float GetElapsedTIme();
 	static SaveInfo GetSaveInfo(int saveNumber);
@@ -72,6 +75,9 @@ public:
 	static int GetCurrentInventorySectionNumber();
 	static int GetSelectedInventoryItemNumber();
 	static std::unordered_map<EntityId, std::vector<InventoryItem>> GetAllHeroesInventory();
+	static int GetActiveInventoryCharacterNumber();
+	static EquipmentType GetCurrentEquipmentType();
+	static int GetCurrentEquipmentItemNumber();
 
 private:
 	EntityId m_selectedEntityId{};
@@ -90,6 +96,9 @@ private:
 	static int m_currentInventorySectionNumber;
 	static int m_selectedInventoryItemNumber;
 	static std::unordered_map<EntityId, std::vector<InventoryItem>> m_allHeroesInventory;
+	static int m_activeInventoryCharacterNumber;
+	static EquipmentType m_currentEquipmentType;
+	static int m_currentEquipmentItemNumber;
 
 	static std::string GetSaveFileName(int saveNumber);
 };

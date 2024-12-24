@@ -941,7 +941,7 @@ void CViewSystem::DrawInventory()
 	for (auto heroId : heroesWithInventory)
 	{
 		auto heroInventory = entityManager.GetComponent<InventoryComponent>(heroId);
-		CGameController::UpdateHeroInventory(heroId, heroInventory->items);
+		CGameController::UpdateHeroInventory(heroId, heroInventory->commonItems);
 	}
 
 	m_inventory.sectionTitle.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
@@ -985,6 +985,12 @@ void CViewSystem::DrawInventory()
 	m_inventory.inventoryMenuSoul.setTexture(CTextureStorage::GetTexture("menu_soul.png"));
 	m_inventory.inventoryMenuSoul.setScale(0.125f, 0.125f);
 
+	auto activeCharacterNameComp = entityManager.GetComponent<NameComponent>(CGameController::GetActiveInventoryCharacterNumber());
+	m_inventory.heroName.setFont(font);
+	m_inventory.heroName.setCharacterSize(45);
+	m_inventory.heroName.setString(activeCharacterNameComp->name);
+	m_inventory.heroName.setPosition(m_inventory.inventoryMenu.getPosition().x + 180, m_inventory.inventoryMenu.getPosition().y + 60);
+
 	switch (currentInventorySectionNumber)
 	{
 	case 0: {
@@ -996,23 +1002,24 @@ void CViewSystem::DrawInventory()
 			{
 				m_inventory.inventoryMenuSoul.setPosition(m_inventory.inventoryMenu.getPosition().x + 310, m_inventory.inventoryMenu.getPosition().y + 92);
 			}
-			if (m_currentInventoryItemAction == InventoryAction::Drop)
+			if (m_currentInventoryItemAction == InventoryAction::Destroy)
 			{
-				m_inventory.inventoryMenuSoul.setPosition(m_inventory.inventoryMenu.getPosition().x + 560, m_inventory.inventoryMenu.getPosition().y + 92);
+				m_inventory.inventoryMenuSoul.setPosition(m_inventory.inventoryMenu.getPosition().x + 530, m_inventory.inventoryMenu.getPosition().y + 92);
 			}
 		}
+		m_inventory.heroName.setPosition(-200, -200);
 		break;
 	}
 	case 1: {
 		m_inventory.sectionTitle.setTextureRect(sf::IntRect(117, 103, 35, 18));
 		m_inventory.inventoryMenu.setTextureRect(sf::IntRect(841, 171, 270, 170));
-		m_inventory.inventoryMenuSoul.setPosition(m_inventory.inventoryMenu.getPosition().x + 200, m_inventory.inventoryMenu.getPosition().y + 92);
+		m_inventory.inventoryMenuSoul.setPosition(-200, -200);
 		break;
 	}
 	case 2: {
 		m_inventory.sectionTitle.setTextureRect(sf::IntRect(117, 128, 35, 18));
 		m_inventory.inventoryMenu.setTextureRect(sf::IntRect(841, 346, 270, 170));
-		m_inventory.inventoryMenuSoul.setPosition(m_inventory.inventoryMenu.getPosition().x + 200, m_inventory.inventoryMenu.getPosition().y + 92);
+		m_inventory.inventoryMenuSoul.setPosition(-200, -200);
 		break;
 	}
 	default:
@@ -1027,14 +1034,38 @@ void CViewSystem::DrawInventory()
 		useInventoryItemText.setString("USE");
 		useInventoryItemText.setPosition(m_inventory.inventoryMenu.getPosition().x + 350, m_inventory.inventoryMenu.getPosition().y + 70);
 
-		sf::Text dropInventoryItemText;
-		dropInventoryItemText.setFont(font);
-		dropInventoryItemText.setCharacterSize(50);
-		dropInventoryItemText.setString("DROP");
-		dropInventoryItemText.setPosition(m_inventory.inventoryMenu.getPosition().x + 600, m_inventory.inventoryMenu.getPosition().y + 70);
+		sf::Text destroyInventoryItemText;
+		destroyInventoryItemText.setFont(font);
+		destroyInventoryItemText.setCharacterSize(50);
+		destroyInventoryItemText.setString("DESTROY");
+		destroyInventoryItemText.setPosition(m_inventory.inventoryMenu.getPosition().x + 570, m_inventory.inventoryMenu.getPosition().y + 70);
 
 		m_inventory.inventoryItemMenuActions.push_back(useInventoryItemText);
-		m_inventory.inventoryItemMenuActions.push_back(dropInventoryItemText);
+		m_inventory.inventoryItemMenuActions.push_back(destroyInventoryItemText);
+	}
+
+	float offsetX = 0;
+	if (m_inventory.heroIcons.empty())
+	{
+		auto charactersWithIcons = entityManager.GetEntitiesWithComponents<AvatarComponent>();
+		std::sort(charactersWithIcons.begin(), charactersWithIcons.end());
+
+		for (const auto& characterId : charactersWithIcons)
+		{
+			auto characterIconComp = entityManager.GetComponent<AvatarComponent>(characterId);
+			if (!characterIconComp)
+			{
+				continue;
+			}
+			sf::Sprite heroIcon;
+			heroIcon.setTexture(CTextureStorage::GetTexture(characterIconComp->avatarFilePath));
+			heroIcon.setPosition(m_inventory.inventoryMenu.getPosition().x + 110 + offsetX, m_inventory.inventoryMenu.getPosition().y + 160);
+			heroIcon.setScale(3.5f, 3.5f);
+			heroIcon.setColor(sf::Color(255, 255, 255, 80));
+
+			m_inventory.heroIcons[characterId] = heroIcon;
+			offsetX += 150;
+		}
 	}
 
 	const float totalWidth = 289 * 3;
@@ -1052,7 +1083,7 @@ void CViewSystem::DrawInventory()
 		HeroInfoCard heroFightCard;
 		heroFightCard.area.setSize({ cardWidth, 70.f });
 		heroFightCard.area.setPosition({ m_inventory.inventoryMenu.getPosition().x + 80 + xOffset,
-			m_inventory.inventoryMenu.getPosition().y + 750 });
+			m_inventory.inventoryMenu.getPosition().y + 720 });
 		heroFightCard.area.setFillColor(sf::Color::Black);
 		heroFightCard.area.setOutlineThickness(2);
 		heroFightCard.area.setOutlineColor(colorThemeComp->colorTheme);
@@ -1089,6 +1120,8 @@ void CViewSystem::DrawInventory()
 	}
 
 	CViewSystem::UpdateInventoryItems();
+	CViewSystem::UpdateHeroStats();
+	CViewSystem::UpdateHeroEquipment();
 
 	for (int i = 0; i < m_inventory.inventorySections.size(); i++)
 	{
@@ -1144,8 +1177,59 @@ void CViewSystem::DrawInventory()
 		}
 	}
 
+	if (currentInventorySectionNumber == 1 || currentInventorySectionNumber == 2)
+	{
+		for (auto [characterId, icon] : m_inventory.heroIcons)
+		{
+			if (characterId == CGameController::GetActiveInventoryCharacterNumber())
+			{
+				icon.setScale(4.f, 4.f);
+				icon.setColor(sf::Color(255, 255, 255, 255));
+			}
+			m_window.draw(icon);
+		}
+	}
+
 	if (currentInventorySectionNumber == 1)
 	{
+		m_window.draw(m_inventory.heroName);
+		m_window.draw(m_inventory.activeWeaponInfo);
+		m_window.draw(m_inventory.activeShieldInfo);
+
+		for (const auto& statText : m_inventory.heroStats)
+		{
+			m_window.draw(statText);
+		}
+
+		switch (CGameController::GetCurrentEquipmentType())
+		{
+		case EquipmentType::Weapon: {
+			for (int i = 0; i < m_inventory.characterWeapons.size(); i++)
+			{
+				auto weapon = m_inventory.characterWeapons[i];
+				if (i == CGameController::GetCurrentEquipmentItemNumber() && m_currentInventoryState == InventoryState::EquipmentItemSelection)
+				{
+					weapon.setFillColor(sf::Color::Yellow);
+				}
+
+				m_window.draw(weapon);
+			}
+			break;
+		}
+		case EquipmentType::Shield: {
+			for (int i = 0; i < m_inventory.characterShields.size(); i++)
+			{
+				auto shield = m_inventory.characterShields[i];
+				if (i == CGameController::GetCurrentEquipmentItemNumber() && m_currentInventoryState == InventoryState::EquipmentItemSelection)
+				{
+					shield.setFillColor(sf::Color::Yellow);
+				}
+
+				m_window.draw(shield);
+			}
+			break;
+		}
+		}
 	}
 
 	for (const auto& info : m_inventory.heroesInfo)
@@ -1190,5 +1274,113 @@ void CViewSystem::UpdateInventoryItems()
 				column++;
 			}
 		}
+	}
+}
+
+void CViewSystem::UpdateHeroStats()
+{
+	m_inventory.heroStats.clear();
+
+	auto& entityManager = CEntityManager::GetInstance();
+	auto attackComp = entityManager.GetComponent<AttackComponent>(CGameController::GetActiveInventoryCharacterNumber());
+	auto defenseComp = entityManager.GetComponent<DefenseComponent>(CGameController::GetActiveInventoryCharacterNumber());
+	auto magicComp = entityManager.GetComponent<MagicComponent>(CGameController::GetActiveInventoryCharacterNumber());
+
+	if (!attackComp || !defenseComp || !magicComp)
+	{
+		return;
+	}
+
+	sf::Text attackInfo;
+	attackInfo.setFont(font);
+	attackInfo.setCharacterSize(45);
+	attackInfo.setString("Attack:     " + std::to_string(attackComp->attackValue));
+	attackInfo.setPosition(m_inventory.inventoryMenu.getPosition().x + 60, m_inventory.inventoryMenu.getPosition().x + 100);
+
+	sf::Text defenseInfo;
+	defenseInfo.setFont(font);
+	defenseInfo.setCharacterSize(45);
+	defenseInfo.setString("Defense:   " + std::to_string(defenseComp->defenseValue));
+	defenseInfo.setPosition(m_inventory.inventoryMenu.getPosition().x + 60, m_inventory.inventoryMenu.getPosition().x + 150);
+
+	sf::Text magicInfo;
+	magicInfo.setFont(font);
+	magicInfo.setCharacterSize(45);
+	magicInfo.setString("Magic:        " + std::to_string(magicComp->magicValue));
+	magicInfo.setPosition(m_inventory.inventoryMenu.getPosition().x + 60, m_inventory.inventoryMenu.getPosition().x + 200);
+
+	m_inventory.heroStats.push_back(attackInfo);
+	m_inventory.heroStats.push_back(defenseInfo);
+	m_inventory.heroStats.push_back(magicInfo);
+}
+
+void CViewSystem::UpdateHeroEquipment()
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	auto selectedCharacterInventoryComp = entityManager.GetComponent<InventoryComponent>(CGameController::GetActiveInventoryCharacterNumber());
+	if (!selectedCharacterInventoryComp)
+	{
+		return;
+	}
+
+	m_inventory.activeWeaponInfo.setFont(font);
+	m_inventory.activeWeaponInfo.setCharacterSize(40);
+	m_inventory.activeWeaponInfo.setString("Weapon: " + selectedCharacterInventoryComp->activeWeapon.name);
+	m_inventory.activeWeaponInfo.setPosition(m_inventory.inventoryMenu.getPosition().x + 500, m_inventory.inventoryMenu.getPosition().y + 60);
+	m_inventory.activeWeaponInfo.setFillColor(sf::Color::White);
+
+	m_inventory.activeShieldInfo.setFont(font);
+	m_inventory.activeShieldInfo.setCharacterSize(40);
+	m_inventory.activeShieldInfo.setString("Shield: " + selectedCharacterInventoryComp->activeShield.name);
+	m_inventory.activeShieldInfo.setPosition(m_inventory.inventoryMenu.getPosition().x + 500, m_inventory.inventoryMenu.getPosition().y + 110);
+	m_inventory.activeShieldInfo.setFillColor(sf::Color::White);
+
+	switch (CGameController::GetCurrentEquipmentType())
+	{
+	case EquipmentType::Weapon: {
+		m_inventory.activeWeaponInfo.setFillColor(sf::Color::Yellow);
+		break;
+	}
+	case EquipmentType::Shield: {
+		m_inventory.activeShieldInfo.setFillColor(sf::Color::Yellow);
+		break;
+	}
+	}
+
+	m_inventory.characterWeapons.clear();
+	m_inventory.characterShields.clear();
+	float yOffset = 0;
+
+	for (const auto& weapon : selectedCharacterInventoryComp->weapons)
+	{
+		if (weapon.name == selectedCharacterInventoryComp->activeWeapon.name && weapon.ownerId == selectedCharacterInventoryComp->activeWeapon.ownerId)
+		{
+			continue;
+		}
+		sf::Text weaponText;
+		weaponText.setFont(font);
+		weaponText.setCharacterSize(40);
+		weaponText.setString(weapon.name);
+		weaponText.setPosition(m_inventory.inventoryMenu.getPosition().x + 600, m_inventory.inventoryMenu.getPosition().y + 320 + yOffset);
+
+		yOffset += 50;
+		m_inventory.characterWeapons.push_back(weaponText);
+	}
+
+	yOffset = 0;
+	for (const auto& shield : selectedCharacterInventoryComp->shields)
+	{
+		if (shield.name == selectedCharacterInventoryComp->activeShield.name && shield.ownerId == selectedCharacterInventoryComp->activeShield.ownerId)
+		{
+			continue;
+		}
+		sf::Text shieldText;
+		shieldText.setFont(font);
+		shieldText.setCharacterSize(40);
+		shieldText.setString(shield.name);
+		shieldText.setPosition(m_inventory.inventoryMenu.getPosition().x + 600, m_inventory.inventoryMenu.getPosition().y + 320 + yOffset);
+
+		yOffset += 50;
+		m_inventory.characterShields.push_back(shieldText);
 	}
 }

@@ -146,6 +146,38 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 	{
 		switch (key)
 		{
+		case sf::Keyboard::Up: {
+			if (m_currentInventoryState == InventoryState::EquipmentTypeSelection)
+			{
+				CGameController::SetCurrentInventoryEquipmentType(EquipmentType::Weapon);
+			}
+			if (m_currentInventoryState == InventoryState::EquipmentItemSelection)
+			{
+				int newEquipmentItemNumber = CGameController::GetCurrentEquipmentItemNumber() - 1;
+				if (newEquipmentItemNumber < 0)
+				{
+					newEquipmentItemNumber = 0;
+				}
+				CGameController::SetCurrentInventoryEquipmentItemNumber(newEquipmentItemNumber);
+			}
+			break;
+		}
+		case sf::Keyboard::Down: {
+			if (m_currentInventoryState == InventoryState::EquipmentTypeSelection)
+			{
+				CGameController::SetCurrentInventoryEquipmentType(EquipmentType::Shield);
+			}
+			if (m_currentInventoryState == InventoryState::EquipmentItemSelection)
+			{
+				int newEquipmentItemNumber = CGameController::GetCurrentEquipmentItemNumber() + 1;
+				if (newEquipmentItemNumber > 6)
+				{
+					newEquipmentItemNumber = 6;
+				}
+				CGameController::SetCurrentInventoryEquipmentItemNumber(newEquipmentItemNumber);
+			}
+			break;
+		}
 		case sf::Keyboard::W: {
 			if (m_currentInventoryState != InventoryState::ItemSelection)
 			{
@@ -197,19 +229,9 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 			if (m_currentInventoryState != InventoryState::ItemSelection)
 			{
 				auto newInventoryMenuPosition = CGameController::GetCurrentInventoryMenuPosition() + 1;
-				if (CGameController::GetCurrentInventorySectionNumber() == 0)
+				if (newInventoryMenuPosition > 1)
 				{
-					if (newInventoryMenuPosition > 1)
-					{
-						newInventoryMenuPosition = 1;
-					}
-				}
-				else
-				{
-					if (newInventoryMenuPosition > 2)
-					{
-						newInventoryMenuPosition = 2;
-					}
+					newInventoryMenuPosition = 1;
 				}
 
 				InventoryState state;
@@ -256,6 +278,18 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 		case sf::Keyboard::A: {
 			if (CGameController::GetCurrentInventoryMenuPosition() == 0)
 			{
+				if (CGameController::GetCurrentInventorySectionNumber() == 1)
+				{
+					SEvent inventoryStateChangedEvent;
+					InventoryStateChangedEventData eventData{};
+
+					eventData.changedState = InventoryState::EquipmentTypeSelection;
+					inventoryStateChangedEvent.type = EventType::InventoryStateChanged;
+					inventoryStateChangedEvent.data = eventData;
+
+					CEventDispatcher::GetInstance().Dispatch(inventoryStateChangedEvent);
+				}
+
 				auto newInventoryMenuSectionNumber = CGameController::GetCurrentInventorySectionNumber() - 1;
 				if (newInventoryMenuSectionNumber < 0)
 				{
@@ -274,11 +308,32 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 
 				CEventDispatcher::GetInstance().Dispatch(inventoryActionChangedEvent);
 			}
+			if (CGameController::GetCurrentInventoryMenuPosition() == 1 && (CGameController::GetCurrentInventorySectionNumber() == 1 || CGameController::GetCurrentInventorySectionNumber() == 2))
+			{
+				int newActiveInventoryCharacterNumber = CGameController::GetActiveInventoryCharacterNumber() - 1;
+				if (newActiveInventoryCharacterNumber < 1)
+				{
+					newActiveInventoryCharacterNumber = 1;
+				}
+				CGameController::SetActiveInventoryCharacterNumber(newActiveInventoryCharacterNumber);
+			}
 			break;
 		}
 		case sf::Keyboard::D: {
 			if (CGameController::GetCurrentInventoryMenuPosition() == 0)
 			{
+				if (CGameController::GetCurrentInventorySectionNumber() == 1)
+				{
+					SEvent inventoryStateChangedEvent;
+					InventoryStateChangedEventData eventData{};
+
+					eventData.changedState = InventoryState::EquipmentTypeSelection;
+					inventoryStateChangedEvent.type = EventType::InventoryStateChanged;
+					inventoryStateChangedEvent.data = eventData;
+
+					CEventDispatcher::GetInstance().Dispatch(inventoryStateChangedEvent);
+				}
+
 				auto newInventoryMenuSectionNumber = CGameController::GetCurrentInventorySectionNumber() + 1;
 				if (newInventoryMenuSectionNumber > 2)
 				{
@@ -291,15 +346,60 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 				SEvent inventoryActionChangedEvent;
 				InventoryActionChangedEventData eventData{};
 
-				eventData.selectedAction = InventoryAction::Drop;
+				eventData.selectedAction = InventoryAction::Destroy;
 				inventoryActionChangedEvent.type = EventType::InventoryActionChanged;
 				inventoryActionChangedEvent.data = eventData;
 
 				CEventDispatcher::GetInstance().Dispatch(inventoryActionChangedEvent);
 			}
+			if (CGameController::GetCurrentInventoryMenuPosition() == 1 && (CGameController::GetCurrentInventorySectionNumber() == 1 || CGameController::GetCurrentInventorySectionNumber() == 2))
+			{
+				int newActiveInventoryCharacterNumber = CGameController::GetActiveInventoryCharacterNumber() + 1;
+				if (newActiveInventoryCharacterNumber > 2)
+				{
+					newActiveInventoryCharacterNumber = 2;
+				}
+				CGameController::SetActiveInventoryCharacterNumber(newActiveInventoryCharacterNumber);
+			}
 			break;
 		}
 		case sf::Keyboard::Enter: {
+			if (m_currentInventoryState == InventoryState::EquipmentItemSelection)
+			{
+				SEvent inventoryItemEquipped;
+				InventoryItemEquippedEventData eventData{};
+				ItemType type;
+				switch (CGameController::GetCurrentEquipmentType())
+				{
+				case EquipmentType::Weapon: {
+					type = ItemType::Weapon;
+					break;
+				}
+				case EquipmentType::Shield: {
+					type = ItemType::Shield;
+					break;
+				}
+				}
+
+				eventData.ownerId = CGameController::GetActiveInventoryCharacterNumber();
+				eventData.itemNumber = CGameController::GetCurrentEquipmentItemNumber();
+				eventData.type = type;
+				inventoryItemEquipped.type = EventType::InventoryItemEquipped;
+				inventoryItemEquipped.data = eventData;
+
+				CEventDispatcher::GetInstance().Dispatch(inventoryItemEquipped);
+			}
+			if (m_currentInventoryState == InventoryState::EquipmentTypeSelection)
+			{
+				SEvent inventoryStateChangedEvent;
+				InventoryStateChangedEventData eventData{};
+
+				eventData.changedState = InventoryState::EquipmentItemSelection;
+				inventoryStateChangedEvent.type = EventType::InventoryStateChanged;
+				inventoryStateChangedEvent.data = eventData;
+
+				CEventDispatcher::GetInstance().Dispatch(inventoryStateChangedEvent);
+			}
 			if (m_currentInventoryState == InventoryState::ItemSelection)
 			{
 				auto itemActionEvent = CEventDispatcher::GetInstance().GetLastEvent(EventType::InventoryActionChanged);
@@ -346,6 +446,17 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 				InventoryStateChangedEventData inventoryStateChangedEventData{};
 
 				inventoryStateChangedEventData.changedState = InventoryState::ItemActionSelection;
+				inventoryStateChangedEvent.type = EventType::InventoryStateChanged;
+				inventoryStateChangedEvent.data = inventoryStateChangedEventData;
+
+				CEventDispatcher::GetInstance().Dispatch(inventoryStateChangedEvent);
+			}
+			if (m_currentInventoryState == InventoryState::EquipmentItemSelection)
+			{
+				SEvent inventoryStateChangedEvent;
+				InventoryStateChangedEventData inventoryStateChangedEventData{};
+
+				inventoryStateChangedEventData.changedState = InventoryState::EquipmentTypeSelection;
 				inventoryStateChangedEvent.type = EventType::InventoryStateChanged;
 				inventoryStateChangedEvent.data = inventoryStateChangedEventData;
 

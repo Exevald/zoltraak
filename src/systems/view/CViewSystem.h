@@ -80,7 +80,7 @@ struct Inventory
 	std::vector<sf::Sprite> inventorySections;
 	sf::Sprite inventoryMenu;
 	sf::Text money;
-	std::vector<sf::Sprite> heroIcons;
+	std::unordered_map<EntityId, sf::Sprite> heroIcons;
 	sf::Sprite inventoryMenuSoul;
 	sf::Text heroDescription;
 	std::vector<sf::Text> heroStats;
@@ -88,6 +88,11 @@ struct Inventory
 	std::unordered_map<int, sf::Text> inventoryItems;
 	std::unordered_map<int, HeroInfoCard> heroesInfo;
 	sf::Text heroName;
+	sf::Text activeWeaponInfo;
+	sf::Text activeShieldInfo;
+	std::vector<sf::Text> spellsInfo;
+	std::vector<sf::Text> characterWeapons;
+	std::vector<sf::Text> characterShields;
 };
 
 class CViewSystem
@@ -137,6 +142,8 @@ private:
 	void SetMagicText();
 	void DrawInventory();
 	void UpdateInventoryItems();
+	void UpdateHeroStats();
+	void UpdateHeroEquipment();
 
 	sf::RenderWindow& m_window;
 	Level& m_level;

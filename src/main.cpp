@@ -70,17 +70,100 @@ int main()
 
 	CGameController::SetGameState(CurrentState::Inventory);
 
-	factory.RegisterItem(ItemType::HealingPotion, [](int ownerId) {
-		return std::make_unique<InventoryItem>("Heal potion", ItemType::HealingPotion, ownerId);
+	factory.RegisterItem<HealPotionItem>("Small heal potion", [](int ownerId) {
+		return std::make_unique<HealPotionItem>(ownerId, "Small heal potion", 10);
 	});
-	factory.RegisterItem(ItemType::DamagePotion, [](int ownerId) {
-		return std::make_unique<InventoryItem>("Damage potion", ItemType::DamagePotion, ownerId);
+	factory.RegisterItem<DamagePotionItem>("Damage potion", [](int ownerId) {
+		return std::make_unique<DamagePotionItem>(ownerId, "Damage potion", 1);
 	});
-	factory.RegisterItem(ItemType::DefensePotion, [](int ownerId) {
-		return std::make_unique<InventoryItem>("Defence potion", ItemType::DefensePotion, ownerId);
+	factory.RegisterItem<DefensePotionItem>("DefensePotionItem", [](int ownerId) {
+		return std::make_unique<DefensePotionItem>(ownerId, "Defense potion", 1);
 	});
-	factory.RegisterItem(ItemType::ManaPotion, [](int ownerId) {
-		return std::make_unique<InventoryItem>("Mana potion", ItemType::ManaPotion, ownerId);
+	factory.RegisterItem<ManaPotionItem>("Small mana potion", [](int ownerId) {
+		return std::make_unique<ManaPotionItem>(ownerId, "Small mana potion", 10);
+	});
+
+	factory.RegisterItem<WeaponItem>("Empty Fist", [](int ownerId) {
+		const std::unordered_map<BonusType, int> itemBonuses;
+
+		return std::make_unique<WeaponItem>(ownerId, "Empty Fist", itemBonuses);
+	});
+
+	factory.RegisterItem<WeaponItem>("Wood Blade", [](int ownerId) {
+		const int damageBonus = 1;
+		const std::unordered_map<BonusType, int> itemBonuses = {
+			{ BonusType::DamageBonus, damageBonus },
+		};
+
+		return std::make_unique<WeaponItem>(ownerId, "Wood Blade", itemBonuses);
+	});
+
+	factory.RegisterItem<WeaponItem>("Bounce Blade", [](int ownerId) {
+		const int damageBonus = 2;
+		const int armorBonus = 1;
+		const std::unordered_map<BonusType, int> itemBonuses = {
+			{ BonusType::DamageBonus, damageBonus },
+			{ BonusType::ArmorBonus, armorBonus },
+		};
+
+		return std::make_unique<WeaponItem>(ownerId, "Bounce Blade", itemBonuses);
+	});
+
+	factory.RegisterItem<WeaponItem>("Mecha Saber", [](int ownerId) {
+		const int damageBonus = 2;
+		const int armorBonus = 1;
+		const std::unordered_map<BonusType, int> itemBonuses = {
+			{ BonusType::DamageBonus, damageBonus },
+			{ BonusType::ArmorBonus, armorBonus },
+		};
+
+		return std::make_unique<WeaponItem>(ownerId, "Mecha Saber", itemBonuses);
+	});
+
+	factory.RegisterItem<ShieldItem>("Poor man shield", [](int ownerId) {
+		const std::unordered_map<BonusType, int> itemBonuses;
+
+		return std::make_unique<ShieldItem>(ownerId, "Poor man shield", itemBonuses);
+	});
+
+	factory.RegisterItem<ShieldItem>("White Ribbon", [](int ownerId) {
+		const int armorBonus = 2;
+		const std::unordered_map<BonusType, int> itemBonuses = {
+			{ BonusType::ArmorBonus, armorBonus },
+		};
+
+		return std::make_unique<ShieldItem>(ownerId, "White Ribbon", itemBonuses);
+	});
+
+	factory.RegisterItem<ShieldItem>("Amber Card", [](int ownerId) {
+		const int armorBonus = 1;
+		const std::unordered_map<BonusType, int> itemBonuses = {
+			{ BonusType::ArmorBonus, armorBonus },
+		};
+
+		return std::make_unique<ShieldItem>(ownerId, "Amber Card", itemBonuses);
+	});
+
+	factory.RegisterItem<ShieldItem>("Iron Shackle", [](int ownerId) {
+		const int damageBonus = 1;
+		const int armorBonus = 2;
+		const std::unordered_map<BonusType, int> itemBonuses = {
+			{ BonusType::DamageBonus, damageBonus },
+			{ BonusType::ArmorBonus, armorBonus },
+		};
+
+		return std::make_unique<ShieldItem>(ownerId, "Iron Shackle", itemBonuses);
+	});
+
+	factory.RegisterItem<ShieldItem>("Mouse Token", [](int ownerId) {
+		const int armorBonus = 2;
+		const int magicBonus = 1;
+		const std::unordered_map<BonusType, int> itemBonuses = {
+			{ BonusType::ArmorBonus, armorBonus },
+			{ BonusType::MagicBonus, magicBonus },
+		};
+
+		return std::make_unique<ShieldItem>(ownerId, "Mouse Token", itemBonuses);
 	});
 
 	EntityId hero1 = entityManager.CreateEntity();
@@ -99,12 +182,28 @@ int main()
 	entityManager.AddComponent<AnimationComponent>(hero1, hero1Sprites);
 	entityManager.AddComponent<FightTurnComponent>(hero1, false, false);
 	entityManager.AddComponent<MoneyComponent>(hero1, 100);
+	entityManager.AddComponent<AttackComponent>(hero1, 10);
+	entityManager.AddComponent<DefenseComponent>(hero1, 2);
+	entityManager.AddComponent<MagicComponent>(hero1, 0);
 
 	std::vector<InventoryItem> hero1InventoryItems;
-	hero1InventoryItems.push_back(*factory.CreateInventoryItem(ItemType::HealingPotion, hero1));
-	hero1InventoryItems.push_back(*factory.CreateInventoryItem(ItemType::HealingPotion, hero1));
+	hero1InventoryItems.push_back(*factory.CreateInventoryItem<HealPotionItem>("Small heal potion", hero1));
+	hero1InventoryItems.push_back(*factory.CreateInventoryItem<HealPotionItem>("Small heal potion", hero1));
 
-	entityManager.AddComponent<InventoryComponent>(hero1, hero1InventoryItems, 6);
+	std::vector<WeaponItem> hero1Weapons;
+	auto hero1EmptyFistWeapon = *factory.CreateInventoryItem<WeaponItem>("Empty Fist", hero1);
+
+	hero1Weapons.push_back(hero1EmptyFistWeapon);
+	hero1Weapons.push_back(*factory.CreateInventoryItem<WeaponItem>("Wood Blade", hero1));
+	hero1Weapons.push_back(*factory.CreateInventoryItem<WeaponItem>("Bounce Blade", hero1));
+
+	std::vector<ShieldItem> hero1Shields;
+	auto hero1PoorManShield = *factory.CreateInventoryItem<ShieldItem>("Poor man shield", hero1);
+
+	hero1Shields.push_back(hero1PoorManShield);
+	hero1Shields.push_back(*factory.CreateInventoryItem<ShieldItem>("White Ribbon", hero1));
+
+	entityManager.AddComponent<InventoryComponent>(hero1, hero1EmptyFistWeapon, hero1PoorManShield, hero1Weapons, 6, hero1Shields, 6, hero1InventoryItems, 6);
 
 	auto* hero1AnimComp = entityManager.GetComponent<AnimationComponent>(hero1);
 	hero1AnimComp->AddAnimation("idle", 6, 1563, 6, sf::Vector2i(35, 37), 0.15f);
@@ -129,12 +228,23 @@ int main()
 	entityManager.AddComponent<ExperienceComponent>(hero2, 80, 100, 1);
 	entityManager.AddComponent<AnimationComponent>(hero2, hero2Sprites);
 	entityManager.AddComponent<FightTurnComponent>(hero2, false, true);
+	entityManager.AddComponent<AttackComponent>(hero2, 8);
+	entityManager.AddComponent<DefenseComponent>(hero2, 2);
+	entityManager.AddComponent<MagicComponent>(hero2, 7);
 
 	std::vector<InventoryItem> hero2InventoryItems;
-	hero2InventoryItems.push_back(*factory.CreateInventoryItem(ItemType::ManaPotion, hero2));
-	hero2InventoryItems.push_back(*factory.CreateInventoryItem(ItemType::DamagePotion, hero2));
+	hero2InventoryItems.push_back(*factory.CreateInventoryItem<ManaPotionItem>("Small mana potion", hero2));
+	hero2InventoryItems.push_back(*factory.CreateInventoryItem<DamagePotionItem>("Damage potion", hero2));
 
-	entityManager.AddComponent<InventoryComponent>(hero2, hero2InventoryItems, 6);
+	std::vector<WeaponItem> hero2Weapons;
+	auto hero2EmptyFistWeapon = *factory.CreateInventoryItem<WeaponItem>("Empty Fist", hero2);
+	hero2Weapons.push_back(hero2EmptyFistWeapon);
+
+	std::vector<ShieldItem> hero2Shields;
+	auto hero2PoorManShield = *factory.CreateInventoryItem<ShieldItem>("Poor man shield", hero2);
+	hero2Shields.push_back(hero1PoorManShield);
+
+	entityManager.AddComponent<InventoryComponent>(hero2, hero2EmptyFistWeapon, hero2PoorManShield, hero2Weapons, 6, hero2Shields, 6, hero2InventoryItems, 6);
 
 	auto* hero2AnimComp = entityManager.GetComponent<AnimationComponent>(hero2);
 	hero2AnimComp->AddAnimation("idle", 5, 505, 5, sf::Vector2i(49, 40), 0.15f);

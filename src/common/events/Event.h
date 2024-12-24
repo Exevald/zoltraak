@@ -15,7 +15,9 @@ enum class EventType
 	InventoryActionChanged,
 	InventoryStateChanged,
 	InventoryItemSelected,
-	InventoryItemUsed
+	InventoryItemUsed,
+	ActiveInventoryCharacterChanged,
+	InventoryItemEquipped,
 };
 
 struct EntitySelectedEventData
@@ -67,6 +69,18 @@ struct InventoryItemUsedEventData
 	InventoryAction usageAction;
 };
 
+struct ActiveInventoryCharacterNumberChangedEventData
+{
+	int characterNumber;
+};
+
+struct InventoryItemEquippedEventData
+{
+	int ownerId;
+	int itemNumber;
+	ItemType type;
+};
+
 using EventData = std::variant<
 	EntitySelectedEventData,
 	EntityMovedEventData,
@@ -76,7 +90,9 @@ using EventData = std::variant<
 	InventoryActionChangedEventData,
 	InventoryStateChangedEventData,
 	InventoryItemSelectedEventData,
-	InventoryItemUsedEventData>;
+	InventoryItemUsedEventData,
+	ActiveInventoryCharacterNumberChangedEventData,
+	InventoryItemEquippedEventData>;
 
 struct SEvent
 {

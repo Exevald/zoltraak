@@ -1,6 +1,5 @@
 #include "CInventorySystem.h"
 #include "../../CGameController.h"
-#include "../../common/CEntityManager.h"
 #include <iostream>
 
 void CInventorySystem::Init()
@@ -8,6 +7,11 @@ void CInventorySystem::Init()
 	CEventDispatcher::GetInstance().Subscribe(EventType::InventoryItemUsed, [](const SEvent& event) {
 		const auto& inventoryItemUsedEventData = std::get<InventoryItemUsedEventData>(event.data);
 		CInventorySystem::UseItemFromInventory(inventoryItemUsedEventData.inventoryItemNumber, inventoryItemUsedEventData.usageAction);
+	});
+
+	CEventDispatcher::GetInstance().Subscribe(EventType::InventoryItemEquipped, [](const SEvent& event) {
+		const auto& inventoryItemUsedEventData = std::get<InventoryItemEquippedEventData>(event.data);
+		CInventorySystem::EquipItem(inventoryItemUsedEventData.ownerId, inventoryItemUsedEventData.itemNumber, inventoryItemUsedEventData.type);
 	});
 }
 
@@ -19,7 +23,7 @@ void CInventorySystem::Update()
 	for (auto entity : entitiesWithInventory)
 	{
 		auto inventoryComp = entityManager.GetComponent<InventoryComponent>(entity);
-		if (inventoryComp->items.size() > inventoryComp->size)
+		if (inventoryComp->commonItems.size() > inventoryComp->commonItemsInventorySize)
 		{
 			std::cout << "Inventory overdraft!" << std::endl;
 			return;
@@ -62,7 +66,7 @@ void CInventorySystem::UseItemFromInventory(int itemIndex, const InventoryAction
 		return;
 	}
 
-	ownerInventoryComp->items.erase(ownerInventoryComp->items.begin() + localItemIndex);
+	ownerInventoryComp->commonItems.erase(ownerInventoryComp->commonItems.begin() + localItemIndex);
 	CGameController::RemoveItemFromHeroInventory(ownerId, localItemIndex);
 }
 
@@ -101,4 +105,56 @@ void CInventorySystem::UseEffect(const InventoryItem& item)
 	default:
 		break;
 	}
+}
+
+void CInventorySystem::EquipItem(int ownerId, int equippedItemNumber, const ItemType& itemType)
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	auto inventoryComp = entityManager.GetComponent<InventoryComponent>(ownerId);
+	if (!inventoryComp)
+	{
+		return;
+	}
+
+	switch (itemType)
+	{
+	case ItemType::Weapon: {
+		auto newWeapon = GetFilteredItem(inventoryComp->weapons, inventoryComp->activeWeapon, equippedItemNumber);
+		if (newWeapon.has_value())
+		{
+			inventoryComp->activeWeapon = newWeapon.value();
+		}
+		break;
+	}
+	case ItemType::Shield: {
+		auto newShield = CInventorySystem::GetFilteredItem<ShieldItem>(inventoryComp->shields, inventoryComp->activeShield, equippedItemNumber);
+		if (newShield.has_value())
+		{
+			inventoryComp->activeShield = newShield.value();
+		}
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+template <typename T>
+std::optional<T> CInventorySystem::GetFilteredItem(const std::vector<T>& items, const T& activeItem, int index)
+{
+	std::vector<T> filteredItems;
+	for (const auto& item : items)
+	{
+		if (item.name != activeItem.name)
+		{
+			filteredItems.push_back(item);
+		}
+	}
+
+	if (index >= 0 && index < static_cast<int>(filteredItems.size()))
+	{
+		return filteredItems[index];
+	}
+
+	return std::nullopt;
 }

@@ -251,12 +251,35 @@ struct FightTurnComponent : IComponent
 
 struct InventoryComponent : IComponent
 {
-	std::vector<InventoryItem> items;
-	int size;
+	WeaponItem activeWeapon;
+	ShieldItem activeShield;
 
-	explicit InventoryComponent(const std::vector<InventoryItem>& items, int size)
-		: items(items)
-		, size(size)
+	std::vector<WeaponItem> weapons;
+	int weaponsInventorySize;
+
+	std::vector<ShieldItem> shields;
+	int shieldsInventorySize;
+
+	std::vector<InventoryItem> commonItems;
+	int commonItemsInventorySize;
+
+	explicit InventoryComponent(
+		WeaponItem weapon,
+		ShieldItem shield,
+		const std::vector<WeaponItem>& weapons,
+		int weaponsInventorySize,
+		const std::vector<ShieldItem>& shields,
+		int shieldsInventorySize,
+		const std::vector<InventoryItem>& commonItems,
+		int commonItemsInventorySize)
+		: commonItems(commonItems)
+		, commonItemsInventorySize(commonItemsInventorySize)
+		, weapons(weapons)
+		, weaponsInventorySize(weaponsInventorySize)
+		, shields(shields)
+		, shieldsInventorySize(shieldsInventorySize)
+		, activeWeapon(std::move(weapon))
+		, activeShield(std::move(shield))
 	{
 	}
 };
@@ -267,6 +290,36 @@ struct MoneyComponent : IComponent
 
 	explicit MoneyComponent(int money)
 		: money(money)
+	{
+	}
+};
+
+struct AttackComponent : IComponent
+{
+	int attackValue;
+
+	explicit AttackComponent(int value)
+		: attackValue(value)
+	{
+	}
+};
+
+struct DefenseComponent : IComponent
+{
+	int defenseValue;
+
+	explicit DefenseComponent(int value)
+		: defenseValue(value)
+	{
+	}
+};
+
+struct MagicComponent : IComponent
+{
+	int magicValue;
+
+	explicit MagicComponent(int value)
+		: magicValue(value)
 	{
 	}
 };
