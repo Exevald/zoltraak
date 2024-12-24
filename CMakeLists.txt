@@ -54,6 +54,7 @@ add_executable(
         src/systems/animation/CAnimationSystem.cpp
         src/systems/fight/CFightSystem.cpp
         src/systems/inventory/CInventorySystem.cpp
+        src/systems/spell/CSpellSystem.cpp
 
         src/CGameController.cpp
         src/main.cpp

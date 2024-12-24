@@ -1,15 +1,23 @@
-class CInventoryItemsFactory
+#pragma once
+
+#include <string>
+#include <unordered_map>
+#include <memory>
+#include <functional>
+#include "../../../common/spells/Spells.h"
+
+class CSpellFactory
 {
 public:
 	template <typename T>
-	void RegisterItem(const std::string& name, std::function<std::unique_ptr<T>(int)> creator)
+	void RegisterSpell(const std::string& name, std::function<std::unique_ptr<T>(int)> creator)
 	{
 		if (m_creators.find(name) != m_creators.end())
 		{
 			throw std::runtime_error("Item with name '" + name + "' is already registered.");
 		}
 
-		m_creators[name] = [creator](int ownerId) -> std::unique_ptr<InventoryItem> {
+		m_creators[name] = [creator](int ownerId) -> std::unique_ptr<Spell> {
 			return creator(ownerId);
 		};
 
@@ -17,7 +25,7 @@ public:
 	}
 
 	template <typename T>
-	std::unique_ptr<T> CreateInventoryItem(const std::string& name, int ownerId) const
+	std::unique_ptr<T> CreateSpell(const std::string& name, int ownerId) const
 	{
 		auto it = m_creators.find(name);
 		if (it != m_creators.end())
@@ -32,9 +40,9 @@ public:
 		throw std::runtime_error("Item '" + name + "' not found in the factory.");
 	}
 
-	~CInventoryItemsFactory() = default;
+	~CSpellFactory() = default;
 
 private:
-	std::unordered_map<std::string, std::function<std::unique_ptr<InventoryItem>(int)>> m_creators;
+	std::unordered_map<std::string, std::function<std::unique_ptr<Spell>(int)>> m_creators;
 	std::unordered_map<std::string, size_t> m_registeredTypes;
 };

@@ -5,6 +5,7 @@
 #include "event/CEventSystem.h"
 #include "fight/CFightSystem.h"
 #include "inventory/CInventorySystem.h"
+#include "spell/CSpellSystem.h"
 #include "view/CViewSystem.h"
 #include <fstream>
 #include <iostream>
@@ -49,6 +50,7 @@ void CGameController::InitSystems()
 	CCollisionSystem::Init();
 	CFightSystem::Init();
 	CInventorySystem::Init();
+	CSpellSystem::Init();
 }
 
 void CGameController::Draw(sf::RenderWindow& window, Level& level)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utils.h"
+#include "spells/Spells.h"
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
 #include <utility>
@@ -320,6 +321,26 @@ struct MagicComponent : IComponent
 
 	explicit MagicComponent(int value)
 		: magicValue(value)
+	{
+	}
+};
+
+struct DescriptionComponent : IComponent
+{
+	std::string description;
+
+	explicit DescriptionComponent(std::string description)
+		: description(std::move(description))
+	{
+	}
+};
+
+struct SpellComponent : IComponent
+{
+	std::vector<Spell> spells;
+
+	explicit SpellComponent(const std::vector<Spell>& spells)
+		: spells(spells)
 	{
 	}
 };

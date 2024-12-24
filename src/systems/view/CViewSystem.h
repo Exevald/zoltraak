@@ -90,9 +90,9 @@ struct Inventory
 	sf::Text heroName;
 	sf::Text activeWeaponInfo;
 	sf::Text activeShieldInfo;
-	std::vector<sf::Text> spellsInfo;
 	std::vector<sf::Text> characterWeapons;
 	std::vector<sf::Text> characterShields;
+	sf::Text heroLevel;
 };
 
 class CViewSystem
@@ -144,6 +144,8 @@ private:
 	void UpdateInventoryItems();
 	void UpdateHeroStats();
 	void UpdateHeroEquipment();
+	void DrawHeroInfo();
+	void DrawHeroSpells();
 
 	sf::RenderWindow& m_window;
 	Level& m_level;

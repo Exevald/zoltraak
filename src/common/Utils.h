@@ -42,14 +42,14 @@ struct InventoryItem
 	ItemType type;
 	int ownerId;
 
-	InventoryItem()
+	explicit InventoryItem()
 		: name("Healing potion")
 		, type(ItemType::HealingPotion)
 		, ownerId(-1)
 	{
 	}
 
-	InventoryItem(std::string name, ItemType type, int ownerId)
+	explicit InventoryItem(std::string name, ItemType type, int ownerId)
 		: name(std::move(name))
 		, type(type)
 		, ownerId(ownerId)

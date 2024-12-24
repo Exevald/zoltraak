@@ -1179,6 +1179,13 @@ void CViewSystem::DrawInventory()
 
 	if (currentInventorySectionNumber == 1 || currentInventorySectionNumber == 2)
 	{
+		m_window.draw(m_inventory.heroName);
+
+		for (const auto& statText : m_inventory.heroStats)
+		{
+			m_window.draw(statText);
+		}
+
 		for (auto [characterId, icon] : m_inventory.heroIcons)
 		{
 			if (characterId == CGameController::GetActiveInventoryCharacterNumber())
@@ -1192,14 +1199,8 @@ void CViewSystem::DrawInventory()
 
 	if (currentInventorySectionNumber == 1)
 	{
-		m_window.draw(m_inventory.heroName);
 		m_window.draw(m_inventory.activeWeaponInfo);
 		m_window.draw(m_inventory.activeShieldInfo);
-
-		for (const auto& statText : m_inventory.heroStats)
-		{
-			m_window.draw(statText);
-		}
 
 		switch (CGameController::GetCurrentEquipmentType())
 		{
@@ -1230,6 +1231,12 @@ void CViewSystem::DrawInventory()
 			break;
 		}
 		}
+	}
+
+	if (currentInventorySectionNumber == 2)
+	{
+		CViewSystem::DrawHeroInfo();
+		CViewSystem::DrawHeroSpells();
 	}
 
 	for (const auto& info : m_inventory.heroesInfo)
@@ -1382,5 +1389,52 @@ void CViewSystem::UpdateHeroEquipment()
 
 		yOffset += 50;
 		m_inventory.characterShields.push_back(shieldText);
+	}
+}
+
+void CViewSystem::DrawHeroInfo()
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	auto descriptionComp = entityManager.GetComponent<DescriptionComponent>(CGameController::GetActiveInventoryCharacterNumber());
+	auto experienceComp = entityManager.GetComponent<ExperienceComponent>(CGameController::GetActiveInventoryCharacterNumber());
+	if (!descriptionComp || !experienceComp)
+	{
+		return;
+	}
+
+	m_inventory.heroLevel.setFont(font);
+	m_inventory.heroLevel.setCharacterSize(40);
+	m_inventory.heroLevel.setString("LEVEL: " + std::to_string(experienceComp->currentHeroLevel));
+	m_inventory.heroLevel.setPosition(m_inventory.inventoryMenu.getPosition().x + 500, m_inventory.inventoryMenu.getPosition().y + 65);
+
+	m_inventory.heroDescription.setFont(font);
+	m_inventory.heroDescription.setCharacterSize(40);
+	m_inventory.heroDescription.setString("INFO: " + descriptionComp->description);
+	m_inventory.heroDescription.setPosition(m_inventory.inventoryMenu.getPosition().x + 500, m_inventory.inventoryMenu.getPosition().y + 120);
+
+	m_window.draw(m_inventory.heroLevel);
+	m_window.draw(m_inventory.heroDescription);
+}
+
+void CViewSystem::DrawHeroSpells()
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	auto spellComp = entityManager.GetComponent<SpellComponent>(CGameController::GetActiveInventoryCharacterNumber());
+	if (!spellComp)
+	{
+		return;
+	}
+
+	float yOffset = 0;
+	for (const auto& spell : spellComp->spells)
+	{
+		sf::Text spellName;
+		spellName.setFont(font);
+		spellName.setCharacterSize(40);
+		spellName.setString("LW: " + std::to_string(spell.level) + " " + spell.name);
+		spellName.setPosition(m_inventory.inventoryMenu.getPosition().x + 550, m_inventory.inventoryMenu.getPosition().y + 320 + yOffset);
+
+		yOffset += 50;
+		m_window.draw(spellName);
 	}
 }
