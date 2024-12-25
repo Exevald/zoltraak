@@ -19,6 +19,7 @@ set(IMAGES
         ${CMAKE_SOURCE_DIR}/src/res/sprites/utils_windows.png
         ${CMAKE_SOURCE_DIR}/src/res/sprites/fight_background.png
         ${CMAKE_SOURCE_DIR}/src/res/sprites/fight_utils.png
+        ${CMAKE_SOURCE_DIR}/src/res/sprites/vendor_hero1.png
 )
 
 set(MAPS
@@ -48,13 +49,15 @@ add_executable(
 
         src/systems/event/CEventSystem.cpp
         src/systems/movement/CMovementSystem.cpp
-        src/systems/view/CViewSystem.cpp
         src/systems/collision/CCollisionSystem.cpp
         src/systems/camera/CCameraSystem.cpp
         src/systems/animation/CAnimationSystem.cpp
         src/systems/fight/CFightSystem.cpp
         src/systems/inventory/CInventorySystem.cpp
         src/systems/spell/CSpellSystem.cpp
+
+        src/systems/view/renderers/vendor/CVendorRenderer.cpp
+        src/systems/view/CViewSystem.cpp
 
         src/CGameController.cpp
         src/main.cpp

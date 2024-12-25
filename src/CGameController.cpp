@@ -18,6 +18,7 @@ constexpr int MARGIN = 60;
 const std::array<std::string, 3> SAVE_FILES = { "save1.txt", "save2.txt", "save3.txt" };
 } // namespace
 
+EntityId CGameController::m_selectedEntityId = 1;
 float CGameController::m_elapsedTime = 0;
 float CGameController::m_levelWidth = 0;
 float CGameController::m_levelHeight = 0;
@@ -36,6 +37,10 @@ std::unordered_map<EntityId, std::vector<InventoryItem>> CGameController::m_allH
 int CGameController::m_activeInventoryCharacterNumber = 1;
 EquipmentType CGameController::m_currentEquipmentType = EquipmentType::Weapon;
 int CGameController::m_currentEquipmentItemNumber = 0;
+int CGameController::m_currentVendorActionNumber = 0;
+VendorState CGameController::m_currentVendorState = VendorState::None;
+int CGameController::m_currentVendorItemToBuyNumber = 0;
+int CGameController::m_currentHeroItemToSellNumber = 0;
 
 void CGameController::InitGameSettings(const Level& level)
 {
@@ -43,13 +48,15 @@ void CGameController::InitGameSettings(const Level& level)
 	m_levelHeight = float(level.size()) * TILE_SIZE * SCALE_FACTOR - MARGIN;
 }
 
-void CGameController::InitSystems()
+void CGameController::InitSystems(const CInventoryItemFactory& factory)
 {
+	CInventorySystem inventorySystem(factory);
+
 	CEventSystem::Init();
 	CMovementSystem::Init();
 	CCollisionSystem::Init();
 	CFightSystem::Init();
-	CInventorySystem::Init();
+	inventorySystem.Init();
 	CSpellSystem::Init();
 }
 
@@ -65,6 +72,8 @@ void CGameController::Draw(sf::RenderWindow& window, Level& level)
 
 void CGameController::Update()
 {
+	CGameController::UpdateAllHeroesInventory();
+
 	CAnimationSystem::Update();
 	CFightSystem::Update();
 	CInventorySystem::Update();
@@ -75,7 +84,7 @@ void CGameController::SetSelectedEntityId(EntityId id)
 	m_selectedEntityId = id;
 }
 
-EntityId CGameController::GetSelectedEntityId() const
+EntityId CGameController::GetSelectedEntityId()
 {
 	return m_selectedEntityId;
 }
@@ -304,4 +313,83 @@ void CGameController::SetCurrentInventoryEquipmentItemNumber(int number)
 int CGameController::GetCurrentEquipmentItemNumber()
 {
 	return m_currentEquipmentItemNumber;
+}
+
+void CGameController::SetCurrentVendorActionNumber(int number)
+{
+	m_currentVendorActionNumber = number;
+}
+
+int CGameController::GetCurrentVendorActionNumber()
+{
+	return m_currentVendorActionNumber;
+}
+
+void CGameController::UpdateAllHeroesInventory()
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	auto heroesWithInventory = entityManager.GetEntitiesWithComponents<InventoryComponent>();
+
+	for (auto heroId : heroesWithInventory)
+	{
+		std::vector<InventoryItem> resultCommonInventory;
+		auto heroInventory = entityManager.GetComponent<InventoryComponent>(heroId);
+		resultCommonInventory.reserve(heroInventory->commonItems.size() + heroInventory->weapons.size() + heroInventory->shields.size());
+		resultCommonInventory.insert(resultCommonInventory.end(), heroInventory->commonItems.begin(), heroInventory->commonItems.end());
+		resultCommonInventory.insert(resultCommonInventory.end(), heroInventory->weapons.begin(), heroInventory->weapons.end());
+		resultCommonInventory.insert(resultCommonInventory.end(), heroInventory->shields.begin(), heroInventory->shields.end());
+
+		CGameController::UpdateHeroInventory(heroId, resultCommonInventory);
+	}
+}
+
+void CGameController::SetCurrentVendorState(const VendorState& state)
+{
+	m_currentVendorState = state;
+}
+
+VendorState CGameController::GetCurrentVendorState()
+{
+	return m_currentVendorState;
+}
+
+void CGameController::SetCurrentVendorItemToBuyNumber(int number)
+{
+	m_currentVendorItemToBuyNumber = number;
+}
+
+int CGameController::GetCurrentVendorItemToBuyNumber()
+{
+	return m_currentVendorItemToBuyNumber;
+}
+
+void CGameController::SetCurrentHeroItemToSellNumber(int number)
+{
+	m_currentHeroItemToSellNumber = number;
+}
+
+int CGameController::GetCurrentHeroItemToSellNumber()
+{
+	return m_currentHeroItemToSellNumber;
+}
+
+std::vector<InventoryItem> CGameController::GetHeroesItemsToSell()
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	auto entitiesWithInventory = entityManager.GetEntitiesWithComponents<InventoryComponent>();
+
+	std::vector<InventoryItem> commonHeroesInventory;
+	for (const auto& [entityId, heroInventory] : CGameController::GetAllHeroesInventory())
+	{
+		auto entityInventoryComp = entityManager.GetComponent<InventoryComponent>(entityId);
+		for (const auto& item : heroInventory)
+		{
+			if ((item.name != entityInventoryComp->activeWeapon.name && item.name != entityInventoryComp->activeShield.name) && (item.type == ItemType::Weapon || item.type == ItemType::Shield))
+			{
+				commonHeroesInventory.push_back(item);
+			}
+		}
+	}
+
+	return commonHeroesInventory;
 }

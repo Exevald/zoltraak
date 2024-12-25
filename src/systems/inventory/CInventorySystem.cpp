@@ -13,6 +13,16 @@ void CInventorySystem::Init()
 		const auto& inventoryItemUsedEventData = std::get<InventoryItemEquippedEventData>(event.data);
 		CInventorySystem::EquipItem(inventoryItemUsedEventData.ownerId, inventoryItemUsedEventData.itemNumber, inventoryItemUsedEventData.type);
 	});
+
+	CEventDispatcher::GetInstance().Subscribe(EventType::VendorItemBought, [factory = m_inventoryItemFactory](const SEvent& event) {
+		const auto& vendorItemBoughtEventData = std::get<VendorItemBoughtEventData>(event.data);
+		CInventorySystem::BuyItem(vendorItemBoughtEventData.itemIndex, factory);
+	});
+
+	CEventDispatcher::GetInstance().Subscribe(EventType::HeroItemSold, [](const SEvent& event) {
+		const auto& itemSoldEventData = std::get<HeroItemSoldEventData>(event.data);
+		CInventorySystem::SellItem(itemSoldEventData.itemIndex);
+	});
 }
 
 void CInventorySystem::Update()
@@ -119,7 +129,7 @@ void CInventorySystem::EquipItem(int ownerId, int equippedItemNumber, const Item
 	switch (itemType)
 	{
 	case ItemType::Weapon: {
-		auto newWeapon = GetFilteredItem(inventoryComp->weapons, inventoryComp->activeWeapon, equippedItemNumber);
+		auto newWeapon = CInventorySystem::GetFilteredItem(inventoryComp->weapons, inventoryComp->activeWeapon, equippedItemNumber);
 		if (newWeapon.has_value())
 		{
 			inventoryComp->activeWeapon = newWeapon.value();
@@ -157,4 +167,53 @@ std::optional<T> CInventorySystem::GetFilteredItem(const std::vector<T>& items, 
 	}
 
 	return std::nullopt;
+}
+
+void CInventorySystem::BuyItem(int boughtItemNumber, const CInventoryItemFactory& factory)
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	auto vendor = entityManager.GetEntitiesWithComponents<VendorComponent>().front();
+	auto vendorComp = entityManager.GetComponent<VendorComponent>(vendor);
+	auto itemToBuy = vendorComp->items[boughtItemNumber];
+	auto heroInventoryComp = entityManager.GetComponent<InventoryComponent>(CGameController::GetSelectedEntityId());
+
+	vendorComp->items.erase(vendorComp->items.begin() + boughtItemNumber);
+	switch (itemToBuy.type)
+	{
+	case ItemType::Weapon: {
+		heroInventoryComp->weapons.push_back(*factory.CreateInventoryItem<WeaponItem>(itemToBuy.name, CGameController::GetSelectedEntityId()));
+		break;
+	}
+	case ItemType::Shield: {
+		heroInventoryComp->shields.push_back(*factory.CreateInventoryItem<ShieldItem>(itemToBuy.name, CGameController::GetSelectedEntityId()));
+		break;
+	}
+	default: {
+		heroInventoryComp->commonItems.push_back(*factory.CreateInventoryItem<HealPotionItem>(itemToBuy.name, CGameController::GetSelectedEntityId()));
+		break;
+	}
+	}
+}
+
+void CInventorySystem::SellItem(int soldItemNumber)
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	auto itemsToSell = CGameController::GetHeroesItemsToSell();
+	auto itemToSell = itemsToSell[soldItemNumber];
+	auto heroInventoryComp = entityManager.GetComponent<InventoryComponent>(itemToSell.ownerId);
+	auto heroMoneyComp = entityManager.GetComponent<MoneyComponent>(itemToSell.ownerId);
+	if (!heroInventoryComp || !heroMoneyComp)
+	{
+		return;
+	}
+
+	if (itemToSell.type == ItemType::Weapon)
+	{
+		heroInventoryComp->weapons.erase(heroInventoryComp->weapons.begin() + soldItemNumber);
+	}
+	if (itemToSell.type == ItemType::Shield)
+	{
+		heroInventoryComp->shields.erase(heroInventoryComp->shields.begin() + soldItemNumber);
+	}
+	heroMoneyComp->money += itemToSell.cost;
 }

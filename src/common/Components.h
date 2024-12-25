@@ -344,3 +344,15 @@ struct SpellComponent : IComponent
 	{
 	}
 };
+
+struct VendorComponent : IComponent
+{
+	std::vector<InventoryItem> items;
+	int vendorInventorySize;
+
+	explicit VendorComponent(const std::vector<InventoryItem>& items, int vendorInventorySize)
+		: items(items)
+		, vendorInventorySize(vendorInventorySize)
+	{
+	}
+};

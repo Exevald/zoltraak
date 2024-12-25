@@ -6,7 +6,7 @@
 #include "events/CEventDispatcher.h"
 #include <iostream>
 
-auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
+static auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
 
 void CViewSystem::Init()
 {
@@ -38,6 +38,11 @@ void CViewSystem::Init()
 	CEventDispatcher::GetInstance().Subscribe(EventType::InventoryItemUsed, [this](const SEvent& event) {
 		CViewSystem::UpdateInventoryItems();
 	});
+
+	for (const auto& renderer : m_renderers)
+	{
+		renderer->Init();
+	}
 }
 
 void CViewSystem::Draw()
@@ -99,6 +104,11 @@ void CViewSystem::Draw()
 		m_window.setView(view);
 
 		CViewSystem::DrawInventory();
+	}
+
+	for (const auto& renderer : m_renderers)
+	{
+		renderer->Draw(m_window);
 	}
 }
 
@@ -936,13 +946,6 @@ void CViewSystem::DrawInventory()
 	auto currentInventorySectionNumber = CGameController::GetCurrentInventorySectionNumber();
 	auto entityWithMoneyId = entityManager.GetEntitiesWithComponents<MoneyComponent>().front();
 	auto moneyComp = entityManager.GetComponent<MoneyComponent>(entityWithMoneyId);
-	auto heroesWithInventory = entityManager.GetEntitiesWithComponents<InventoryComponent>();
-
-	for (auto heroId : heroesWithInventory)
-	{
-		auto heroInventory = entityManager.GetComponent<InventoryComponent>(heroId);
-		CGameController::UpdateHeroInventory(heroId, heroInventory->commonItems);
-	}
 
 	m_inventory.sectionTitle.setTexture(CTextureStorage::GetTexture("utils_windows.png"));
 	m_inventory.sectionTitle.setPosition(float(m_window.getSize().x) / 5, 50);
@@ -1258,28 +1261,37 @@ void CViewSystem::UpdateInventoryItems()
 	int itemIndex = 0;
 	m_inventory.inventoryItems.clear();
 	int inventoryItemsSize = 0;
+	std::vector<InventoryItem> commonHeroesInventory;
 
-	for (const auto& [entityId, entityInventoryItems] : CGameController::GetAllHeroesInventory())
+	for (const auto& [entityId, charactersInventory] : CGameController::GetAllHeroesInventory())
 	{
-		for (const auto& inventoryItem : entityInventoryItems)
+		for (const auto& item : charactersInventory)
 		{
-			sf::Text inventoryItemText;
-			inventoryItemText.setFont(font);
-			inventoryItemText.setString(inventoryItem.name);
-			inventoryItemText.setCharacterSize(45);
-			inventoryItemText.setPosition(m_inventory.inventoryMenu.getPosition().x + 200 + column * 370, m_inventory.inventoryMenu.getPosition().y + 150 + row * 50);
-			inventoryItemText.setFillColor(sf::Color(125, 125, 125));
-
-			m_inventory.inventoryItems[itemIndex] = inventoryItemText;
-
-			row++;
-			itemIndex++;
-			inventoryItemsSize++;
-			if (row > 5)
+			if (item.type != ItemType::Weapon && item.type != ItemType::Shield)
 			{
-				row = 0;
-				column++;
+				commonHeroesInventory.push_back(item);
 			}
+		}
+	}
+
+	for (const auto& inventoryItem : commonHeroesInventory)
+	{
+		sf::Text inventoryItemText;
+		inventoryItemText.setFont(font);
+		inventoryItemText.setString(inventoryItem.name);
+		inventoryItemText.setCharacterSize(45);
+		inventoryItemText.setPosition(m_inventory.inventoryMenu.getPosition().x + 200 + column * 370, m_inventory.inventoryMenu.getPosition().y + 150 + row * 50);
+		inventoryItemText.setFillColor(sf::Color(125, 125, 125));
+
+		m_inventory.inventoryItems[itemIndex] = inventoryItemText;
+
+		row++;
+		itemIndex++;
+		inventoryItemsSize++;
+		if (row > 5)
+		{
+			row = 0;
+			column++;
 		}
 	}
 }

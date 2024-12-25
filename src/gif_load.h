@@ -49,7 +49,7 @@ extern "C" {
 struct GIF_WHDR
 { /** ======== frame writer info: ======== **/
 	long xdim, ydim, clrs, /** global dimensions, palette size      **/
-		bkgd, tran, /** background index, transparent index  **/
+		bkgd, tran, /** vendorIcon index, transparent index  **/
 		intr, mode, /** interlace flag, frame blending mode  **/
 		frxd, fryd, frxo, fryo, /** current frame dimensions and offset  **/
 		time, ifrm, nfrm; /** delay, frame number, frame count     **/
@@ -204,7 +204,7 @@ GIF_EXTR long GIF_Load(void* data, long size,
 				[reserved]   bit 3     0
 				PixelBits    bit 2-0   |Plt| = 2 * 2^PixelBits
 				**/
-		uint8_t bkgd, aspr; /** background color index, aspect ratio     **/
+		uint8_t bkgd, aspr; /** vendorIcon color index, aspect ratio     **/
 	}* ghdr = (struct GIF_GHDR*)data;
 	struct GIF_FHDR
 	{ /** ======= GIF FRAME MASTER HEADER: ======= **/
@@ -226,7 +226,7 @@ GIF_EXTR long GIF_Load(void* data, long size,
 				[reserved]   bit 7-5   [undefined]
 				BlendMode    bit 4-2   000: not set; static GIF
 									   001: leave result as is
-									   010: restore background
+									   010: restore vendorIcon
 									   011: restore previous
 									   1--: [undefined]
 				UserInput    bit 1     1: show frame till input

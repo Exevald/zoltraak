@@ -142,6 +142,121 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 		}
 	}
 
+	if (currentGameState == CurrentState::Vendor)
+	{
+		switch (key)
+		{
+		case sf::Keyboard::W: {
+			if (CGameController::GetCurrentVendorState() == VendorState::None)
+			{
+				int newCurrentVendorAction = CGameController::GetCurrentVendorActionNumber() - 1;
+				if (newCurrentVendorAction < 0)
+				{
+					newCurrentVendorAction = 0;
+				}
+				CGameController::SetCurrentVendorActionNumber(newCurrentVendorAction);
+			}
+			if (CGameController::GetCurrentVendorState() == VendorState::Buy)
+			{
+				int newCurrentVendorItemToBuyNumber = CGameController::GetCurrentVendorItemToBuyNumber() - 1;
+				if (newCurrentVendorItemToBuyNumber < 0)
+				{
+					newCurrentVendorItemToBuyNumber = 0;
+				}
+				CGameController::SetCurrentVendorItemToBuyNumber(newCurrentVendorItemToBuyNumber);
+			}
+			if (CGameController::GetCurrentVendorState() == VendorState::Sell)
+			{
+				int newCurrentHeroItemToSellNumber = CGameController::GetCurrentHeroItemToSellNumber() - 1;
+				if (newCurrentHeroItemToSellNumber < 0)
+				{
+					newCurrentHeroItemToSellNumber = 0;
+				}
+				CGameController::SetCurrentHeroItemToSellNumber(newCurrentHeroItemToSellNumber);
+			}
+			break;
+		}
+		case sf::Keyboard::S: {
+			if (CGameController::GetCurrentVendorState() == VendorState::None)
+			{
+				int newCurrentVendorAction = CGameController::GetCurrentVendorActionNumber() + 1;
+				if (newCurrentVendorAction > 3)
+				{
+					newCurrentVendorAction = 3;
+				}
+				CGameController::SetCurrentVendorActionNumber(newCurrentVendorAction);
+			}
+			if (CGameController::GetCurrentVendorState() == VendorState::Buy)
+			{
+				int newCurrentVendorItemToBuyNumber = CGameController::GetCurrentVendorItemToBuyNumber() + 1;
+				if (newCurrentVendorItemToBuyNumber > 5)
+				{
+					newCurrentVendorItemToBuyNumber = 5;
+				}
+				CGameController::SetCurrentVendorItemToBuyNumber(newCurrentVendorItemToBuyNumber);
+			}
+			if (CGameController::GetCurrentVendorState() == VendorState::Sell)
+			{
+				int newCurrentHeroItemToSellNumber = CGameController::GetCurrentHeroItemToSellNumber() + 1;
+				if (newCurrentHeroItemToSellNumber > 5)
+				{
+					newCurrentHeroItemToSellNumber = 5;
+				}
+				CGameController::SetCurrentHeroItemToSellNumber(newCurrentHeroItemToSellNumber);
+			}
+			break;
+		}
+		case sf::Keyboard::Enter: {
+			if (CGameController::GetCurrentVendorState() == VendorState::Buy)
+			{
+				SEvent vendorItemBoughtEvent;
+				VendorItemBoughtEventData eventData{};
+
+				eventData.itemIndex = CGameController::GetCurrentVendorItemToBuyNumber();
+				vendorItemBoughtEvent.type = EventType::VendorItemBought;
+				vendorItemBoughtEvent.data = eventData;
+
+				CEventDispatcher::GetInstance().Dispatch(vendorItemBoughtEvent);
+			}
+			if (CGameController::GetCurrentVendorState() == VendorState::Sell)
+			{
+				SEvent heroItemSoldEvent;
+				HeroItemSoldEventData eventData{};
+
+				eventData.itemIndex = CGameController::GetCurrentHeroItemToSellNumber();
+				heroItemSoldEvent.type = EventType::HeroItemSold;
+				heroItemSoldEvent.data = eventData;
+
+				CEventDispatcher::GetInstance().Dispatch(heroItemSoldEvent);
+			}
+			if (CGameController::GetCurrentVendorActionNumber() == 3)
+			{
+				CGameController::SetGameState(CurrentState::Player);
+			}
+			if (CGameController::GetCurrentVendorActionNumber() == 0 || CGameController::GetCurrentVendorActionNumber() == 1)
+			{
+				VendorState newState;
+				if (CGameController::GetCurrentVendorActionNumber() == 0)
+				{
+					newState = VendorState::Buy;
+				}
+				if (CGameController::GetCurrentVendorActionNumber() == 1)
+				{
+					newState = VendorState::Sell;
+				}
+				CGameController::SetCurrentVendorState(newState);
+			}
+			break;
+		}
+		case sf::Keyboard::C: {
+			CGameController::SetCurrentVendorState(VendorState::None);
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
 	if (currentGameState == CurrentState::Inventory)
 	{
 		switch (key)

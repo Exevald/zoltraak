@@ -38,3 +38,11 @@ enum class InventoryAction
 	Use,
 	Destroy,
 };
+
+enum class VendorState
+{
+	None,
+	Buy,
+	Sell,
+	Talk,
+};

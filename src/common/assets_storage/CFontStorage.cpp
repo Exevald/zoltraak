@@ -11,7 +11,7 @@ sf::Font& CFontStorage::GetFont(const std::string& filePath)
 		sf::Font font;
 		if (!font.loadFromFile(filePath))
 		{
-			throw std::runtime_error("Failed to load font: " + filePath);
+			throw std::runtime_error("Failed to load Font: " + filePath);
 		}
 		m_fontCache[filePath] = font;
 	}

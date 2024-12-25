@@ -3,6 +3,7 @@
 #include "CEntityManager.h"
 #include "camera/CCameraSystem.h"
 #include "collision/CCollisionSystem.h"
+#include "inventory/item_factory/CInventoryItemFactory.h"
 #include "level_generator/CLevelGenerator.h"
 #include "movement/CMovementSystem.h"
 #include "view/CViewSystem.h"
@@ -18,6 +19,7 @@ enum class CurrentState
 	Settings,
 	Fight,
 	Inventory,
+	Vendor,
 };
 
 struct SaveInfo
@@ -38,10 +40,10 @@ class CGameController
 {
 public:
 	static void InitGameSettings(const Level& level);
-	static void InitSystems();
+	static void InitSystems(const CInventoryItemFactory& factory);
 	static void Update();
 	static void Draw(sf::RenderWindow& window, Level& level);
-	void SetSelectedEntityId(EntityId id);
+	static void SetSelectedEntityId(EntityId id);
 	static void SaveGameInfo(int saveNumber, const SaveInfo& info);
 	static void SetGameState(const CurrentState& state);
 	static void SetCurrentMainMenuOption(int option);
@@ -59,6 +61,11 @@ public:
 	static void SetActiveInventoryCharacterNumber(int activeCharacterNumber);
 	static void SetCurrentInventoryEquipmentType(const EquipmentType& type);
 	static void SetCurrentInventoryEquipmentItemNumber(int number);
+	static void SetCurrentVendorActionNumber(int number);
+	static void UpdateAllHeroesInventory();
+	static void SetCurrentVendorState(const VendorState& state);
+	static void SetCurrentVendorItemToBuyNumber(int number);
+	static void SetCurrentHeroItemToSellNumber(int number);
 
 	static float GetElapsedTIme();
 	static SaveInfo GetSaveInfo(int saveNumber);
@@ -67,7 +74,7 @@ public:
 	static int GetCurrentMainMenuOption();
 	static int GetCurrentPauseMenuOption();
 	static int GetCurrentGameSaveNumber();
-	[[nodiscard]] EntityId GetSelectedEntityId() const;
+	static EntityId GetSelectedEntityId();
 	static sf::Vector2f GetGameSizeSettings();
 	static CurrentState GetCurrentGameState();
 	static float GetDeltaTime();
@@ -75,12 +82,17 @@ public:
 	static int GetCurrentInventorySectionNumber();
 	static int GetSelectedInventoryItemNumber();
 	static std::unordered_map<EntityId, std::vector<InventoryItem>> GetAllHeroesInventory();
+	static std::vector<InventoryItem> GetHeroesItemsToSell();
 	static int GetActiveInventoryCharacterNumber();
 	static EquipmentType GetCurrentEquipmentType();
 	static int GetCurrentEquipmentItemNumber();
+	static int GetCurrentVendorActionNumber();
+	static VendorState GetCurrentVendorState();
+	static int GetCurrentVendorItemToBuyNumber();
+	static int GetCurrentHeroItemToSellNumber();
 
 private:
-	EntityId m_selectedEntityId{};
+	static EntityId m_selectedEntityId;
 	static float m_elapsedTime;
 	static float m_levelWidth;
 	static float m_levelHeight;
@@ -99,6 +111,10 @@ private:
 	static int m_activeInventoryCharacterNumber;
 	static EquipmentType m_currentEquipmentType;
 	static int m_currentEquipmentItemNumber;
+	static int m_currentVendorActionNumber;
+	static VendorState m_currentVendorState;
+	static int m_currentVendorItemToBuyNumber;
+	static int m_currentHeroItemToSellNumber;
 
 	static std::string GetSaveFileName(int saveNumber);
 };

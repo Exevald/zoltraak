@@ -35,7 +35,7 @@ void HandleEvents(sf::RenderWindow& window, CGameController& gameController)
 
 	if (!movementKeyPressed)
 	{
-		EntityId selectedEntityId = gameController.GetSelectedEntityId();
+		EntityId selectedEntityId = CGameController::GetSelectedEntityId();
 		auto& entityManager = CEntityManager::GetInstance();
 		auto* velocityComp = entityManager.GetComponent<VelocityComponent>(selectedEntityId);
 
@@ -70,25 +70,25 @@ int main()
 	auto mapTexture = CTextureStorage::GetTexture("map_fieldOfHopesAndDreams.png");
 	auto level = CLevelGenerator::GenerateLevel("level1.txt");
 
-	CGameController::SetGameState(CurrentState::Inventory);
+	CGameController::SetGameState(CurrentState::Vendor);
 
 	inventoryItemFactory.RegisterItem<HealPotionItem>("Small heal potion", [](int ownerId) {
-		return std::make_unique<HealPotionItem>(ownerId, "Small heal potion", 10);
+		return std::make_unique<HealPotionItem>(ownerId, "Small heal potion", 10, 25);
 	});
 	inventoryItemFactory.RegisterItem<DamagePotionItem>("Damage potion", [](int ownerId) {
-		return std::make_unique<DamagePotionItem>(ownerId, "Damage potion", 1);
+		return std::make_unique<DamagePotionItem>(ownerId, "Damage potion", 1, 25);
 	});
 	inventoryItemFactory.RegisterItem<DefensePotionItem>("DefensePotionItem", [](int ownerId) {
-		return std::make_unique<DefensePotionItem>(ownerId, "Defense potion", 1);
+		return std::make_unique<DefensePotionItem>(ownerId, "Defense potion", 1, 25);
 	});
 	inventoryItemFactory.RegisterItem<ManaPotionItem>("Small mana potion", [](int ownerId) {
-		return std::make_unique<ManaPotionItem>(ownerId, "Small mana potion", 10);
+		return std::make_unique<ManaPotionItem>(ownerId, "Small mana potion", 10, 25);
 	});
 
 	inventoryItemFactory.RegisterItem<WeaponItem>("Empty Fist", [](int ownerId) {
 		const std::unordered_map<BonusType, int> itemBonuses;
 
-		return std::make_unique<WeaponItem>(ownerId, "Empty Fist", itemBonuses);
+		return std::make_unique<WeaponItem>(ownerId, "Empty Fist", itemBonuses, 0);
 	});
 
 	inventoryItemFactory.RegisterItem<WeaponItem>("Wood Blade", [](int ownerId) {
@@ -97,7 +97,7 @@ int main()
 			{ BonusType::DamageBonus, damageBonus },
 		};
 
-		return std::make_unique<WeaponItem>(ownerId, "Wood Blade", itemBonuses);
+		return std::make_unique<WeaponItem>(ownerId, "Wood Blade", itemBonuses, 30);
 	});
 
 	inventoryItemFactory.RegisterItem<WeaponItem>("Bounce Blade", [](int ownerId) {
@@ -108,7 +108,7 @@ int main()
 			{ BonusType::ArmorBonus, armorBonus },
 		};
 
-		return std::make_unique<WeaponItem>(ownerId, "Bounce Blade", itemBonuses);
+		return std::make_unique<WeaponItem>(ownerId, "Bounce Blade", itemBonuses, 30);
 	});
 
 	inventoryItemFactory.RegisterItem<WeaponItem>("Mecha Saber", [](int ownerId) {
@@ -119,13 +119,13 @@ int main()
 			{ BonusType::ArmorBonus, armorBonus },
 		};
 
-		return std::make_unique<WeaponItem>(ownerId, "Mecha Saber", itemBonuses);
+		return std::make_unique<WeaponItem>(ownerId, "Mecha Saber", itemBonuses, 30);
 	});
 
 	inventoryItemFactory.RegisterItem<ShieldItem>("Poor man shield", [](int ownerId) {
 		const std::unordered_map<BonusType, int> itemBonuses;
 
-		return std::make_unique<ShieldItem>(ownerId, "Poor man shield", itemBonuses);
+		return std::make_unique<ShieldItem>(ownerId, "Poor man shield", itemBonuses, 0);
 	});
 
 	inventoryItemFactory.RegisterItem<ShieldItem>("White Ribbon", [](int ownerId) {
@@ -134,7 +134,7 @@ int main()
 			{ BonusType::ArmorBonus, armorBonus },
 		};
 
-		return std::make_unique<ShieldItem>(ownerId, "White Ribbon", itemBonuses);
+		return std::make_unique<ShieldItem>(ownerId, "White Ribbon", itemBonuses, 30);
 	});
 
 	inventoryItemFactory.RegisterItem<ShieldItem>("Amber Card", [](int ownerId) {
@@ -143,7 +143,7 @@ int main()
 			{ BonusType::ArmorBonus, armorBonus },
 		};
 
-		return std::make_unique<ShieldItem>(ownerId, "Amber Card", itemBonuses);
+		return std::make_unique<ShieldItem>(ownerId, "Amber Card", itemBonuses, 30);
 	});
 
 	inventoryItemFactory.RegisterItem<ShieldItem>("Iron Shackle", [](int ownerId) {
@@ -154,7 +154,7 @@ int main()
 			{ BonusType::ArmorBonus, armorBonus },
 		};
 
-		return std::make_unique<ShieldItem>(ownerId, "Iron Shackle", itemBonuses);
+		return std::make_unique<ShieldItem>(ownerId, "Iron Shackle", itemBonuses, 30);
 	});
 
 	inventoryItemFactory.RegisterItem<ShieldItem>("Mouse Token", [](int ownerId) {
@@ -165,7 +165,7 @@ int main()
 			{ BonusType::MagicBonus, magicBonus },
 		};
 
-		return std::make_unique<ShieldItem>(ownerId, "Mouse Token", itemBonuses);
+		return std::make_unique<ShieldItem>(ownerId, "Mouse Token", itemBonuses, 30);
 	});
 
 	spellFactory.RegisterSpell<HealSpell>("Heal Prayer", [](int ownerId) {
@@ -304,7 +304,16 @@ int main()
 	entityManager.AddComponent<ImageComponent>(fightSoul, menuSoul, 0, 0, sf::Vector2i(225, 225));
 	entityManager.AddComponent<FightSoulComponent>(fightSoul);
 
-	CGameController::InitSystems();
+	EntityId vendor = entityManager.CreateEntity();
+
+	std::vector<InventoryItem> vendorItems;
+	vendorItems.push_back(*inventoryItemFactory.CreateInventoryItem<WeaponItem>("Mecha Saber", vendor));
+	vendorItems.push_back(*inventoryItemFactory.CreateInventoryItem<ShieldItem>("Iron Shackle", vendor));
+	vendorItems.push_back(*inventoryItemFactory.CreateInventoryItem<HealPotionItem>("Small heal potion", vendor));
+
+	entityManager.AddComponent<VendorComponent>(vendor, vendorItems, 6);
+
+	CGameController::InitSystems(inventoryItemFactory);
 	CGameController::InitGameSettings(level);
 
 	sf::Clock clock;
@@ -314,12 +323,12 @@ int main()
 		if (CGameController::GetCurrentGameState() == CurrentState::MainMenu)
 		{
 			auto playerSoulId = entityManager.GetEntitiesWithComponents<MenuSoulComponent>().front();
-			gameController.SetSelectedEntityId(playerSoulId);
+			CGameController::SetSelectedEntityId(playerSoulId);
 		}
 		if (CGameController::GetCurrentGameState() == CurrentState::Fight)
 		{
 			auto fightSoulId = entityManager.GetEntitiesWithComponents<FightSoulComponent>().front();
-			gameController.SetSelectedEntityId(fightSoulId);
+			CGameController::SetSelectedEntityId(fightSoulId);
 		}
 
 		HandleEvents(window, gameController);

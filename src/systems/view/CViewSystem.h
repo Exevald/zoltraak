@@ -3,7 +3,10 @@
 #include "../../CGameController.h"
 #include "CEntityManager.h"
 #include "Utils.h"
+#include "view/renderers/IRenderer.h"
+#include "view/renderers/vendor/CVendorRenderer.h"
 #include <SFML/Graphics.hpp>
+#include <memory>
 
 struct SaveInfo;
 
@@ -102,6 +105,7 @@ public:
 		: m_window(window)
 		, m_level(level)
 	{
+		m_renderers.push_back(std::make_unique<CVendorRenderer>(m_vendor));
 		m_heroCard.isVisible = false;
 	}
 
@@ -155,9 +159,13 @@ private:
 	LevelChoosingMenu m_levelChoosingMenu;
 	FightScene m_fightingScene;
 	Inventory m_inventory;
+	Vendor m_vendor;
+
 	FightAction m_currentFightAction = FightAction::Info;
 	int m_activeFightHero = 2;
 	bool m_isAttackBarActive = false;
 	InventoryState m_currentInventoryState = InventoryState::MenuSectionSelection;
 	InventoryAction m_currentInventoryItemAction = InventoryAction::Use;
+
+	std::vector<std::unique_ptr<IRenderer>> m_renderers;
 };
