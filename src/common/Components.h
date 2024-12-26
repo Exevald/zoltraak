@@ -356,3 +356,8 @@ struct VendorComponent : IComponent
 	{
 	}
 };
+
+struct EnemyComponent : IComponent
+{
+
+};

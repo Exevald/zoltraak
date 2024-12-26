@@ -3,7 +3,9 @@
 #include "camera/CCameraSystem.h"
 #include "collision/CCollisionSystem.h"
 #include "event/CEventSystem.h"
+#include "experience/CExperienceSystem.h"
 #include "fight/CFightSystem.h"
+#include "health/CHealthSystem.h"
 #include "inventory/CInventorySystem.h"
 #include "spell/CSpellSystem.h"
 #include "view/CViewSystem.h"
@@ -41,6 +43,10 @@ int CGameController::m_currentVendorActionNumber = 0;
 VendorState CGameController::m_currentVendorState = VendorState::None;
 int CGameController::m_currentVendorItemToBuyNumber = 0;
 int CGameController::m_currentHeroItemToSellNumber = 0;
+std::vector<AttackData> CGameController::m_attacks;
+FightAction CGameController::m_selectedFightAction = FightAction::Info;
+int CGameController::m_currentFightInventoryItemNumber = 0;
+int CGameController::m_activeFightHeroNumber = 2;
 
 void CGameController::InitGameSettings(const Level& level)
 {
@@ -58,6 +64,8 @@ void CGameController::InitSystems(const CInventoryItemFactory& factory)
 	CFightSystem::Init();
 	inventorySystem.Init();
 	CSpellSystem::Init();
+	CExperienceSystem::Init();
+	CHealthSystem::Init();
 }
 
 void CGameController::Draw(sf::RenderWindow& window, Level& level)
@@ -77,6 +85,7 @@ void CGameController::Update()
 	CAnimationSystem::Update();
 	CFightSystem::Update();
 	CInventorySystem::Update();
+	CHealthSystem::Update();
 }
 
 void CGameController::SetSelectedEntityId(EntityId id)
@@ -392,4 +401,39 @@ std::vector<InventoryItem> CGameController::GetHeroesItemsToSell()
 	}
 
 	return commonHeroesInventory;
+}
+
+void CGameController::SetFightAttacks(const std::vector<AttackData>& attacks)
+{
+	m_attacks = attacks;
+}
+
+void CGameController::SetCurrentFightAction(const FightAction& action)
+{
+	m_selectedFightAction = action;
+}
+
+FightAction CGameController::GetCurrentFightAction()
+{
+	return m_selectedFightAction;
+}
+
+void CGameController::SetCurrentFightInventoryItemNumber(int number)
+{
+	m_currentFightInventoryItemNumber = number;
+}
+
+int CGameController::GetCurrentFightInventoryItemNumber()
+{
+	return m_currentFightInventoryItemNumber;
+}
+
+void CGameController::SetActiveFightHeroNumber(int number)
+{
+	m_activeFightHeroNumber = number;
+}
+
+int CGameController::GetActiveFightHeroNumber()
+{
+	return m_activeFightHeroNumber;
 }

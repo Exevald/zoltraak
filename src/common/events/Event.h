@@ -11,7 +11,6 @@ enum class EventType
 	EntityMoved,
 	FightActionSelected,
 	ActiveFightCharacterUpdated,
-	InventoryItemCreated,
 	InventoryActionChanged,
 	InventoryStateChanged,
 	InventoryItemSelected,
@@ -20,6 +19,8 @@ enum class EventType
 	InventoryItemEquipped,
 	VendorItemBought,
 	HeroItemSold,
+	AttackCollied,
+	FightItemUsed,
 };
 
 struct EntitySelectedEventData
@@ -93,6 +94,18 @@ struct HeroItemSoldEventData
 	int itemIndex;
 };
 
+struct AttackColliedEventData
+{
+	int damage;
+	int parsonId;
+};
+
+struct FightItemUsedEventData
+{
+	int heroId;
+	int itemIndex;
+};
+
 using EventData = std::variant<
 	EntitySelectedEventData,
 	EntityMovedEventData,
@@ -106,7 +119,9 @@ using EventData = std::variant<
 	ActiveInventoryCharacterNumberChangedEventData,
 	InventoryItemEquippedEventData,
 	VendorItemBoughtEventData,
-	HeroItemSoldEventData>;
+	HeroItemSoldEventData,
+	AttackColliedEventData,
+	FightItemUsedEventData>;
 
 struct SEvent
 {

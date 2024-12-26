@@ -20,6 +20,7 @@ set(IMAGES
         ${CMAKE_SOURCE_DIR}/src/res/sprites/fight_background.png
         ${CMAKE_SOURCE_DIR}/src/res/sprites/fight_utils.png
         ${CMAKE_SOURCE_DIR}/src/res/sprites/vendor_hero1.png
+        ${CMAKE_SOURCE_DIR}/src/res/sprites/enemy_sprite1.png
 )
 
 set(MAPS
@@ -55,8 +56,11 @@ add_executable(
         src/systems/fight/CFightSystem.cpp
         src/systems/inventory/CInventorySystem.cpp
         src/systems/spell/CSpellSystem.cpp
+        src/systems/health/CHealthSystem.cpp
+        src/systems/experience/CExperienceSystem.cpp
 
         src/systems/view/renderers/vendor/CVendorRenderer.cpp
+        src/systems/view/renderers/skills/CSkillsRenderer.cpp
         src/systems/view/CViewSystem.cpp
 
         src/CGameController.cpp

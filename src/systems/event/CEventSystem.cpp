@@ -60,13 +60,13 @@ void CEventSystem::HandleMouseClick(CGameController& gameController, const sf::V
 
 	CEventDispatcher::GetInstance().Dispatch(entitySelectedEvent);
 
-	gameController.SetSelectedEntityId(clickedEntity);
+	CGameController::SetSelectedEntityId(clickedEntity);
 }
 
 void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard::Key key)
 {
 	auto& entityManager = CEntityManager::GetInstance();
-	EntityId selectedEntityId = gameController.GetSelectedEntityId();
+	EntityId selectedEntityId = CGameController::GetSelectedEntityId();
 	auto* velocityComp = entityManager.GetComponent<VelocityComponent>(selectedEntityId);
 	auto* animationComp = entityManager.GetComponent<AnimationComponent>(selectedEntityId);
 
@@ -80,6 +80,34 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 	{
 		switch (key)
 		{
+		case sf::Keyboard::W: {
+			if (CGameController::GetCurrentFightAction() == FightAction::Inventory)
+			{
+				auto newInventoryItemNumber = CGameController::GetCurrentFightInventoryItemNumber() - 1;
+				if (newInventoryItemNumber < 0)
+				{
+					newInventoryItemNumber = 0;
+				}
+				CGameController::SetCurrentFightInventoryItemNumber(newInventoryItemNumber);
+				break;
+			}
+		}
+		case sf::Keyboard::S: {
+			if (CGameController::GetCurrentFightAction() == FightAction::Inventory)
+			{
+				auto newInventoryItemNumber = CGameController::GetCurrentFightInventoryItemNumber() + 1;
+				if (newInventoryItemNumber > 6)
+				{
+					newInventoryItemNumber = 6;
+				}
+				CGameController::SetCurrentFightInventoryItemNumber(newInventoryItemNumber);
+				break;
+			}
+		}
+		case sf::Keyboard::C: {
+			CGameController::SetCurrentFightAction(FightAction::Info);
+			break;
+		}
 		case sf::Keyboard::A: {
 			auto newFightAction = CGameController::GetCurrentFightActionNumber() - 1;
 			if (newFightAction < 0)
@@ -99,42 +127,83 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 			break;
 		}
 		case sf::Keyboard::Enter: {
-			FightAction selectedFightAction;
-			switch (CGameController::GetCurrentFightActionNumber())
+			switch (CGameController::GetCurrentFightAction())
 			{
-			case 0: {
-				selectedFightAction = FightAction::Attack;
+			case FightAction::Act: {
 				break;
 			}
-			case 1: {
-				selectedFightAction = FightAction::Act;
+			case FightAction::Inventory: {
+				SEvent fightItemUsedEvent;
+				FightItemUsedEventData fightItemUsedEventData{};
+
+				fightItemUsedEventData.itemIndex = CGameController::GetCurrentFightInventoryItemNumber();
+				fightItemUsedEventData.heroId = CGameController::GetActiveFightHeroNumber();
+				fightItemUsedEvent.type = EventType::FightItemUsed;
+				fightItemUsedEvent.data = fightItemUsedEventData;
+
+				SEvent fightActionSelectedEvent;
+				FightActionSelectedEventData fightActionSelectedEventData{};
+
+				fightActionSelectedEventData.id = selectedEntityId;
+				fightActionSelectedEventData.selectedAction = FightAction::Info;
+				fightActionSelectedEvent.type = EventType::FightActionSelected;
+				fightActionSelectedEvent.data = fightItemUsedEventData;
+
+				CEventDispatcher::GetInstance().Dispatch(fightActionSelectedEvent);
+				CEventDispatcher::GetInstance().Dispatch(fightItemUsedEvent);
 				break;
 			}
-			case 2: {
-				selectedFightAction = FightAction::Inventory;
+			case FightAction::Spare: {
+				CGameController::SetGameState(CurrentState::Player);
 				break;
 			}
-			case 3: {
-				selectedFightAction = FightAction::Spare;
-				break;
-			}
-			case 4: {
-				selectedFightAction = FightAction::Magic;
+			case FightAction::Magic: {
 				break;
 			}
 			default:
 				break;
 			}
+			if (CGameController::GetCurrentFightAction() == FightAction::Info)
+			{
+				FightAction selectedFightAction;
+				switch (CGameController::GetCurrentFightActionNumber())
+				{
+				case 0: {
+					selectedFightAction = FightAction::Attack;
 
-			SEvent fightActionSelectedEvent;
-			FightActionSelectedEventData eventData{};
+					SEvent fightActionSelectedEvent;
+					FightActionSelectedEventData eventData{};
 
-			eventData.id = selectedEntityId;
-			eventData.selectedAction = selectedFightAction;
-			fightActionSelectedEvent.type = EventType::FightActionSelected;
-			fightActionSelectedEvent.data = eventData;
+					eventData.id = selectedEntityId;
+					eventData.selectedAction = selectedFightAction;
+					fightActionSelectedEvent.type = EventType::FightActionSelected;
+					fightActionSelectedEvent.data = eventData;
 
-			CEventDispatcher::GetInstance().Dispatch(fightActionSelectedEvent);
+					CEventDispatcher::GetInstance().Dispatch(fightActionSelectedEvent);
+					break;
+				}
+				case 1: {
+					selectedFightAction = FightAction::Act;
+					break;
+				}
+				case 2: {
+					selectedFightAction = FightAction::Inventory;
+					break;
+				}
+				case 3: {
+					CGameController::SetGameState(CurrentState::Player);
+					break;
+				}
+				case 4: {
+					selectedFightAction = FightAction::Magic;
+					break;
+				}
+				default:
+					break;
+				}
+
+				CGameController::SetCurrentFightAction(selectedFightAction);
+			}
 			break;
 		}
 		default:
@@ -655,6 +724,10 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 		}
 		case sf::Keyboard::I: {
 			CGameController::SetGameState(CurrentState::Inventory);
+			break;
+		}
+		case sf::Keyboard::M: {
+			CGameController::SetGameState(CurrentState::Vendor);
 			break;
 		}
 		default: {

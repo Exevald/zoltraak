@@ -76,7 +76,7 @@ void CMovementSystem::HandleEntityMoved(EntityId movedEntityId, const std::strin
 		newX = std::max(0.f, std::min(newX, 777 + float(battleAreaSettings.areaWidth * 2) - 22));
 		newY = std::max(0.f, std::min(newY, 305 + float(battleAreaSettings.areaHeight * 2) - 22));
 	}
-	if (fightSoulComponent)
+	if (fightSoulComponent && CGameController::GetCurrentFightPhase() == FightPhase::EnemiesTurn)
 	{
 		newX = std::clamp(newX, 785.f, 785.f + 142.f * 2 - 28.f);
 		newY = std::clamp(newY, 314.f, 314.f + 141.f * 2 - 28.f);

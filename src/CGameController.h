@@ -3,6 +3,7 @@
 #include "CEntityManager.h"
 #include "camera/CCameraSystem.h"
 #include "collision/CCollisionSystem.h"
+#include "fight/CFightSystem.h"
 #include "inventory/item_factory/CInventoryItemFactory.h"
 #include "level_generator/CLevelGenerator.h"
 #include "movement/CMovementSystem.h"
@@ -66,6 +67,10 @@ public:
 	static void SetCurrentVendorState(const VendorState& state);
 	static void SetCurrentVendorItemToBuyNumber(int number);
 	static void SetCurrentHeroItemToSellNumber(int number);
+	static void SetFightAttacks(const std::vector<AttackData>& attacks);
+	static void SetCurrentFightAction(const FightAction& action);
+	static void SetCurrentFightInventoryItemNumber(int number);
+	static void SetActiveFightHeroNumber(int number);
 
 	static float GetElapsedTIme();
 	static SaveInfo GetSaveInfo(int saveNumber);
@@ -90,6 +95,9 @@ public:
 	static VendorState GetCurrentVendorState();
 	static int GetCurrentVendorItemToBuyNumber();
 	static int GetCurrentHeroItemToSellNumber();
+	static FightAction GetCurrentFightAction();
+	static int GetCurrentFightInventoryItemNumber();
+	static int GetActiveFightHeroNumber();
 
 private:
 	static EntityId m_selectedEntityId;
@@ -115,6 +123,10 @@ private:
 	static VendorState m_currentVendorState;
 	static int m_currentVendorItemToBuyNumber;
 	static int m_currentHeroItemToSellNumber;
+	static std::vector<AttackData> m_attacks;
+	static FightAction m_selectedFightAction;
+	static int m_currentFightInventoryItemNumber;
+	static int m_activeFightHeroNumber;
 
 	static std::string GetSaveFileName(int saveNumber);
 };

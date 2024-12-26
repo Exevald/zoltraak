@@ -15,14 +15,10 @@ void CViewSystem::Init()
 		UpdateHeroCard(selectedEventData.id);
 	});
 
-	CEventDispatcher::GetInstance().Subscribe(EventType::FightActionSelected, [this](const SEvent& event) {
-		const auto& fightActionSelectedEventData = std::get<FightActionSelectedEventData>(event.data);
-		m_currentFightAction = fightActionSelectedEventData.selectedAction;
-	});
-
 	CEventDispatcher::GetInstance().Subscribe(EventType::ActiveFightCharacterUpdated, [this](const SEvent& event) {
 		const auto& activeFightCharacterUpdatedEventData = std::get<ActiveFightCharacterUpdatedEventData>(event.data);
 		CViewSystem::UpdateActiveFightUserInfo(activeFightCharacterUpdatedEventData.id);
+		CGameController::SetActiveFightHeroNumber(activeFightCharacterUpdatedEventData.id);
 	});
 
 	CEventDispatcher::GetInstance().Subscribe(EventType::InventoryActionChanged, [this](const SEvent& event) {
@@ -97,6 +93,11 @@ void CViewSystem::Draw()
 		m_window.setView(view);
 
 		CViewSystem::DrawFightScene();
+
+		if (CGameController::GetCurrentFightPhase() == FightPhase::EnemiesTurn)
+		{
+			CViewSystem::DrawAttacks();
+		}
 	}
 	if (currentState == CurrentState::Inventory)
 	{
@@ -214,6 +215,10 @@ void CViewSystem::DrawItems()
 
 	for (EntityId entityId : entitiesWithAnimations)
 	{
+		if (entityManager.GetComponent<EnemyComponent>(entityId))
+		{
+			continue;
+		}
 		const auto* animComp = entityManager.GetComponent<AnimationComponent>(entityId);
 
 		m_window.draw(animComp->sprite);
@@ -634,6 +639,7 @@ void CViewSystem::DrawFightScene()
 
 	auto charactersIds = entityManager.GetEntitiesWithComponents<NameComponent>();
 	auto currentFightPhase = CGameController::GetCurrentFightPhase();
+	auto enemies = entityManager.GetEntitiesWithComponents<EnemyComponent>();
 
 	m_fightingScene.backgroundTexture = CTextureStorage::GetTexture("fight_background.png");
 	m_fightingScene.background.setTexture(m_fightingScene.backgroundTexture);
@@ -666,7 +672,7 @@ void CViewSystem::DrawFightScene()
 	m_window.draw(m_fightingScene.background);
 	m_window.draw(m_fightingScene.fightInfoCard);
 
-	switch (m_currentFightAction)
+	switch (CGameController::GetCurrentFightAction())
 	{
 	case FightAction::Info: {
 		CViewSystem::SetFightInfo();
@@ -682,7 +688,7 @@ void CViewSystem::DrawFightScene()
 		break;
 	}
 	case FightAction::Inventory: {
-		CViewSystem::SetFightInventory();
+		CViewSystem::DrawFightInventory();
 		break;
 	}
 	case FightAction::Spare: {
@@ -690,12 +696,12 @@ void CViewSystem::DrawFightScene()
 		break;
 	}
 	case FightAction::Magic: {
-		CViewSystem::SetMagicText();
+		CViewSystem::DrawMagicSkills();
 		break;
 	}
 	}
 
-	if (currentFightPhase == FightPhase::EnemiesTurn)
+	if (currentFightPhase == FightPhase::EnemiesTurn && !m_isAttackBarActive)
 	{
 		m_window.draw(m_fightingScene.battleArea);
 		m_window.draw(m_fightingScene.heroSoul);
@@ -716,7 +722,7 @@ void CViewSystem::DrawFightScene()
 			m_fightingScene.fightInfoCard.getPosition().y - 70 });
 		heroFightCard.area.setFillColor(sf::Color::Black);
 
-		if (fightTurnComp->isHeroTurn)
+		if (fightTurnComp->isHeroTurn && currentFightPhase != FightPhase::EnemiesTurn)
 		{
 			heroFightCard.area.setPosition({ m_fightingScene.fightInfoCard.getPosition().x + xOffset,
 				m_fightingScene.fightInfoCard.getPosition().y - 140 });
@@ -804,6 +810,18 @@ void CViewSystem::DrawFightScene()
 		m_fightingScene.heroesFightInfo[id] = heroFightCard;
 		xOffset += cardWidth + 20;
 		spriteYOffset += 150;
+	}
+
+	spriteYOffset = 0;
+	for (int enemyId : enemies)
+	{
+		auto animComp = entityManager.GetComponent<AnimationComponent>(enemyId);
+		animComp->sprite.setPosition(1400, 450 + spriteYOffset);
+		animComp->sprite.setScale(3.5f, 3.5f);
+
+		m_window.draw(animComp->sprite);
+		spriteYOffset += 150;
+
 	}
 
 	for (const auto& info : m_fightingScene.heroesFightInfo)
@@ -901,7 +919,7 @@ void CViewSystem::SetAttackBar(const sf::Vector2f& fightInfoCardPosition)
 		}
 
 		std::cout << "Damage multiplier: " << damageMultiplier << std::endl;
-		m_currentFightAction = FightAction::Info;
+		CGameController::SetCurrentFightAction(FightAction::Info);
 	}
 
 	m_window.draw(attackBar);
@@ -911,31 +929,106 @@ void CViewSystem::SetAttackBar(const sf::Vector2f& fightInfoCardPosition)
 void CViewSystem::SetActActions()
 {
 	auto& entityManager = CEntityManager::GetInstance();
-	std::cout << "Act\n";
 }
 
-void CViewSystem::SetFightInventory()
+void CViewSystem::DrawFightInventory()
 {
 	auto& entityManager = CEntityManager::GetInstance();
-	std::cout << "Inventory\n";
+	auto inventoryComp = entityManager.GetComponent<InventoryComponent>(m_activeFightHero);
+	if (!inventoryComp)
+	{
+		return;
+	}
+
+	m_fightingScene.heroInventoryItems.clear();
+	float xOffset = 0;
+	float yOffset = 0;
+	for (auto& item : inventoryComp->commonItems)
+	{
+		sf::Text itemText;
+		itemText.setFont(font);
+		itemText.setString(item.name);
+		itemText.setCharacterSize(40);
+		itemText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50 + xOffset * 100, m_fightingScene.fightInfoCard.getPosition().y + 20 + yOffset * 50);
+		m_fightingScene.heroInventoryItems.push_back(itemText);
+
+		yOffset++;
+		if (yOffset > 3)
+		{
+			yOffset = 0;
+			xOffset++;
+		}
+	}
+
+	for (int i = 0; i < m_fightingScene.heroInventoryItems.size(); i++)
+	{
+		auto item = m_fightingScene.heroInventoryItems[i];
+		if (CGameController::GetCurrentFightInventoryItemNumber() > m_fightingScene.heroInventoryItems.size() - 1)
+		{
+			CGameController::SetCurrentFightInventoryItemNumber(int(m_fightingScene.heroInventoryItems.size()) - 1);
+		}
+		if (i == CGameController::GetCurrentFightInventoryItemNumber())
+		{
+			item.setFillColor(sf::Color::Yellow);
+		}
+
+		m_window.draw(item);
+	}
 }
 
 void CViewSystem::SetFightInfo()
 {
 	auto& entityManager = CEntityManager::GetInstance();
-	std::cout << "Fight info\n";
 }
 
 void CViewSystem::SetSpareText()
 {
 	auto& entityManager = CEntityManager::GetInstance();
-	std::cout << "Spare\n";
 }
 
-void CViewSystem::SetMagicText()
+void CViewSystem::DrawMagicSkills()
 {
 	auto& entityManager = CEntityManager::GetInstance();
-	std::cout << "Magic\n";
+	auto spellComp = entityManager.GetComponent<SpellComponent>(m_activeFightHero);
+	if (!spellComp)
+	{
+		return;
+	}
+
+	m_fightingScene.heroMagicSkills.clear();
+	float xOffset = 0;
+	float yOffset = 0;
+	for (auto& item : spellComp->spells)
+	{
+		sf::Text itemText;
+		itemText.setFont(font);
+		itemText.setString(item.name);
+		itemText.setCharacterSize(40);
+		itemText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 50 + xOffset * 100, m_fightingScene.fightInfoCard.getPosition().y + 20 + yOffset * 50);
+		m_fightingScene.heroMagicSkills.push_back(itemText);
+
+		yOffset++;
+		if (yOffset > 3)
+		{
+			yOffset = 0;
+			xOffset++;
+		}
+	}
+
+	for (int i = 0; i < m_fightingScene.heroMagicSkills.size(); i++)
+	{
+		auto item = m_fightingScene.heroMagicSkills[i];
+		if (CGameController::GetCurrentFightInventoryItemNumber() > m_fightingScene.heroMagicSkills.size() - 1)
+		{
+			CGameController::SetCurrentFightInventoryItemNumber(int(m_fightingScene.heroMagicSkills.size()) - 1);
+		}
+		if (i == CGameController::GetCurrentFightInventoryItemNumber())
+		{
+			item.setFillColor(sf::Color::Yellow);
+		}
+
+		m_window.draw(item);
+	}
 }
 
 void CViewSystem::DrawInventory()
@@ -1448,5 +1541,20 @@ void CViewSystem::DrawHeroSpells()
 
 		yOffset += 50;
 		m_window.draw(spellName);
+	}
+}
+
+void CViewSystem::DrawAttacks()
+{
+	for (const auto& attack : CFightSystem::GetAttacks())
+	{
+		sf::Sprite attackSprite;
+		attackSprite.setTexture(CTextureStorage::GetTexture("enemy_sprite1.png"));
+		attackSprite.setTextureRect(sf::IntRect(2, 421, 40, 40));
+		attackSprite.setRotation(90.f);
+		attackSprite.setPosition(m_fightingScene.battleArea.getPosition().x + attack.x, m_fightingScene.battleArea.getPosition().y + attack.y);
+		attackSprite.setScale(0.7f, 0.7f);
+
+		m_window.draw(attackSprite);
 	}
 }

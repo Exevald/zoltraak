@@ -3,6 +3,7 @@
 #include "assets_storage/CTextureStorage.h"
 #include "common/Utils.h"
 #include "common/level_generator/CLevelGenerator.h"
+#include "experience/skill_factory/CSkillFactory.h"
 #include "inventory/item_factory/CInventoryItemFactory.h"
 #include "spell/spell_factory/CSpellFactory.h"
 #include "systems/event/CEventSystem.h"
@@ -66,11 +67,12 @@ int main()
 	auto hero2Sprites = CTextureStorage::GetTexture("hero2_sprites.png");
 	auto menuSoul = CTextureStorage::GetTexture("menu_soul.png");
 	auto utilsWindows = CTextureStorage::GetTexture("utils_windows.png");
+	auto enemySprites = CTextureStorage::GetTexture("enemy_sprite1.png");
 
 	auto mapTexture = CTextureStorage::GetTexture("map_fieldOfHopesAndDreams.png");
 	auto level = CLevelGenerator::GenerateLevel("level1.txt");
 
-	CGameController::SetGameState(CurrentState::Vendor);
+	CGameController::SetGameState(CurrentState::Fight);
 
 	inventoryItemFactory.RegisterItem<HealPotionItem>("Small heal potion", [](int ownerId) {
 		return std::make_unique<HealPotionItem>(ownerId, "Small heal potion", 10, 25);
@@ -313,8 +315,18 @@ int main()
 
 	entityManager.AddComponent<VendorComponent>(vendor, vendorItems, 6);
 
+	EntityId enemy1 = entityManager.CreateEntity();
+	entityManager.AddComponent<EnemyComponent>(enemy1);
+	entityManager.AddComponent<PositionComponent>(enemy1, 1400, 350);
+	entityManager.AddComponent<AnimationComponent>(enemy1, enemySprites);
+	auto* enemy1AnimationCompAnimationComp = entityManager.GetComponent<AnimationComponent>(enemy1);
+	enemy1AnimationCompAnimationComp->AddAnimation("idle", 1, 15, 4, sf::Vector2i(48, 48), 0.15f);
+	enemy1AnimationCompAnimationComp->SetAnimation("idle");
+
 	CGameController::InitSystems(inventoryItemFactory);
 	CGameController::InitGameSettings(level);
+	CFightSystem::LoadAttackPatterns();
+	CGameController::SetFightAttacks(CFightSystem::GetAttacks());
 
 	sf::Clock clock;
 

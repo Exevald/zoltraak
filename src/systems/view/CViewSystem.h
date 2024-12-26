@@ -75,6 +75,8 @@ struct FightScene
 	std::unordered_map<int, HeroInfoCard> heroesFightInfo;
 	sf::Sprite heroSoul;
 	sf::Sprite battleArea;
+	std::vector<sf::Text> heroInventoryItems;
+	std::vector<sf::Text> heroMagicSkills;
 };
 
 struct Inventory
@@ -142,14 +144,15 @@ private:
 	void SetAttackBar(const sf::Vector2f& fightInfoCardPosition);
 	void SetSpareText();
 	void SetActActions();
-	void SetFightInventory();
-	void SetMagicText();
+	void DrawFightInventory();
+	void DrawMagicSkills();
 	void DrawInventory();
 	void UpdateInventoryItems();
 	void UpdateHeroStats();
 	void UpdateHeroEquipment();
 	void DrawHeroInfo();
 	void DrawHeroSpells();
+	void DrawAttacks();
 
 	sf::RenderWindow& m_window;
 	Level& m_level;
