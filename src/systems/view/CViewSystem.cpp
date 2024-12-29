@@ -1395,7 +1395,7 @@ void CViewSystem::UpdateHeroStats()
 
 	auto& entityManager = CEntityManager::GetInstance();
 	auto attackComp = entityManager.GetComponent<AttackComponent>(CGameController::GetActiveInventoryCharacterNumber());
-	auto defenseComp = entityManager.GetComponent<DefenseComponent>(CGameController::GetActiveInventoryCharacterNumber());
+	auto defenseComp = entityManager.GetComponent<DefenceComponent>(CGameController::GetActiveInventoryCharacterNumber());
 	auto magicComp = entityManager.GetComponent<MagicComponent>(CGameController::GetActiveInventoryCharacterNumber());
 
 	if (!attackComp || !defenseComp || !magicComp)

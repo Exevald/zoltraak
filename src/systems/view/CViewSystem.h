@@ -4,6 +4,7 @@
 #include "CEntityManager.h"
 #include "Utils.h"
 #include "view/renderers/IRenderer.h"
+#include "view/renderers/skills/CSkillsRenderer.h"
 #include "view/renderers/vendor/CVendorRenderer.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
@@ -108,6 +109,7 @@ public:
 		, m_level(level)
 	{
 		m_renderers.push_back(std::make_unique<CVendorRenderer>(m_vendor));
+		m_renderers.push_back(std::make_unique<CSkillsRenderer>(m_skills));
 		m_heroCard.isVisible = false;
 	}
 
@@ -163,6 +165,7 @@ private:
 	FightScene m_fightingScene;
 	Inventory m_inventory;
 	Vendor m_vendor;
+	Skills m_skills;
 
 	FightAction m_currentFightAction = FightAction::Info;
 	int m_activeFightHero = 2;

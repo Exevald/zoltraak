@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Spells.h"
+#include <functional>
+#include <memory>
 #include <string>
 #include <unordered_map>
-#include <memory>
-#include <functional>
-#include "../../../common/spells/Spells.h"
 
 class CSpellFactory
 {

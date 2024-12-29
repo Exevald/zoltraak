@@ -21,6 +21,7 @@ enum class CurrentState
 	Fight,
 	Inventory,
 	Vendor,
+	Skills,
 };
 
 struct SaveInfo
@@ -71,6 +72,7 @@ public:
 	static void SetCurrentFightAction(const FightAction& action);
 	static void SetCurrentFightInventoryItemNumber(int number);
 	static void SetActiveFightHeroNumber(int number);
+	static void SetCurrentSkillAreaNumber(int number);
 
 	static float GetElapsedTIme();
 	static SaveInfo GetSaveInfo(int saveNumber);
@@ -98,6 +100,7 @@ public:
 	static FightAction GetCurrentFightAction();
 	static int GetCurrentFightInventoryItemNumber();
 	static int GetActiveFightHeroNumber();
+	static int GetCurrentSkillAreaNumber();
 
 private:
 	static EntityId m_selectedEntityId;
@@ -127,6 +130,7 @@ private:
 	static FightAction m_selectedFightAction;
 	static int m_currentFightInventoryItemNumber;
 	static int m_activeFightHeroNumber;
+	static int m_currentSkillAreaNumber;
 
 	static std::string GetSaveFileName(int saveNumber);
 };

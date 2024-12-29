@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utils.h"
+#include "skill/Skill.h"
 #include "spells/Spells.h"
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
@@ -305,11 +306,11 @@ struct AttackComponent : IComponent
 	}
 };
 
-struct DefenseComponent : IComponent
+struct DefenceComponent : IComponent
 {
 	int defenseValue;
 
-	explicit DefenseComponent(int value)
+	explicit DefenceComponent(int value)
 		: defenseValue(value)
 	{
 	}
@@ -359,5 +360,21 @@ struct VendorComponent : IComponent
 
 struct EnemyComponent : IComponent
 {
+};
 
+struct SkillsComponent : IComponent
+{
+	std::vector<AttackSkill> attackSkills;
+	std::vector<DefenceSkill> defenceSkills;
+	std::vector<SpellCreationSkill> spellCreationSkills;
+
+	explicit SkillsComponent(
+		const std::vector<AttackSkill>& attackSkills,
+		const std::vector<DefenceSkill>& defenceSkills,
+		const std::vector<SpellCreationSkill>& spellCreationSkills)
+		: attackSkills(attackSkills)
+		, defenceSkills(defenceSkills)
+		, spellCreationSkills(spellCreationSkills)
+	{
+	}
 };

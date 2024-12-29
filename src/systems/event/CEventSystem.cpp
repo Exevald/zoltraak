@@ -780,6 +780,33 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 		}
 	}
 
+	if (currentGameState == CurrentState::Skills)
+	{
+		switch (key)
+		{
+		case sf::Keyboard::A: {
+			auto newCurrentSkillAreaNumber = CGameController::GetCurrentSkillAreaNumber() - 1;
+			if (newCurrentSkillAreaNumber < 0)
+			{
+				newCurrentSkillAreaNumber = 0;
+			}
+			CGameController::SetCurrentSkillAreaNumber(newCurrentSkillAreaNumber);
+			break;
+		}
+		case sf::Keyboard::D: {
+			auto newCurrentSkillAreaNumber = CGameController::GetCurrentSkillAreaNumber() + 1;
+			if (newCurrentSkillAreaNumber > 2)
+			{
+				newCurrentSkillAreaNumber = 2;
+			}
+			CGameController::SetCurrentSkillAreaNumber(newCurrentSkillAreaNumber);
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
 	if (selectedEntityId != -1)
 	{
 		if (!velocityComp)

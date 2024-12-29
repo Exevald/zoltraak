@@ -16,7 +16,7 @@ public:
 	{
 		if (m_creators.find(name) != m_creators.end())
 		{
-			throw std::runtime_error("Talent with name '" + name + "' is already registered.");
+			throw std::runtime_error("Skill with name '" + name + "' is already registered.");
 		}
 
 		m_creators[name] = [creator](int ownerId) -> std::unique_ptr<Skill> {
@@ -27,19 +27,19 @@ public:
 	}
 
 	template <typename T>
-	std::unique_ptr<T> CreateTalent(const std::string& name, int ownerId) const
+	std::unique_ptr<T> CreateSkill(const std::string& name, int ownerId) const
 	{
 		auto it = m_creators.find(name);
 		if (it != m_creators.end())
 		{
 			if (m_registeredTypes.at(name) != typeid(T).hash_code())
 			{
-				throw std::runtime_error("Type mismatch for talent '" + name + "'.");
+				throw std::runtime_error("Type mismatch for skill '" + name + "'.");
 			}
 
 			return std::unique_ptr<T>(static_cast<T*>(it->second(ownerId).release()));
 		}
-		throw std::runtime_error("Talent '" + name + "' not found in the factory.");
+		throw std::runtime_error("Skill '" + name + "' not found in the factory.");
 	}
 
 	void ApplyAttackBoost(const std::vector<std::unique_ptr<Skill>>& talents, int& attackPower) const
@@ -64,13 +64,13 @@ public:
 		}
 	}
 
-	void ApplySpellBoost(const std::vector<std::unique_ptr<Skill>>& talents, Spell& spell) const
+	void AddSpellsFromTalents(std::vector<std::unique_ptr<Skill>>& skills, std::vector<std::unique_ptr<Spell>>& spellBook)
 	{
-		for (const auto& talent : talents)
+		for (const auto& skill : skills)
 		{
-			if (talent->type == SkillType::MagicSkill && talent->currentLevel > 0)
+			if (auto newSpell = skill->CreateNewSpell())
 			{
-				talent->ApplySpell(spell);
+				spellBook.push_back(std::move(newSpell));
 			}
 		}
 	}

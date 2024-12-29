@@ -3,9 +3,9 @@
 #include "assets_storage/CTextureStorage.h"
 #include "common/Utils.h"
 #include "common/level_generator/CLevelGenerator.h"
-#include "experience/skill_factory/CSkillFactory.h"
 #include "inventory/item_factory/CInventoryItemFactory.h"
-#include "spell/spell_factory/CSpellFactory.h"
+#include "skill/CSkillFactory.h"
+#include "spells/CSpellFactory.h"
 #include "systems/event/CEventSystem.h"
 #include <SFML/Graphics.hpp>
 
@@ -58,6 +58,7 @@ int main()
 	CGameController gameController;
 	CInventoryItemFactory inventoryItemFactory;
 	CSpellFactory spellFactory;
+	CSkillFactory skillFactory;
 	auto& entityManager = CEntityManager::GetInstance();
 
 	EntityId camera = entityManager.CreateEntity();
@@ -72,7 +73,7 @@ int main()
 	auto mapTexture = CTextureStorage::GetTexture("map_fieldOfHopesAndDreams.png");
 	auto level = CLevelGenerator::GenerateLevel("level1.txt");
 
-	CGameController::SetGameState(CurrentState::Fight);
+	CGameController::SetGameState(CurrentState::Skills);
 
 	inventoryItemFactory.RegisterItem<HealPotionItem>("Small heal potion", [](int ownerId) {
 		return std::make_unique<HealPotionItem>(ownerId, "Small heal potion", 10, 25);
@@ -186,6 +187,22 @@ int main()
 		return std::make_unique<DamageSpell>(ownerId, "Dark Wave", 50, 30, 1);
 	});
 
+	skillFactory.RegisterSkill<AttackSkill>("Crimson aura", [](int ownerId) {
+		return std::make_unique<AttackSkill>(ownerId, "Crimson aura", "Increases hero pure damage on 2 points per level", 2, 2);
+	});
+
+	skillFactory.RegisterSkill<AttackSkill>("Venom aura", [](int ownerId) {
+		return std::make_unique<AttackSkill>(ownerId, "Venom aura", "Decreases enemies pure damage on 2 points per level", 2, 1);
+	});
+
+	skillFactory.RegisterSkill<DefenceSkill>("Sentinel Barrier", [](int ownerId) {
+		return std::make_unique<DefenceSkill>(ownerId, "Sentinel Barrier", "Increases hero defence on 2 points per level", 2, 2);
+	});
+
+	skillFactory.RegisterSkill<DefenceSkill>("Poison touch", [](int ownerId) {
+		return std::make_unique<DefenceSkill>(ownerId, "Poison touch", "Decreases enemies defence on 2 points per level", 2, 1);
+	});
+
 	EntityId hero1 = entityManager.CreateEntity();
 	entityManager.AddComponent<SelectionComponent>(hero1);
 	entityManager.AddComponent<NameComponent>(hero1, "Kris");
@@ -203,7 +220,7 @@ int main()
 	entityManager.AddComponent<FightTurnComponent>(hero1, false, false);
 	entityManager.AddComponent<MoneyComponent>(hero1, 100);
 	entityManager.AddComponent<AttackComponent>(hero1, 10);
-	entityManager.AddComponent<DefenseComponent>(hero1, 2);
+	entityManager.AddComponent<DefenceComponent>(hero1, 2);
 	entityManager.AddComponent<MagicComponent>(hero1, 0);
 	entityManager.AddComponent<DescriptionComponent>(hero1, "Commands the party");
 
@@ -231,6 +248,18 @@ int main()
 
 	entityManager.AddComponent<SpellComponent>(hero1, hero1Spells);
 
+	std::vector<AttackSkill> hero1AttackSkills;
+	hero1AttackSkills.push_back(*skillFactory.CreateSkill<AttackSkill>("Crimson aura", hero1));
+	hero1AttackSkills.push_back(*skillFactory.CreateSkill<AttackSkill>("Venom aura", hero1));
+
+	std::vector<DefenceSkill> hero1DefenceSkills;
+	hero1DefenceSkills.push_back(*skillFactory.CreateSkill<DefenceSkill>("Sentinel Barrier", hero1));
+	hero1DefenceSkills.push_back(*skillFactory.CreateSkill<DefenceSkill>("Poison touch", hero1));
+
+	std::vector<SpellCreationSkill> hero1SpellCreationSkills;
+
+	entityManager.AddComponent<SkillsComponent>(hero1, hero1AttackSkills, hero1DefenceSkills, hero1SpellCreationSkills);
+
 	auto* hero1AnimComp = entityManager.GetComponent<AnimationComponent>(hero1);
 	hero1AnimComp->AddAnimation("idle", 6, 1563, 6, sf::Vector2i(35, 37), 0.15f);
 	hero1AnimComp->AddAnimation("walk_up", 101, 139, 4, sf::Vector2i(18, 37), 0.25f);
@@ -255,7 +284,7 @@ int main()
 	entityManager.AddComponent<AnimationComponent>(hero2, hero2Sprites);
 	entityManager.AddComponent<FightTurnComponent>(hero2, false, true);
 	entityManager.AddComponent<AttackComponent>(hero2, 8);
-	entityManager.AddComponent<DefenseComponent>(hero2, 2);
+	entityManager.AddComponent<DefenceComponent>(hero2, 2);
 	entityManager.AddComponent<MagicComponent>(hero2, 7);
 	entityManager.AddComponent<DescriptionComponent>(hero2, "Deals damage with scarf");
 

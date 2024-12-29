@@ -47,6 +47,7 @@ std::vector<AttackData> CGameController::m_attacks;
 FightAction CGameController::m_selectedFightAction = FightAction::Info;
 int CGameController::m_currentFightInventoryItemNumber = 0;
 int CGameController::m_activeFightHeroNumber = 2;
+int CGameController::m_currentSkillAreaNumber = 0;
 
 void CGameController::InitGameSettings(const Level& level)
 {
@@ -436,4 +437,14 @@ void CGameController::SetActiveFightHeroNumber(int number)
 int CGameController::GetActiveFightHeroNumber()
 {
 	return m_activeFightHeroNumber;
+}
+
+void CGameController::SetCurrentSkillAreaNumber(int number)
+{
+	m_currentSkillAreaNumber = number;
+}
+
+int CGameController::GetCurrentSkillAreaNumber()
+{
+	return m_currentSkillAreaNumber;
 }
