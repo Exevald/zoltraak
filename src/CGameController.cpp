@@ -448,3 +448,8 @@ int CGameController::GetCurrentSkillAreaNumber()
 {
 	return m_currentSkillAreaNumber;
 }
+
+void CGameController::SetCurrentSkillsState(SkillsState& state)
+{
+	m_currentSkillsState = state;
+}

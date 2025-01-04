@@ -46,3 +46,9 @@ enum class VendorState
 	Sell,
 	Talk,
 };
+
+enum class SkillsState
+{
+	None,
+	ChoosingSkill,
+};

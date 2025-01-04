@@ -72,6 +72,7 @@ public:
 	static void SetCurrentFightAction(const FightAction& action);
 	static void SetCurrentFightInventoryItemNumber(int number);
 	static void SetActiveFightHeroNumber(int number);
+	static void SetCurrentSkillsState(SkillsState& state);
 	static void SetCurrentSkillAreaNumber(int number);
 
 	static float GetElapsedTIme();
@@ -130,7 +131,9 @@ private:
 	static FightAction m_selectedFightAction;
 	static int m_currentFightInventoryItemNumber;
 	static int m_activeFightHeroNumber;
+	static SkillsState m_currentSkillsState;
 	static int m_currentSkillAreaNumber;
+	static int m_currentSkillNumber;
 
 	static std::string GetSaveFileName(int saveNumber);
 };

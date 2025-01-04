@@ -5,6 +5,7 @@
 
 static auto& font = CFontStorage::GetFont("8bitoperator_jve.ttf");
 const int TextSize = 40;
+const int SkillTextSize = 35;
 
 void CSkillsRenderer::Init()
 {
@@ -12,7 +13,7 @@ void CSkillsRenderer::Init()
 
 void CSkillsRenderer::Draw(sf::RenderWindow& window)
 {
-	if (CGameController::GetCurrentGameState() == CurrentState::Skills)
+	if (CGameController::GetCurrentGameState() == CurrentState::Skills && CGameController::GetSelectedEntityId() != -1)
 	{
 		sf::View view = window.getDefaultView();
 		window.setView(view);
@@ -77,6 +78,49 @@ void CSkillsRenderer::DrawCurrentSkillInfo(sf::RenderWindow& window)
 
 void CSkillsRenderer::DrawSkills(sf::RenderWindow& window)
 {
+	auto& entityManager = CEntityManager::GetInstance();
+	auto heroSkills = entityManager.GetComponent<SkillsComponent>(CGameController::GetSelectedEntityId());
+	if (!heroSkills)
+	{
+		return;
+	}
+	m_skills.allSkillsInfo.clear();
+
+	float yOffset = 0;
+	for (const auto& attackSkill : heroSkills->attackSkills)
+	{
+		int attackSkillsIndex = 0;
+		sf::Text attackSkillInfo;
+		attackSkillInfo.setFont(font);
+		attackSkillInfo.setCharacterSize(SkillTextSize);
+		attackSkillInfo.setString(attackSkill.name + " " + std::to_string(attackSkill.currentLevel) + "/" + std::to_string(attackSkill.maxLevel));
+		attackSkillInfo.setPosition(m_skills.skillsAreas[attackSkillsIndex].skillAreaBorder.getPosition().x + 30, m_skills.skillsAreas[attackSkillsIndex].skillAreaBorder.getPosition().y + 50 + yOffset);
+
+		m_skills.allSkillsInfo[attackSkillsIndex].push_back(attackSkillInfo);
+		yOffset += 50;
+	}
+
+	yOffset = 0;
+	for (const auto& defenceSkill : heroSkills->defenceSkills)
+	{
+		int defenceSkillsIndex = 1;
+		sf::Text defenceSkillInfo;
+		defenceSkillInfo.setFont(font);
+		defenceSkillInfo.setCharacterSize(SkillTextSize);
+		defenceSkillInfo.setString(defenceSkill.name + " " + std::to_string(defenceSkill.currentLevel) + "/" + std::to_string(defenceSkill.maxLevel));
+		defenceSkillInfo.setPosition(m_skills.skillsAreas[defenceSkillsIndex].skillAreaBorder.getPosition().x + 30, m_skills.skillsAreas[defenceSkillsIndex].skillAreaBorder.getPosition().y + 50 + yOffset);
+
+		m_skills.allSkillsInfo[defenceSkillsIndex].push_back(defenceSkillInfo);
+		yOffset += 50;
+	}
+
+	for (const auto& skillsInfo : m_skills.allSkillsInfo)
+	{
+		for (const auto& skill : skillsInfo.second)
+		{
+			window.draw(skill);
+		}
+	}
 }
 
 SkillArea CSkillsRenderer::CreateSkillArea(const std::string& title, const sf::Vector2f& areaPos, const sf::Vector2f& skillAreaSize)
