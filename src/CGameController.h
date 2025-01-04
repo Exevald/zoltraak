@@ -72,8 +72,9 @@ public:
 	static void SetCurrentFightAction(const FightAction& action);
 	static void SetCurrentFightInventoryItemNumber(int number);
 	static void SetActiveFightHeroNumber(int number);
-	static void SetCurrentSkillsState(SkillsState& state);
+	static void SetCurrentSkillsState(const SkillsState& state);
 	static void SetCurrentSkillAreaNumber(int number);
+	static void SetCurrentSkillNumber(int number);
 
 	static float GetElapsedTIme();
 	static SaveInfo GetSaveInfo(int saveNumber);
@@ -101,7 +102,9 @@ public:
 	static FightAction GetCurrentFightAction();
 	static int GetCurrentFightInventoryItemNumber();
 	static int GetActiveFightHeroNumber();
+	static SkillsState GetCurrentSkillsState();
 	static int GetCurrentSkillAreaNumber();
+	static int GetCurrentSkillNumber();
 
 private:
 	static EntityId m_selectedEntityId;

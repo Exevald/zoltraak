@@ -49,6 +49,6 @@ enum class VendorState
 
 enum class SkillsState
 {
-	None,
+	ChoosingSkillArea,
 	ChoosingSkill,
 };

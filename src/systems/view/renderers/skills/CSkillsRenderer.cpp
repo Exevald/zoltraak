@@ -21,6 +21,7 @@ void CSkillsRenderer::Draw(sf::RenderWindow& window)
 		CSkillsRenderer::DrawSkillsAreas(window);
 		CSkillsRenderer::DrawCurrentSkillInfo(window);
 		CSkillsRenderer::DrawSkills(window);
+		CSkillsRenderer::DrawSkillDescription(window);
 	}
 }
 
@@ -116,11 +117,71 @@ void CSkillsRenderer::DrawSkills(sf::RenderWindow& window)
 
 	for (const auto& skillsInfo : m_skills.allSkillsInfo)
 	{
-		for (const auto& skill : skillsInfo.second)
+		for (int i = 0; i < skillsInfo.second.size(); i++)
 		{
+			if (CGameController::GetCurrentSkillNumber() > skillsInfo.second.size() - 1)
+			{
+				CGameController::SetCurrentSkillNumber(int(skillsInfo.second.size()) - 1);
+			}
+
+			auto skill = skillsInfo.second[i];
+			const auto isCurrentSkillsStateCorrect = CGameController::GetCurrentSkillsState() == SkillsState::ChoosingSkill;
+			const auto isCurrentSkillAreaNumberCorrect = skillsInfo.first == CGameController::GetCurrentSkillAreaNumber();
+			const auto isCurrentSkillNumberCorrect = i == CGameController::GetCurrentSkillNumber();
+
+			if (isCurrentSkillsStateCorrect && isCurrentSkillAreaNumberCorrect && isCurrentSkillNumberCorrect)
+			{
+				skill.setFillColor(sf::Color::Yellow);
+			}
+
 			window.draw(skill);
 		}
 	}
+}
+
+void CSkillsRenderer::DrawSkillDescription(sf::RenderWindow& window)
+{
+	if (CGameController::GetCurrentSkillsState() != SkillsState::ChoosingSkill)
+	{
+		return;
+	}
+
+	auto& entityManager = CEntityManager::GetInstance();
+	auto heroSkills = entityManager.GetComponent<SkillsComponent>(CGameController::GetSelectedEntityId());
+	if (!heroSkills)
+	{
+		return;
+	}
+
+	std::vector<Skill> currentAreaSkills;
+	switch (CGameController::GetCurrentSkillAreaNumber())
+	{
+	case 0: {
+		currentAreaSkills.reserve(currentAreaSkills.size() + heroSkills->attackSkills.size());
+		currentAreaSkills.insert(currentAreaSkills.end(), heroSkills->attackSkills.begin(), heroSkills->attackSkills.end());
+		break;
+	}
+	case 1: {
+		currentAreaSkills.reserve(currentAreaSkills.size() + heroSkills->defenceSkills.size());
+		currentAreaSkills.insert(currentAreaSkills.end(), heroSkills->defenceSkills.begin(), heroSkills->defenceSkills.end());
+		break;
+	}
+	case 2: {
+		currentAreaSkills.reserve(currentAreaSkills.size() + heroSkills->spellCreationSkills.size());
+		currentAreaSkills.insert(currentAreaSkills.end(), heroSkills->spellCreationSkills.begin(), heroSkills->spellCreationSkills.end());
+		break;
+	}
+	default:
+		break;
+	}
+
+	sf::Text skillDescription;
+	skillDescription.setFont(font);
+	skillDescription.setString(currentAreaSkills[CGameController::GetCurrentSkillNumber()].description);
+	skillDescription.setCharacterSize(38);
+	skillDescription.setPosition(m_skills.selectedSkillInfoArea.getPosition().x + 30, m_skills.selectedSkillInfoArea.getPosition().y + 30);
+
+	window.draw(skillDescription);
 }
 
 SkillArea CSkillsRenderer::CreateSkillArea(const std::string& title, const sf::Vector2f& areaPos, const sf::Vector2f& skillAreaSize)

@@ -48,6 +48,8 @@ FightAction CGameController::m_selectedFightAction = FightAction::Info;
 int CGameController::m_currentFightInventoryItemNumber = 0;
 int CGameController::m_activeFightHeroNumber = 2;
 int CGameController::m_currentSkillAreaNumber = 0;
+SkillsState CGameController::m_currentSkillsState = SkillsState::ChoosingSkillArea;
+int CGameController::m_currentSkillNumber = 0;
 
 void CGameController::InitGameSettings(const Level& level)
 {
@@ -449,7 +451,22 @@ int CGameController::GetCurrentSkillAreaNumber()
 	return m_currentSkillAreaNumber;
 }
 
-void CGameController::SetCurrentSkillsState(SkillsState& state)
+void CGameController::SetCurrentSkillsState(const SkillsState& state)
 {
 	m_currentSkillsState = state;
+}
+
+SkillsState CGameController::GetCurrentSkillsState()
+{
+	return m_currentSkillsState;
+}
+
+void CGameController::SetCurrentSkillNumber(int number)
+{
+	m_currentSkillNumber = number;
+}
+
+int CGameController::GetCurrentSkillNumber()
+{
+	return m_currentSkillNumber;
 }

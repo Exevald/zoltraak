@@ -32,6 +32,7 @@ private:
 	void DrawSkillsAreas(sf::RenderWindow& window);
 	void DrawCurrentSkillInfo(sf::RenderWindow& window);
 	void DrawSkills(sf::RenderWindow& window);
+	void DrawSkillDescription(sf::RenderWindow& window);
 
 	static SkillArea CreateSkillArea(const std::string& title, const sf::Vector2f& areaPos, const sf::Vector2f& skillAreaSize);
 

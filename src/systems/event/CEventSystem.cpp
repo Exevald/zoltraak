@@ -730,6 +730,10 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 			CGameController::SetGameState(CurrentState::Vendor);
 			break;
 		}
+		case sf::Keyboard::N: {
+			CGameController::SetGameState(CurrentState::Skills);
+			break;
+		}
 		default: {
 			break;
 		}
@@ -785,21 +789,55 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 		switch (key)
 		{
 		case sf::Keyboard::A: {
-			auto newCurrentSkillAreaNumber = CGameController::GetCurrentSkillAreaNumber() - 1;
-			if (newCurrentSkillAreaNumber < 0)
+			if (CGameController::GetCurrentSkillsState() == SkillsState::ChoosingSkillArea)
 			{
-				newCurrentSkillAreaNumber = 0;
+				auto newCurrentSkillAreaNumber = CGameController::GetCurrentSkillAreaNumber() - 1;
+				if (newCurrentSkillAreaNumber < 0)
+				{
+					newCurrentSkillAreaNumber = 0;
+				}
+				CGameController::SetCurrentSkillAreaNumber(newCurrentSkillAreaNumber);
 			}
-			CGameController::SetCurrentSkillAreaNumber(newCurrentSkillAreaNumber);
 			break;
 		}
 		case sf::Keyboard::D: {
-			auto newCurrentSkillAreaNumber = CGameController::GetCurrentSkillAreaNumber() + 1;
-			if (newCurrentSkillAreaNumber > 2)
+			if (CGameController::GetCurrentSkillsState() == SkillsState::ChoosingSkillArea)
 			{
-				newCurrentSkillAreaNumber = 2;
+				auto newCurrentSkillAreaNumber = CGameController::GetCurrentSkillAreaNumber() + 1;
+				if (newCurrentSkillAreaNumber > 2)
+				{
+					newCurrentSkillAreaNumber = 2;
+				}
+				CGameController::SetCurrentSkillAreaNumber(newCurrentSkillAreaNumber);
 			}
-			CGameController::SetCurrentSkillAreaNumber(newCurrentSkillAreaNumber);
+			break;
+		}
+		case sf::Keyboard::W: {
+			auto newCurrentSkillNumber = CGameController::GetCurrentSkillNumber() - 1;
+			if (newCurrentSkillNumber < 0) {
+				newCurrentSkillNumber = 0;
+			}
+			CGameController::SetCurrentSkillNumber(newCurrentSkillNumber);
+			break;
+		}
+		case sf::Keyboard::S: {
+			auto newCurrentSkillNumber = CGameController::GetCurrentSkillNumber() + 1;
+			CGameController::SetCurrentSkillNumber(newCurrentSkillNumber);
+			break;
+		}
+		case sf::Keyboard::Enter: {
+			CGameController::SetCurrentSkillsState(SkillsState::ChoosingSkill);
+			break;
+		}
+		case sf::Keyboard::C: {
+			if (CGameController::GetCurrentSkillsState() == SkillsState::ChoosingSkillArea)
+			{
+				CGameController::SetGameState(CurrentState::Player);
+			}
+			if (CGameController::GetCurrentSkillsState() == SkillsState::ChoosingSkill)
+			{
+				CGameController::SetCurrentSkillsState(SkillsState::ChoosingSkillArea);
+			}
 			break;
 		}
 		default:
