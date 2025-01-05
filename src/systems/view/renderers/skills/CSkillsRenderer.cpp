@@ -22,6 +22,7 @@ void CSkillsRenderer::Draw(sf::RenderWindow& window)
 		CSkillsRenderer::DrawCurrentSkillInfo(window);
 		CSkillsRenderer::DrawSkills(window);
 		CSkillsRenderer::DrawSkillDescription(window);
+		CSkillsRenderer::DrawHeroInfo(window);
 	}
 }
 
@@ -201,4 +202,47 @@ SkillArea CSkillsRenderer::CreateSkillArea(const std::string& title, const sf::V
 	skillAreaTitle.setPosition(skillAreaBorder.getPosition().x + skillAreaBorder.getSize().x / 3, skillAreaTopMargin - 70);
 
 	return SkillArea(skillAreaBorder, skillAreaTitle);
+}
+
+void CSkillsRenderer::DrawHeroInfo(sf::RenderWindow& window)
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	auto avatarComp = entityManager.GetComponent<AvatarComponent>(CGameController::GetSelectedEntityId());
+	auto nameComp = entityManager.GetComponent<NameComponent>(CGameController::GetSelectedEntityId());
+	auto experienceComp = entityManager.GetComponent<ExperienceComponent>(CGameController::GetSelectedEntityId());
+	if (!avatarComp || !nameComp || !experienceComp)
+	{
+		return;
+	}
+
+	m_skills.heroInfo.heroInfoArea.setSize({ 350, 165 });
+	m_skills.heroInfo.heroInfoArea.setPosition(100, float(window.getSize().y) - 245);
+	m_skills.heroInfo.heroInfoArea.setFillColor(sf::Color::Black);
+	m_skills.heroInfo.heroInfoArea.setOutlineThickness(3);
+	m_skills.heroInfo.heroInfoArea.setOutlineColor(sf::Color::White);
+
+	m_skills.heroInfo.heroIcon.setTexture(CTextureStorage::GetTexture(avatarComp->avatarFilePath));
+	m_skills.heroInfo.heroIcon.setPosition(m_skills.heroInfo.heroInfoArea.getPosition().x + 30, m_skills.heroInfo.heroInfoArea.getPosition().y + 30);
+	m_skills.heroInfo.heroIcon.setScale(3.f, 3.f);
+
+	m_skills.heroInfo.heroName.setFont(font);
+	m_skills.heroInfo.heroName.setString(nameComp->name);
+	m_skills.heroInfo.heroName.setCharacterSize(30);
+	m_skills.heroInfo.heroName.setPosition(m_skills.heroInfo.heroInfoArea.getPosition().x + 35, m_skills.heroInfo.heroInfoArea.getPosition().y + m_skills.heroInfo.heroInfoArea.getSize().y - 60);
+
+	m_skills.heroInfo.heroLevel.setFont(font);
+	m_skills.heroInfo.heroLevel.setString("LEVEL:  " + std::to_string(experienceComp->currentHeroLevel));
+	m_skills.heroInfo.heroLevel.setCharacterSize(30);
+	m_skills.heroInfo.heroLevel.setPosition(m_skills.heroInfo.heroInfoArea.getPosition().x + 150, m_skills.heroInfo.heroInfoArea.getPosition().y + 30);
+
+	m_skills.heroInfo.heroAvailableSkillPoints.setFont(font);
+	m_skills.heroInfo.heroAvailableSkillPoints.setString("SP:  " + std::to_string(experienceComp->availableSkillPoints));
+	m_skills.heroInfo.heroAvailableSkillPoints.setCharacterSize(30);
+	m_skills.heroInfo.heroAvailableSkillPoints.setPosition(m_skills.heroInfo.heroInfoArea.getPosition().x + 150, m_skills.heroInfo.heroInfoArea.getPosition().y + 80);
+
+	window.draw(m_skills.heroInfo.heroInfoArea);
+	window.draw(m_skills.heroInfo.heroIcon);
+	window.draw(m_skills.heroInfo.heroName);
+	window.draw(m_skills.heroInfo.heroLevel);
+	window.draw(m_skills.heroInfo.heroAvailableSkillPoints);
 }

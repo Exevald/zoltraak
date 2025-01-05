@@ -7,6 +7,7 @@
 #include "inventory/item_factory/CInventoryItemFactory.h"
 #include "level_generator/CLevelGenerator.h"
 #include "movement/CMovementSystem.h"
+#include "skill/CSkillFactory.h"
 #include "view/CViewSystem.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -42,7 +43,7 @@ class CGameController
 {
 public:
 	static void InitGameSettings(const Level& level);
-	static void InitSystems(const CInventoryItemFactory& factory);
+	static void InitSystems(const CInventoryItemFactory& factory, const CSkillFactory& skillFactory);
 	static void Update();
 	static void Draw(sf::RenderWindow& window, Level& level);
 	static void SetSelectedEntityId(EntityId id);

@@ -9,8 +9,8 @@
 class CInventorySystem
 {
 public:
-	explicit CInventorySystem(const CInventoryItemFactory& factory)
-		: m_inventoryItemFactory(factory)
+	explicit CInventorySystem(const CInventoryItemFactory& inventoryItemFactory)
+		: m_inventoryItemFactory(inventoryItemFactory)
 	{
 	}
 

@@ -21,6 +21,7 @@ enum class EventType
 	HeroItemSold,
 	AttackCollied,
 	FightItemUsed,
+	SkillLearned,
 };
 
 struct EntitySelectedEventData
@@ -106,6 +107,12 @@ struct FightItemUsedEventData
 	int itemIndex;
 };
 
+struct SkillLearnedEventData
+{
+	int learnedSkillAreaNumber;
+	int learnedSkillNumber;
+};
+
 using EventData = std::variant<
 	EntitySelectedEventData,
 	EntityMovedEventData,
@@ -121,7 +128,8 @@ using EventData = std::variant<
 	VendorItemBoughtEventData,
 	HeroItemSoldEventData,
 	AttackColliedEventData,
-	FightItemUsedEventData>;
+	FightItemUsedEventData,
+	SkillLearnedEventData>;
 
 struct SEvent
 {

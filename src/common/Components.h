@@ -219,14 +219,17 @@ struct ExperienceComponent : IComponent
 	int experience;
 	int levelExperienceLimit;
 	int currentHeroLevel;
+	int availableSkillPoints;
 
 	explicit ExperienceComponent(
 		int experience,
 		int levelExperienceLimit,
-		int currentHeroLevel)
+		int currentHeroLevel,
+		int skillPoints)
 		: experience(experience)
 		, levelExperienceLimit(levelExperienceLimit)
 		, currentHeroLevel(currentHeroLevel)
+		, availableSkillPoints(skillPoints)
 	{
 	}
 };

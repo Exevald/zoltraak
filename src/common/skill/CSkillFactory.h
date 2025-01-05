@@ -42,33 +42,33 @@ public:
 		throw std::runtime_error("Skill '" + name + "' not found in the factory.");
 	}
 
-	void ApplyAttackBoost(const std::vector<std::unique_ptr<Skill>>& talents, int& attackPower) const
+	void ApplyAttackBoost(const std::vector<AttackSkill>& talents, int& attackPower) const
 	{
 		for (const auto& talent : talents)
 		{
-			if (talent->type == SkillType::AttackSkill && talent->currentLevel > 0)
+			if (talent.currentLevel > 0)
 			{
-				talent->ApplyAttack(attackPower);
+				talent.ApplyAttack(attackPower);
 			}
 		}
 	}
 
-	void ApplyDefenseBoost(const std::vector<std::unique_ptr<Skill>>& talents, int& defenseValue) const
+	void ApplyDefenseBoost(const std::vector<DefenceSkill>& talents, int& defenseValue) const
 	{
 		for (const auto& talent : talents)
 		{
-			if (talent->type == SkillType::DefenseSkill && talent->currentLevel > 0)
+			if (talent.currentLevel > 0)
 			{
-				talent->ApplyDefense(defenseValue);
+				talent.ApplyDefense(defenseValue);
 			}
 		}
 	}
 
-	void AddSpellsFromTalents(std::vector<std::unique_ptr<Skill>>& skills, std::vector<std::unique_ptr<Spell>>& spellBook)
+	void AddSpellsFromTalents(std::vector<Skill>& skills, std::vector<std::unique_ptr<Spell>>& spellBook)
 	{
 		for (const auto& skill : skills)
 		{
-			if (auto newSpell = skill->CreateNewSpell())
+			if (auto newSpell = skill.CreateNewSpell())
 			{
 				spellBook.push_back(std::move(newSpell));
 			}

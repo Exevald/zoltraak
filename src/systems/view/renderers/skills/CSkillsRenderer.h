@@ -9,12 +9,22 @@ struct SkillArea
 	sf::Text title;
 };
 
+struct HeroInfo
+{
+	sf::RectangleShape heroInfoArea;
+	sf::Sprite heroIcon;
+	sf::Text heroName;
+	sf::Text heroLevel;
+	sf::Text heroAvailableSkillPoints;
+};
+
 struct Skills
 {
 	std::vector<SkillArea> skillsAreas;
 	sf::Sprite selectedSkillInfoArea;
 	sf::Text selectedSkillInfoText;
 	std::unordered_map<int, std::vector<sf::Text>> allSkillsInfo;
+	HeroInfo heroInfo;
 };
 
 class CSkillsRenderer : public IRenderer
@@ -33,6 +43,7 @@ private:
 	void DrawCurrentSkillInfo(sf::RenderWindow& window);
 	void DrawSkills(sf::RenderWindow& window);
 	void DrawSkillDescription(sf::RenderWindow& window);
+	void DrawHeroInfo(sf::RenderWindow& window);
 
 	static SkillArea CreateSkillArea(const std::string& title, const sf::Vector2f& areaPos, const sf::Vector2f& skillAreaSize);
 

@@ -57,18 +57,19 @@ void CGameController::InitGameSettings(const Level& level)
 	m_levelHeight = float(level.size()) * TILE_SIZE * SCALE_FACTOR - MARGIN;
 }
 
-void CGameController::InitSystems(const CInventoryItemFactory& factory)
+void CGameController::InitSystems(const CInventoryItemFactory& inventoryItemFactory, const CSkillFactory& skillFactory)
 {
-	CInventorySystem inventorySystem(factory);
+	CInventorySystem inventorySystem(inventoryItemFactory);
+	CExperienceSystem experienceSystem(skillFactory);
 
 	CEventSystem::Init();
 	CMovementSystem::Init();
 	CCollisionSystem::Init();
 	CFightSystem::Init();
-	inventorySystem.Init();
 	CSpellSystem::Init();
-	CExperienceSystem::Init();
 	CHealthSystem::Init();
+	inventorySystem.Init();
+	experienceSystem.Init();
 }
 
 void CGameController::Draw(sf::RenderWindow& window, Level& level)

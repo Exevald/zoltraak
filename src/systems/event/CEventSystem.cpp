@@ -1,7 +1,6 @@
 #include "event/CEventSystem.h"
 #include "Utils.h"
 #include "fight/CFightSystem.h"
-#include <iostream>
 
 InventoryState CEventSystem::m_currentInventoryState = InventoryState::MenuSectionSelection;
 
@@ -13,57 +12,60 @@ void CEventSystem::Init()
 	});
 }
 
-void CEventSystem::HandleMouseClick(CGameController& gameController, const sf::Vector2f& mousePos)
+void CEventSystem::HandleMouseClick(const sf::Vector2f& mousePos)
 {
-	EntityId clickedEntity = -1;
-	auto& entityManager = CEntityManager::GetInstance();
-
-	for (auto entityId : entityManager.GetEntitiesWithComponents<PositionComponent, SelectionComponent>())
+	if (CGameController::GetCurrentGameState() == CurrentState::Player)
 	{
-		auto* animationComp = entityManager.GetComponent<AnimationComponent>(entityId);
-		auto* positionComp = entityManager.GetComponent<PositionComponent>(entityId);
-		auto* selectionComp = entityManager.GetComponent<SelectionComponent>(entityId);
-		auto* imageComp = entityManager.GetComponent<ImageComponent>(entityId);
+		EntityId clickedEntity = -1;
+		auto& entityManager = CEntityManager::GetInstance();
 
-		if (!positionComp || !selectionComp || (!animationComp && !imageComp))
+		for (auto entityId : entityManager.GetEntitiesWithComponents<PositionComponent, SelectionComponent>())
 		{
-			continue;
+			auto* animationComp = entityManager.GetComponent<AnimationComponent>(entityId);
+			auto* positionComp = entityManager.GetComponent<PositionComponent>(entityId);
+			auto* selectionComp = entityManager.GetComponent<SelectionComponent>(entityId);
+			auto* imageComp = entityManager.GetComponent<ImageComponent>(entityId);
+
+			if (!positionComp || !selectionComp || (!animationComp && !imageComp))
+			{
+				continue;
+			}
+
+			sf::FloatRect bounds;
+			if (animationComp)
+			{
+				bounds = animationComp->sprite.getGlobalBounds();
+			}
+			if (imageComp)
+			{
+				bounds = { positionComp->x, positionComp->y, 22, 22 };
+			}
+
+			if (bounds.contains(mousePos))
+			{
+				clickedEntity = entityId;
+				selectionComp->isSelected = true;
+			}
+			else
+			{
+				selectionComp->isSelected = false;
+			}
 		}
 
-		sf::FloatRect bounds;
-		if (animationComp)
-		{
-			bounds = animationComp->sprite.getGlobalBounds();
-		}
-		if (imageComp)
-		{
-			bounds = { positionComp->x, positionComp->y, 22, 22 };
-		}
+		EntitySelectedEventData selectedData{};
+		selectedData.id = clickedEntity;
 
-		if (bounds.contains(mousePos))
-		{
-			clickedEntity = entityId;
-			selectionComp->isSelected = true;
-		}
-		else
-		{
-			selectionComp->isSelected = false;
-		}
+		SEvent entitySelectedEvent;
+		entitySelectedEvent.type = EventType::EntitySelected;
+		entitySelectedEvent.data = selectedData;
+
+		CEventDispatcher::GetInstance().Dispatch(entitySelectedEvent);
+
+		CGameController::SetSelectedEntityId(clickedEntity);
 	}
-
-	EntitySelectedEventData selectedData{};
-	selectedData.id = clickedEntity;
-
-	SEvent entitySelectedEvent;
-	entitySelectedEvent.type = EventType::EntitySelected;
-	entitySelectedEvent.data = selectedData;
-
-	CEventDispatcher::GetInstance().Dispatch(entitySelectedEvent);
-
-	CGameController::SetSelectedEntityId(clickedEntity);
 }
 
-void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard::Key key)
+void CEventSystem::HandleKeyPress(sf::Keyboard::Key key)
 {
 	auto& entityManager = CEntityManager::GetInstance();
 	EntityId selectedEntityId = CGameController::GetSelectedEntityId();
@@ -383,6 +385,7 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 					break;
 				}
 				default: {
+					state = InventoryState::MenuSectionSelection;
 					break;
 				}
 				}
@@ -430,6 +433,7 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 					break;
 				}
 				default: {
+					state = InventoryState::MenuSectionSelection;
 					break;
 				}
 				}
@@ -814,7 +818,8 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 		}
 		case sf::Keyboard::W: {
 			auto newCurrentSkillNumber = CGameController::GetCurrentSkillNumber() - 1;
-			if (newCurrentSkillNumber < 0) {
+			if (newCurrentSkillNumber < 0)
+			{
 				newCurrentSkillNumber = 0;
 			}
 			CGameController::SetCurrentSkillNumber(newCurrentSkillNumber);
@@ -826,7 +831,23 @@ void CEventSystem::HandleKeyPress(CGameController& gameController, sf::Keyboard:
 			break;
 		}
 		case sf::Keyboard::Enter: {
-			CGameController::SetCurrentSkillsState(SkillsState::ChoosingSkill);
+			if (CGameController::GetCurrentSkillsState() == SkillsState::ChoosingSkill)
+			{
+				SEvent skillLearnedEvent;
+				SkillLearnedEventData eventData{};
+
+				eventData.learnedSkillAreaNumber = CGameController::GetCurrentSkillAreaNumber();
+				eventData.learnedSkillNumber = CGameController::GetCurrentSkillNumber();
+				skillLearnedEvent.type = EventType::SkillLearned;
+				skillLearnedEvent.data = eventData;
+
+				CEventDispatcher::GetInstance().Dispatch(skillLearnedEvent);
+			}
+			if (CGameController::GetCurrentSkillsState() == SkillsState::ChoosingSkillArea)
+			{
+				CGameController::SetCurrentSkillsState(SkillsState::ChoosingSkill);
+				CGameController::SetCurrentSkillNumber(0);
+			}
 			break;
 		}
 		case sf::Keyboard::C: {

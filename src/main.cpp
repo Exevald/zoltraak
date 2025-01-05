@@ -9,7 +9,7 @@
 #include "systems/event/CEventSystem.h"
 #include <SFML/Graphics.hpp>
 
-void HandleEvents(sf::RenderWindow& window, CGameController& gameController)
+void HandleEvents(sf::RenderWindow& window)
 {
 	sf::Event event{};
 	bool movementKeyPressed = false;
@@ -24,13 +24,13 @@ void HandleEvents(sf::RenderWindow& window, CGameController& gameController)
 		if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
 		{
 			sf::Vector2f mousePos = window.mapPixelToCoords(sf::Vector2i(event.mouseButton.x, event.mouseButton.y));
-			CEventSystem::HandleMouseClick(gameController, mousePos);
+			CEventSystem::HandleMouseClick(mousePos);
 		}
 
 		if (event.type == sf::Event::KeyPressed)
 		{
 			movementKeyPressed = true;
-			CEventSystem::HandleKeyPress(gameController, event.key.code);
+			CEventSystem::HandleKeyPress(event.key.code);
 		}
 	}
 
@@ -195,8 +195,8 @@ int main()
 		return std::make_unique<AttackSkill>(ownerId, "Venom aura", "Decreases enemies pure damage on 2 points per level", 2, 1);
 	});
 
-	skillFactory.RegisterSkill<DefenceSkill>("Sentinel Barrier", [](int ownerId) {
-		return std::make_unique<DefenceSkill>(ownerId, "Sentinel Barrier", "Increases hero defence on 2 points per level", 2, 2);
+	skillFactory.RegisterSkill<DefenceSkill>("Sigma Barrier", [](int ownerId) {
+		return std::make_unique<DefenceSkill>(ownerId, "Sigma Barrier", "Increases hero defence on 2 points per level", 2, 2);
 	});
 
 	skillFactory.RegisterSkill<DefenceSkill>("Poison touch", [](int ownerId) {
@@ -215,7 +215,7 @@ int main()
 	entityManager.AddComponent<HealthComponent>(hero1, 50, 100);
 	entityManager.AddComponent<ManaComponent>(hero1, 40, 100);
 	entityManager.AddComponent<AvatarComponent>(hero1, "hero1_avatar.png");
-	entityManager.AddComponent<ExperienceComponent>(hero1, 0, 100, 1);
+	entityManager.AddComponent<ExperienceComponent>(hero1, 0, 100, 1, 2);
 	entityManager.AddComponent<AnimationComponent>(hero1, hero1Sprites);
 	entityManager.AddComponent<FightTurnComponent>(hero1, false, false);
 	entityManager.AddComponent<MoneyComponent>(hero1, 100);
@@ -253,7 +253,7 @@ int main()
 	hero1AttackSkills.push_back(*skillFactory.CreateSkill<AttackSkill>("Venom aura", hero1));
 
 	std::vector<DefenceSkill> hero1DefenceSkills;
-	hero1DefenceSkills.push_back(*skillFactory.CreateSkill<DefenceSkill>("Sentinel Barrier", hero1));
+	hero1DefenceSkills.push_back(*skillFactory.CreateSkill<DefenceSkill>("Sigma Barrier", hero1));
 	hero1DefenceSkills.push_back(*skillFactory.CreateSkill<DefenceSkill>("Poison touch", hero1));
 
 	std::vector<SpellCreationSkill> hero1SpellCreationSkills;
@@ -280,7 +280,7 @@ int main()
 	entityManager.AddComponent<HealthComponent>(hero2, 30, 100);
 	entityManager.AddComponent<ManaComponent>(hero2, 90, 100);
 	entityManager.AddComponent<AvatarComponent>(hero2, "hero2_avatar.png");
-	entityManager.AddComponent<ExperienceComponent>(hero2, 80, 100, 1);
+	entityManager.AddComponent<ExperienceComponent>(hero2, 80, 100, 1, 2);
 	entityManager.AddComponent<AnimationComponent>(hero2, hero2Sprites);
 	entityManager.AddComponent<FightTurnComponent>(hero2, false, true);
 	entityManager.AddComponent<AttackComponent>(hero2, 8);
@@ -352,7 +352,7 @@ int main()
 	enemy1AnimationCompAnimationComp->AddAnimation("idle", 1, 15, 4, sf::Vector2i(48, 48), 0.15f);
 	enemy1AnimationCompAnimationComp->SetAnimation("idle");
 
-	CGameController::InitSystems(inventoryItemFactory);
+	CGameController::InitSystems(inventoryItemFactory, skillFactory);
 	CGameController::InitGameSettings(level);
 	CFightSystem::LoadAttackPatterns();
 	CGameController::SetFightAttacks(CFightSystem::GetAttacks());
@@ -372,7 +372,7 @@ int main()
 			CGameController::SetSelectedEntityId(fightSoulId);
 		}
 
-		HandleEvents(window, gameController);
+		HandleEvents(window);
 		CGameController::UpdateDeltaTime();
 		if (CGameController::GetCurrentGameState() == CurrentState::Player)
 		{
