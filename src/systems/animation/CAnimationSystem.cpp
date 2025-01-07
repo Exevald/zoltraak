@@ -9,8 +9,14 @@ void CAnimationSystem::Update()
 	{
 		auto* animComp = entityManager.GetComponent<AnimationComponent>(entityId);
 		auto* positionComp = entityManager.GetComponent<PositionComponent>(entityId);
+		auto* velocityComp = entityManager.GetComponent<VelocityComponent>(entityId);
 
-		if (animComp->currentAnimation.empty())
+		if (!animComp || !positionComp || !velocityComp)
+		{
+			continue;
+		}
+
+		if (animComp->currentAnimation.empty() || (velocityComp->vx == 0 && velocityComp->vy == 0 && CGameController::GetCurrentGameState() == CurrentState::Player && animComp->currentAnimation != "idle"))
 		{
 			continue;
 		}

@@ -73,7 +73,7 @@ int main()
 	auto mapTexture = CTextureStorage::GetTexture("map_fieldOfHopesAndDreams.png");
 	auto level = CLevelGenerator::GenerateLevel("level1.txt");
 
-	CGameController::SetGameState(CurrentState::Skills);
+	CGameController::SetGameState(CurrentState::Player);
 
 	inventoryItemFactory.RegisterItem<HealPotionItem>("Small heal potion", [](int ownerId) {
 		return std::make_unique<HealPotionItem>(ownerId, "Small heal potion", 10, 25);
@@ -309,10 +309,10 @@ int main()
 
 	auto* hero2AnimComp = entityManager.GetComponent<AnimationComponent>(hero2);
 	hero2AnimComp->AddAnimation("idle", 5, 505, 5, sf::Vector2i(49, 40), 0.15f);
-	hero2AnimComp->AddAnimation("walk_up", 0, 37, 4, sf::Vector2i(18, 37), 0.2f);
+	hero2AnimComp->AddAnimation("walk_up", 5, 251, 4, sf::Vector2i(22, 42), 0.2f);
 	hero2AnimComp->AddAnimation("walk_down", 5, 104, 4, sf::Vector2i(22, 42), 0.2f);
-	hero2AnimComp->AddAnimation("walk_left", 0, 111, 4, sf::Vector2i(18, 37), 0.2f);
-	hero2AnimComp->AddAnimation("walk_right", 0, 148, 4, sf::Vector2i(18, 37), 0.2f);
+	hero2AnimComp->AddAnimation("walk_left", 5, 153, 4, sf::Vector2i(22, 42), 0.2f);
+	hero2AnimComp->AddAnimation("walk_right", 5, 202, 4, sf::Vector2i(22, 42), 0.2f);
 	hero2AnimComp->SetAnimation("idle");
 
 	EntityId box = entityManager.CreateEntity();
@@ -348,6 +348,7 @@ int main()
 	entityManager.AddComponent<EnemyComponent>(enemy1);
 	entityManager.AddComponent<PositionComponent>(enemy1, 1400, 350);
 	entityManager.AddComponent<AnimationComponent>(enemy1, enemySprites);
+	entityManager.AddComponent<VelocityComponent>(enemy1, 0, 0);
 	auto* enemy1AnimationCompAnimationComp = entityManager.GetComponent<AnimationComponent>(enemy1);
 	enemy1AnimationCompAnimationComp->AddAnimation("idle", 1, 15, 4, sf::Vector2i(48, 48), 0.15f);
 	enemy1AnimationCompAnimationComp->SetAnimation("idle");

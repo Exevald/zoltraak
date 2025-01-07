@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/System/Clock.hpp>
 #include <string>
 #include <unordered_map>
 #include <utility>

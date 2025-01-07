@@ -20,6 +20,7 @@ void CHealthSystem::Update()
 		auto healthComp = entityManager.GetComponent<HealthComponent>(hero);
 		if (healthComp->currentHealth < 0)
 		{
+			healthComp->currentHealth = 0;
 			return;
 		}
 	}
