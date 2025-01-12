@@ -76,6 +76,7 @@ public:
 	static void SetCurrentSkillsState(const SkillsState& state);
 	static void SetCurrentSkillAreaNumber(int number);
 	static void SetCurrentSkillNumber(int number);
+	static void SetIsFightActionEnded(bool isFightActionEnded);
 
 	static float GetElapsedTIme();
 	static SaveInfo GetSaveInfo(int saveNumber);
@@ -106,6 +107,7 @@ public:
 	static SkillsState GetCurrentSkillsState();
 	static int GetCurrentSkillAreaNumber();
 	static int GetCurrentSkillNumber();
+	static bool	GetIsFightActionEnded();
 
 private:
 	static EntityId m_selectedEntityId;
@@ -138,6 +140,7 @@ private:
 	static SkillsState m_currentSkillsState;
 	static int m_currentSkillAreaNumber;
 	static int m_currentSkillNumber;
+	static bool m_isFightActionEnded;
 
 	static std::string GetSaveFileName(int saveNumber);
 };

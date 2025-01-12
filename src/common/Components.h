@@ -33,6 +33,7 @@ struct AnimationComponent : IComponent
 		sf::Vector2i frameSize;
 		int initialSpriteX{};
 		int initialSpriteY{};
+		bool isLooping{};
 	};
 
 	sf::Sprite sprite;
@@ -40,6 +41,7 @@ struct AnimationComponent : IComponent
 	std::string currentAnimation;
 	int currentFrameNumber = 0;
 	float elapsedTime = 0.f;
+	bool isAnimationFinished = false;
 
 	explicit AnimationComponent(const sf::Texture& texture)
 	{
@@ -47,9 +49,9 @@ struct AnimationComponent : IComponent
 		sprite.setScale(3.f, 3.f);
 	}
 
-	void AddAnimation(const std::string& name, int initialSpriteX, int initialSpriteY, int totalFrames, sf::Vector2i frameSize, float frameDuration)
+	void AddAnimation(const std::string& name, int initialSpriteX, int initialSpriteY, int totalFrames, sf::Vector2i frameSize, float frameDuration, bool isLooping = true)
 	{
-		animations[name] = { totalFrames, frameDuration, frameSize, initialSpriteX, initialSpriteY };
+		animations[name] = { totalFrames, frameDuration, frameSize, initialSpriteX, initialSpriteY, isLooping };
 	}
 
 	void SetAnimation(const std::string& name)

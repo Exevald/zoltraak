@@ -50,6 +50,7 @@ int CGameController::m_activeFightHeroNumber = 2;
 int CGameController::m_currentSkillAreaNumber = 0;
 SkillsState CGameController::m_currentSkillsState = SkillsState::ChoosingSkillArea;
 int CGameController::m_currentSkillNumber = 0;
+bool CGameController::m_isFightActionEnded = false;
 
 void CGameController::InitGameSettings(const Level& level)
 {
@@ -470,4 +471,14 @@ void CGameController::SetCurrentSkillNumber(int number)
 int CGameController::GetCurrentSkillNumber()
 {
 	return m_currentSkillNumber;
+}
+
+void CGameController::SetIsFightActionEnded(bool isFightActionEnded)
+{
+	m_isFightActionEnded = isFightActionEnded;
+}
+
+bool CGameController::GetIsFightActionEnded()
+{
+	return m_isFightActionEnded;
 }

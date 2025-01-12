@@ -24,10 +24,29 @@ void CAnimationSystem::Update()
 		auto& animData = animComp->animations[animComp->currentAnimation];
 		animComp->elapsedTime += CGameController::GetDeltaTime();
 
-		while (animComp->elapsedTime >= animData.frameDuration)
+		if (animComp->elapsedTime >= animData.frameDuration)
 		{
 			animComp->elapsedTime -= animData.frameDuration;
-			animComp->currentFrameNumber = (animComp->currentFrameNumber + 1) % animData.totalFrames;
+			animComp->currentFrameNumber++;
+
+			if (animComp->currentFrameNumber >= animData.totalFrames)
+			{
+				if (animData.isLooping)
+				{
+					animComp->currentFrameNumber = 0;
+				}
+				else
+				{
+					animComp->currentFrameNumber = animData.totalFrames - 1;
+					animComp->isAnimationFinished = true;
+
+					if (animComp->currentAnimation == "attack")
+					{
+						animComp->SetAnimation("idle");
+						continue;
+					}
+				}
+			}
 		}
 
 		int spriteX = animData.initialSpriteX + animComp->currentFrameNumber * (animData.frameSize.x + 6);

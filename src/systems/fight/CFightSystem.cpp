@@ -14,6 +14,10 @@ void CFightSystem::Init()
 	CEventDispatcher::GetInstance().Subscribe(EventType::FightActionSelected, [](const SEvent& event) {
 		CFightSystem::OnHeroActionSelected();
 	});
+
+	CEventDispatcher::GetInstance().Subscribe(EventType::FightActionEnded, [](const SEvent& event) {
+		CFightSystem::OnFightActionEnded();
+	});
 }
 
 void CFightSystem::LoadAttackPatterns()
@@ -103,6 +107,7 @@ void CFightSystem::StartHeroesTurn()
 {
 	auto& entityManager = CEntityManager::GetInstance();
 	auto entitiesInFight = entityManager.GetEntitiesWithComponents<FightTurnComponent>();
+	CGameController::SetIsFightActionEnded(false);
 
 	for (auto entity : entitiesInFight)
 	{
@@ -127,27 +132,26 @@ void CFightSystem::StartEnemiesTurn()
 
 void CFightSystem::OnHeroActionSelected()
 {
-	auto& entityManager = CEntityManager::GetInstance();
-	auto entitiesInFight = entityManager.GetEntitiesWithComponents<FightTurnComponent>();
-	size_t numHeroes = entitiesInFight.size();
-
-	auto* currentHeroFightTurnComp = entityManager.GetComponent<FightTurnComponent>(entitiesInFight[m_currentHeroIndex]);
-	if (currentHeroFightTurnComp)
-	{
-		currentHeroFightTurnComp->hasEntityActed = true;
-	}
-
-	do
-	{
-		m_currentHeroIndex = (m_currentHeroIndex + 1) % numHeroes;
-		auto* healthComp = entityManager.GetComponent<HealthComponent>(entitiesInFight[m_currentHeroIndex]);
-		if (healthComp->currentHealth > 0)
-		{
-			break;
-		}
-	} while (m_currentHeroIndex != 0);
-
-	ProcessFightTurn();
+//	if (CGameController::GetCurrentFightAction() == FightAction::Attack)
+//	{
+//		return;
+//	}
+//
+//	auto& entityManager = CEntityManager::GetInstance();
+//	auto entitiesInFight = entityManager.GetEntitiesWithComponents<FightTurnComponent>();
+//	size_t numHeroes = entitiesInFight.size();
+//
+//	do
+//	{
+//		m_currentHeroIndex = (m_currentHeroIndex + 1) % numHeroes;
+//		auto* healthComp = entityManager.GetComponent<HealthComponent>(entitiesInFight[m_currentHeroIndex]);
+//		if (healthComp->currentHealth > 0)
+//		{
+//			break;
+//		}
+//	} while (m_currentHeroIndex != 0);
+//
+//	ProcessFightTurn();
 }
 
 void CFightSystem::ProcessFightTurn()
@@ -161,6 +165,7 @@ void CFightSystem::ProcessFightTurn()
 		auto entity = entitiesInFight[i];
 		auto* fightTurnComp = entityManager.GetComponent<FightTurnComponent>(entity);
 		auto* healthComp = entityManager.GetComponent<HealthComponent>(entity);
+		auto* nameComp = entityManager.GetComponent<NameComponent>(entity);
 
 		if (healthComp->currentHealth > 0 && CGameController::GetCurrentFightPhase() == FightPhase::CharactersTurn)
 		{
@@ -191,6 +196,31 @@ void CFightSystem::ProcessFightTurn()
 		m_currentHeroIndex = -1;
 		StartEnemiesTurn();
 	}
+	CGameController::SetIsFightActionEnded(false);
+}
+
+void CFightSystem::OnFightActionEnded() {
+	auto& entityManager = CEntityManager::GetInstance();
+	auto entitiesInFight = entityManager.GetEntitiesWithComponents<FightTurnComponent>();
+	auto* currentHeroFightTurnComp = entityManager.GetComponent<FightTurnComponent>(entitiesInFight[m_currentHeroIndex]);
+
+	if (currentHeroFightTurnComp)
+	{
+		currentHeroFightTurnComp->hasEntityActed = true;
+	}
+	size_t numHeroes = entitiesInFight.size();
+
+	do
+	{
+		m_currentHeroIndex = (m_currentHeroIndex + 1) % numHeroes;
+		auto* healthComp = entityManager.GetComponent<HealthComponent>(entitiesInFight[m_currentHeroIndex]);
+		if (healthComp->currentHealth > 0)
+		{
+			break;
+		}
+	} while (m_currentHeroIndex != 0);
+
+	CFightSystem::ProcessFightTurn();
 }
 
 void CFightSystem::CheckFightCollision(const sf::Vector2f& attackPos, int attackIndex)
@@ -213,8 +243,8 @@ void CFightSystem::CheckFightCollision(const sf::Vector2f& attackPos, int attack
 		28);
 
 	sf::FloatRect attackBounds(
-		float(windowSettings.windowWidth) / 2 + attackPos.x,
-		float(windowSettings.windowHeight) / 2 + attackPos.y,
+		attackPos.x,
+		attackPos.y,
 		28,
 		28);
 

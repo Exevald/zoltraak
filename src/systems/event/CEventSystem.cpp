@@ -143,16 +143,16 @@ void CEventSystem::HandleKeyPress(sf::Keyboard::Key key)
 				fightItemUsedEvent.type = EventType::FightItemUsed;
 				fightItemUsedEvent.data = fightItemUsedEventData;
 
-				SEvent fightActionSelectedEvent;
-				FightActionSelectedEventData fightActionSelectedEventData{};
+				SEvent fightActionEndedEvent;
+				FightActionEndedEventData fightActionEndedEventData{};
 
-				fightActionSelectedEventData.id = selectedEntityId;
-				fightActionSelectedEventData.selectedAction = FightAction::Info;
-				fightActionSelectedEvent.type = EventType::FightActionSelected;
-				fightActionSelectedEvent.data = fightItemUsedEventData;
+				fightActionEndedEventData.action = FightAction::Inventory;
+				fightActionEndedEvent.type = EventType::FightActionEnded;
+				fightActionEndedEvent.data = fightActionEndedEventData;
 
-				CEventDispatcher::GetInstance().Dispatch(fightActionSelectedEvent);
 				CEventDispatcher::GetInstance().Dispatch(fightItemUsedEvent);
+				CEventDispatcher::GetInstance().Dispatch(fightActionEndedEvent);
+				CGameController::SetCurrentFightAction(FightAction::Info);
 				break;
 			}
 			case FightAction::Spare: {
@@ -162,11 +162,7 @@ void CEventSystem::HandleKeyPress(sf::Keyboard::Key key)
 			case FightAction::Magic: {
 				break;
 			}
-			default:
-				break;
-			}
-			if (CGameController::GetCurrentFightAction() == FightAction::Info)
-			{
+			case FightAction::Info:
 				FightAction selectedFightAction;
 				switch (CGameController::GetCurrentFightActionNumber())
 				{
@@ -205,6 +201,9 @@ void CEventSystem::HandleKeyPress(sf::Keyboard::Key key)
 				}
 
 				CGameController::SetCurrentFightAction(selectedFightAction);
+				break;
+			case FightAction::Attack:
+				break;
 			}
 			break;
 		}

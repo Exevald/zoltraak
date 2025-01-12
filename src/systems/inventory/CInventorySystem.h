@@ -23,6 +23,7 @@ private:
 	static void EquipItem(int ownerId, int equippedItemNumber, const ItemType& itemType);
 	static void BuyItem(int boughtItemNumber, const CInventoryItemFactory& factory);
 	static void SellItem(int soldItemNumber);
+	static void UseFightItem(int ownerId, int itemIndex);
 
 	template <typename T>
 	static std::optional<T> GetFilteredItem(const std::vector<T>& items, const T& activeItem, int index);

@@ -23,6 +23,11 @@ void CInventorySystem::Init()
 		const auto& itemSoldEventData = std::get<HeroItemSoldEventData>(event.data);
 		CInventorySystem::SellItem(itemSoldEventData.itemIndex);
 	});
+
+	CEventDispatcher::GetInstance().Subscribe(EventType::FightItemUsed, [](const SEvent& event) {
+		const auto& fightItemUsedEventData = std::get<FightItemUsedEventData>(event.data);
+		CInventorySystem::UseFightItem(fightItemUsedEventData.heroId, fightItemUsedEventData.itemIndex);
+	});
 }
 
 void CInventorySystem::Update()
@@ -216,4 +221,20 @@ void CInventorySystem::SellItem(int soldItemNumber)
 		heroInventoryComp->shields.erase(heroInventoryComp->shields.begin() + soldItemNumber);
 	}
 	heroMoneyComp->money += itemToSell.cost;
+}
+
+void CInventorySystem::UseFightItem(int ownerId, int itemIndex)
+{
+	auto& entityManager = CEntityManager::GetInstance();
+	auto inventoryComp = entityManager.GetComponent<InventoryComponent>(ownerId);
+	if (!inventoryComp)
+	{
+		return;
+	}
+
+	auto fightItem = inventoryComp->commonItems[itemIndex];
+	CInventorySystem::UseEffect(fightItem);
+
+	inventoryComp->commonItems.erase(inventoryComp->commonItems.begin() + itemIndex);
+	CGameController::RemoveItemFromHeroInventory(ownerId, itemIndex);
 }

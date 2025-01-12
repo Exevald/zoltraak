@@ -30,6 +30,7 @@ private:
 	static void EndEnemiesTurn();
 	static void StartEnemiesTurn();
 	static void CheckFightCollision(const sf::Vector2f& attackPos, int attackIndex);
+	static void OnFightActionEnded();
 
 	static size_t m_currentHeroIndex;
 	static sf::Clock m_enemiesTurnClock;

@@ -143,7 +143,7 @@ private:
 	void DrawFightScene();
 	void UpdateActiveFightUserInfo(EntityId entity);
 	void SetFightInfo();
-	void SetAttackBar(const sf::Vector2f& fightInfoCardPosition);
+	void DrawAttackBar(const sf::Vector2f& fightInfoCardPosition);
 	void SetSpareText();
 	void SetActActions();
 	void DrawFightInventory();

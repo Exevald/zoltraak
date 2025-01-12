@@ -680,7 +680,7 @@ void CViewSystem::DrawFightScene()
 	}
 	case FightAction::Attack: {
 		m_isAttackBarActive = true;
-		CViewSystem::SetAttackBar(m_fightingScene.fightInfoCard.getPosition());
+		CViewSystem::DrawAttackBar(m_fightingScene.fightInfoCard.getPosition());
 		break;
 	}
 	case FightAction::Act: {
@@ -821,7 +821,6 @@ void CViewSystem::DrawFightScene()
 
 		m_window.draw(animComp->sprite);
 		spriteYOffset += 150;
-
 	}
 
 	for (const auto& info : m_fightingScene.heroesFightInfo)
@@ -866,36 +865,52 @@ void CViewSystem::UpdateActiveFightUserInfo(EntityId entity)
 	m_activeFightHero = entity;
 }
 
-void CViewSystem::SetAttackBar(const sf::Vector2f& fightInfoCardPosition)
+void CViewSystem::DrawAttackBar(const sf::Vector2f& fightInfoCardPosition)
 {
 	static sf::RectangleShape attackBar;
 	static sf::RectangleShape movingIndicator;
-	static float indicatorSpeed = 500.f;
-	static float barWidth = 300.f;
+	static sf::RectangleShape attackPosIndicator;
+	static float indicatorSpeed = 300.f;
+	static float barWidth = 200.f;
 	static float barHeight = 50.f;
 
 	auto& entityManager = CEntityManager::GetInstance();
 	auto colorThemeComp = entityManager.GetComponent<ColorThemeComponent>(m_activeFightHero);
+	auto avatarComp = entityManager.GetComponent<AvatarComponent>(m_activeFightHero);
+	auto animComp = entityManager.GetComponent<AnimationComponent>(m_activeFightHero);
+	auto attackComp = entityManager.GetComponent<AttackComponent>(m_activeFightHero);
 
-	if (!m_isAttackBarActive)
+	if (!m_isAttackBarActive || !avatarComp || !animComp || !attackComp)
 	{
 		return;
 	}
+
+	sf::Sprite heroAvatar;
+	heroAvatar.setTexture(CTextureStorage::GetTexture(avatarComp->avatarFilePath));
+	heroAvatar.setPosition(fightInfoCardPosition.x + 20, fightInfoCardPosition.y + barHeight / 2);
+	heroAvatar.setScale(3.f, 3.f);
 
 	if (attackBar.getSize().x == 0)
 	{
 		attackBar.setSize({ barWidth, barHeight });
 		attackBar.setFillColor(sf::Color::Black);
-		attackBar.setOutlineColor(colorThemeComp->colorTheme);
 		attackBar.setOutlineThickness(2);
 		attackBar.setPosition(
-			fightInfoCardPosition.x + 20,
-			fightInfoCardPosition.y + barHeight / 2);
+			fightInfoCardPosition.x + 130,
+			fightInfoCardPosition.y + barHeight / 2 + 10);
 
 		movingIndicator.setSize({ 10.f, barHeight });
 		movingIndicator.setFillColor(sf::Color::White);
 		movingIndicator.setPosition(attackBar.getPosition());
+
+		attackPosIndicator.setSize({ 10, barHeight });
+		attackPosIndicator.setOutlineThickness(1);
+		attackPosIndicator.setFillColor(sf::Color::Black);
+		attackPosIndicator.setPosition(fightInfoCardPosition.x + 130 + barWidth / 2, fightInfoCardPosition.y + barHeight / 2 + 10);
 	}
+
+	attackBar.setOutlineColor(colorThemeComp->colorTheme);
+	attackPosIndicator.setOutlineColor(colorThemeComp->colorTheme);
 
 	movingIndicator.move(indicatorSpeed * CGameController::GetDeltaTime(), 0);
 	if (movingIndicator.getPosition().x > attackBar.getPosition().x + barWidth || movingIndicator.getPosition().x < attackBar.getPosition().x)
@@ -918,11 +933,23 @@ void CViewSystem::SetAttackBar(const sf::Vector2f& fightInfoCardPosition)
 			damageMultiplier = 1.f;
 		}
 
-		std::cout << "Damage multiplier: " << damageMultiplier << std::endl;
+		animComp->SetAnimation("attack");
+
+		SEvent fightActionEndedEvent;
+		FightActionEndedEventData eventData{};
+
+		eventData.action = FightAction::Attack;
+		fightActionEndedEvent.type = EventType::FightActionEnded;
+		fightActionEndedEvent.data = eventData;
+		CEventDispatcher::GetInstance().Dispatch(fightActionEndedEvent);
+
 		CGameController::SetCurrentFightAction(FightAction::Info);
+		CGameController::SetIsFightActionEnded(true);
 	}
 
 	m_window.draw(attackBar);
+	m_window.draw(heroAvatar);
+	m_window.draw(attackPosIndicator);
 	m_window.draw(movingIndicator);
 }
 
