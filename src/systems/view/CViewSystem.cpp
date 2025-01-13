@@ -219,7 +219,11 @@ void CViewSystem::DrawItems()
 		{
 			continue;
 		}
-		const auto* animComp = entityManager.GetComponent<AnimationComponent>(entityId);
+		auto* animComp = entityManager.GetComponent<AnimationComponent>(entityId);
+		const auto* positionComp = entityManager.GetComponent<PositionComponent>(entityId);
+
+		animComp->sprite.setScale(3.f, 3.f);
+		animComp->sprite.setPosition(positionComp->x, positionComp->y);
 
 		m_window.draw(animComp->sprite);
 	}
@@ -675,7 +679,7 @@ void CViewSystem::DrawFightScene()
 	switch (CGameController::GetCurrentFightAction())
 	{
 	case FightAction::Info: {
-		CViewSystem::SetFightInfo();
+		CViewSystem::DrawFightInfo();
 		break;
 	}
 	case FightAction::Attack: {
@@ -917,8 +921,22 @@ void CViewSystem::DrawAttackBar(const sf::Vector2f& fightInfoCardPosition)
 	{
 		indicatorSpeed = -indicatorSpeed;
 	}
+
+	sf::Text fightInfoText;
+	fightInfoText.setFont(font);
+	fightInfoText.setCharacterSize(40);
+	fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 40, m_fightingScene.fightInfoCard.getPosition().y + 20);
+
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 	{
+		auto enemy = entityManager.GetEntitiesWithComponents<EnemyComponent>().front();
+		auto enemyHealthComp = entityManager.GetComponent<HealthComponent>(enemy);
+		auto heroAttackComp = entityManager.GetComponent<AttackComponent>(m_activeFightHero);
+		if (!enemyHealthComp || !heroAttackComp)
+		{
+			return;
+		}
+
 		m_isAttackBarActive = false;
 
 		float indicatorPos = movingIndicator.getPosition().x - attackBar.getPosition().x;
@@ -926,11 +944,11 @@ void CViewSystem::DrawAttackBar(const sf::Vector2f& fightInfoCardPosition)
 
 		if (indicatorPos > barWidth * 0.4f && indicatorPos < barWidth * 0.6f)
 		{
-			damageMultiplier = 2.f;
+			damageMultiplier = 1.f;
 		}
 		else if (indicatorPos > barWidth * 0.3f && indicatorPos < barWidth * 0.7f)
 		{
-			damageMultiplier = 1.f;
+			damageMultiplier = 0.7f;
 		}
 
 		animComp->SetAnimation("attack");
@@ -941,7 +959,16 @@ void CViewSystem::DrawAttackBar(const sf::Vector2f& fightInfoCardPosition)
 		eventData.action = FightAction::Attack;
 		fightActionEndedEvent.type = EventType::FightActionEnded;
 		fightActionEndedEvent.data = eventData;
+
+		SEvent enemyStrikeCreatedEvent;
+		EnemyStrikeCreatedEventData enemyStrikeCreatedEventData{};
+
+		enemyStrikeCreatedEventData.damage = damageMultiplier * float(attackComp->attackValue);
+		enemyStrikeCreatedEvent.type = EventType::EnemyStrikeCreated;
+		enemyStrikeCreatedEvent.data = enemyStrikeCreatedEventData;
+
 		CEventDispatcher::GetInstance().Dispatch(fightActionEndedEvent);
+		CEventDispatcher::GetInstance().Dispatch(enemyStrikeCreatedEvent);
 
 		CGameController::SetCurrentFightAction(FightAction::Info);
 		CGameController::SetIsFightActionEnded(true);
@@ -1003,14 +1030,26 @@ void CViewSystem::DrawFightInventory()
 	}
 }
 
-void CViewSystem::SetFightInfo()
+void CViewSystem::DrawFightInfo()
 {
-	auto& entityManager = CEntityManager::GetInstance();
+	sf::Text fightInfoText;
+	fightInfoText.setFont(font);
+	fightInfoText.setCharacterSize(40);
+	fightInfoText.setString("Enemy on your way!");
+	fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 40, m_fightingScene.fightInfoCard.getPosition().y + 20);
+
+	m_window.draw(fightInfoText);
 }
 
 void CViewSystem::SetSpareText()
 {
-	auto& entityManager = CEntityManager::GetInstance();
+	sf::Text fightInfoText;
+	fightInfoText.setFont(font);
+	fightInfoText.setCharacterSize(40);
+	fightInfoText.setString("You spared the enemy. Fight is over");
+	fightInfoText.setPosition(m_fightingScene.fightInfoCard.getPosition().x + 40, m_fightingScene.fightInfoCard.getPosition().y + 20);
+
+	m_window.draw(fightInfoText);
 }
 
 void CViewSystem::DrawMagicSkills()

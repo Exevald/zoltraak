@@ -267,6 +267,7 @@ int main()
 	hero1AnimComp->AddAnimation("walk_left", 101, 51, 4, sf::Vector2i(18, 37), 0.25f);
 	hero1AnimComp->AddAnimation("walk_right", 101, 95, 4, sf::Vector2i(18, 37), 0.25f);
 	hero1AnimComp->AddAnimation("attack", 6, 1610, 9, sf::Vector2i(62, 42), 0.08f, false);
+	hero1AnimComp->AddAnimation("magic", 6, 1715, 11, sf::Vector2i(62, 37), 0.15f, false);
 	hero1AnimComp->SetAnimation("idle");
 
 	EntityId hero2 = entityManager.CreateEntity();
@@ -315,6 +316,7 @@ int main()
 	hero2AnimComp->AddAnimation("walk_left", 5, 153, 4, sf::Vector2i(22, 42), 0.2f);
 	hero2AnimComp->AddAnimation("walk_right", 5, 202, 4, sf::Vector2i(22, 42), 0.2f);
 	hero2AnimComp->AddAnimation("attack", 5, 760, 5, sf::Vector2i(76, 42), 0.1f, false);
+	hero2AnimComp->AddAnimation("magic", 5, 1190, 10, sf::Vector2i(55, 47), 0.15f, false);
 	hero2AnimComp->SetAnimation("idle");
 
 	EntityId box = entityManager.CreateEntity();
@@ -351,6 +353,7 @@ int main()
 	entityManager.AddComponent<PositionComponent>(enemy1, 1400, 350);
 	entityManager.AddComponent<AnimationComponent>(enemy1, enemySprites);
 	entityManager.AddComponent<VelocityComponent>(enemy1, 0, 0);
+	entityManager.AddComponent<HealthComponent>(enemy1, 50, 50);
 	auto* enemy1AnimationCompAnimationComp = entityManager.GetComponent<AnimationComponent>(enemy1);
 	enemy1AnimationCompAnimationComp->AddAnimation("idle", 1, 15, 4, sf::Vector2i(48, 48), 0.15f);
 	enemy1AnimationCompAnimationComp->SetAnimation("idle");

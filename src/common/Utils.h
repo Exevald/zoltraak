@@ -37,6 +37,12 @@ enum class BonusType
 	MagicBonus,
 };
 
+enum class FightEndStatus
+{
+	Win,
+	Lose
+};
+
 struct InventoryItem
 {
 	std::string name;

@@ -160,6 +160,24 @@ void CEventSystem::HandleKeyPress(sf::Keyboard::Key key)
 				break;
 			}
 			case FightAction::Magic: {
+				SEvent fightSkillUsedEvent;
+				FightSpellUsedEventData fightSkillUsedEventData{};
+
+				fightSkillUsedEventData.heroId = CGameController::GetActiveFightHeroNumber();
+				fightSkillUsedEventData.spellIndex = 0;
+				fightSkillUsedEvent.type = EventType::FightSpellUsed;
+				fightSkillUsedEvent.data = fightSkillUsedEventData;
+
+				SEvent fightActionEndedEvent;
+				FightActionEndedEventData fightActionEndedEventData{};
+
+				fightActionEndedEventData.action = FightAction::Inventory;
+				fightActionEndedEvent.type = EventType::FightActionEnded;
+				fightActionEndedEvent.data = fightActionEndedEventData;
+
+				CEventDispatcher::GetInstance().Dispatch(fightSkillUsedEvent);
+				CEventDispatcher::GetInstance().Dispatch(fightActionEndedEvent);
+				CGameController::SetCurrentFightAction(FightAction::Info);
 				break;
 			}
 			case FightAction::Info:

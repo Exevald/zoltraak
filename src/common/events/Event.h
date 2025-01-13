@@ -23,6 +23,9 @@ enum class EventType
 	FightItemUsed,
 	SkillLearned,
 	FightActionEnded,
+	FightSpellUsed,
+	EnemyStrikeCreated,
+	FightEnded,
 };
 
 struct EntitySelectedEventData
@@ -119,6 +122,17 @@ struct FightActionEndedEventData
 	FightAction action;
 };
 
+struct FightSpellUsedEventData
+{
+	int heroId;
+	int spellIndex;
+};
+
+struct EnemyStrikeCreatedEventData
+{
+	float damage;
+};
+
 using EventData = std::variant<
 	EntitySelectedEventData,
 	EntityMovedEventData,
@@ -136,7 +150,9 @@ using EventData = std::variant<
 	AttackColliedEventData,
 	FightItemUsedEventData,
 	SkillLearnedEventData,
-	FightActionEndedEventData>;
+	FightActionEndedEventData,
+	FightSpellUsedEventData,
+	EnemyStrikeCreatedEventData>;
 
 struct SEvent
 {

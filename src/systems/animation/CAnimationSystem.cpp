@@ -40,7 +40,7 @@ void CAnimationSystem::Update()
 					animComp->currentFrameNumber = animData.totalFrames - 1;
 					animComp->isAnimationFinished = true;
 
-					if (animComp->currentAnimation == "attack")
+					if (animComp->currentAnimation == "attack" || animComp->currentAnimation == "magic")
 					{
 						animComp->SetAnimation("idle");
 						continue;

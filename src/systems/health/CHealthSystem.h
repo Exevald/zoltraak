@@ -8,4 +8,5 @@ public:
 
 private:
 	static void OnAttackCollied(int damage, int personId);
+	static void OnStrikeCreated(int damage);
 };
