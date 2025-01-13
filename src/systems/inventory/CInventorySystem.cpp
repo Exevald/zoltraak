@@ -181,6 +181,7 @@ void CInventorySystem::BuyItem(int boughtItemNumber, const CInventoryItemFactory
 	auto vendorComp = entityManager.GetComponent<VendorComponent>(vendor);
 	auto itemToBuy = vendorComp->items[boughtItemNumber];
 	auto heroInventoryComp = entityManager.GetComponent<InventoryComponent>(CGameController::GetSelectedEntityId());
+	auto moneyComp = entityManager.GetComponent<MoneyComponent>(CGameController::GetSelectedEntityId());
 
 	vendorComp->items.erase(vendorComp->items.begin() + boughtItemNumber);
 	switch (itemToBuy.type)
@@ -198,6 +199,7 @@ void CInventorySystem::BuyItem(int boughtItemNumber, const CInventoryItemFactory
 		break;
 	}
 	}
+	moneyComp->money -= itemToBuy.cost;
 }
 
 void CInventorySystem::SellItem(int soldItemNumber)

@@ -12,6 +12,18 @@ void CExperienceSystem::Init()
 
 void CExperienceSystem::Update()
 {
+	auto& entityManager = CEntityManager::GetInstance();
+	auto entitiesWithLevel = entityManager.GetEntitiesWithComponents<ExperienceComponent>();
+	for (auto& item : entitiesWithLevel)
+	{
+		auto experienceComp = entityManager.GetComponent<ExperienceComponent>(item);
+		if (experienceComp->experience >= experienceComp->levelExperienceLimit)
+		{
+			experienceComp->currentHeroLevel++;
+			experienceComp->experience = 0;
+			experienceComp->availableSkillPoints += 3;
+		}
+	}
 }
 
 void CExperienceSystem::LearnSkill(int skillAreaNumber, int skillNumber, const CSkillFactory& skillFactory)

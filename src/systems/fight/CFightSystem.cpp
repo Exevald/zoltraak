@@ -191,6 +191,19 @@ void CFightSystem::ProcessFightTurn()
 	if (allEnemiesDead)
 	{
 		CGameController::SetGameState(CurrentState::Player);
+		for (int i = 0; i < entityManager.GetEntitiesWithComponents<NameComponent>().size(); i++)
+		{
+			auto moneyComp = entityManager.GetComponent<MoneyComponent>(entityManager.GetEntitiesWithComponents<NameComponent>()[i]);
+			auto experienceComp = entityManager.GetComponent<ExperienceComponent>(entityManager.GetEntitiesWithComponents<NameComponent>()[i]);
+			if (moneyComp)
+			{
+				moneyComp->money += 50;
+			}
+			if (experienceComp)
+			{
+				experienceComp->experience += 150;
+			}
+		}
 		for (int i = 0; i < entityManager.GetEntitiesWithComponents<AnimationComponent>().size(); i++)
 		{
 			auto animComp = entityManager.GetComponent<AnimationComponent>(entityManager.GetEntitiesWithComponents<AnimationComponent>()[i]);

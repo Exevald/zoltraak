@@ -91,6 +91,7 @@ void CGameController::Update()
 	CFightSystem::Update();
 	CInventorySystem::Update();
 	CHealthSystem::Update();
+	CExperienceSystem::Update();
 }
 
 void CGameController::SetSelectedEntityId(EntityId id)

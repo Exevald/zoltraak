@@ -8,6 +8,8 @@
 #include "spells/CSpellFactory.h"
 #include "systems/event/CEventSystem.h"
 #include <SFML/Graphics.hpp>
+#include <chrono>
+#include <random>
 
 void HandleEvents(sf::RenderWindow& window)
 {
@@ -73,7 +75,7 @@ int main()
 	auto mapTexture = CTextureStorage::GetTexture("map_fieldOfHopesAndDreams.png");
 	auto level = CLevelGenerator::GenerateLevel("level1.txt");
 
-	CGameController::SetGameState(CurrentState::Fight);
+	CGameController::SetGameState(CurrentState::MainMenu);
 
 	inventoryItemFactory.RegisterItem<HealPotionItem>("Small heal potion", [](int ownerId) {
 		return std::make_unique<HealPotionItem>(ownerId, "Small heal potion", 10, 25);
@@ -353,7 +355,7 @@ int main()
 	entityManager.AddComponent<PositionComponent>(enemy1, 1400, 350);
 	entityManager.AddComponent<AnimationComponent>(enemy1, enemySprites);
 	entityManager.AddComponent<VelocityComponent>(enemy1, 0, 0);
-	entityManager.AddComponent<HealthComponent>(enemy1, 50, 50);
+	entityManager.AddComponent<HealthComponent>(enemy1, 30, 30);
 	auto* enemy1AnimationCompAnimationComp = entityManager.GetComponent<AnimationComponent>(enemy1);
 	enemy1AnimationCompAnimationComp->AddAnimation("idle", 1, 15, 4, sf::Vector2i(48, 48), 0.15f);
 	enemy1AnimationCompAnimationComp->SetAnimation("idle");
@@ -364,6 +366,12 @@ int main()
 	CGameController::SetFightAttacks(CFightSystem::GetAttacks());
 
 	sf::Clock clock;
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<> dis(0, 1);
+	float timeSinceLastCheck = 0.0f;
+	const float checkInterval = 1.0f;
 
 	while (window.isOpen())
 	{
@@ -383,6 +391,22 @@ int main()
 		if (CGameController::GetCurrentGameState() == CurrentState::Player)
 		{
 			CGameController::IncreaseElapsedTime();
+			timeSinceLastCheck += CGameController::GetDeltaTime();;
+			if (timeSinceLastCheck >= checkInterval)
+			{
+				if (dis(gen) < 0.05)
+				{
+					CGameController::SetGameState(CurrentState::Fight);
+					entityManager.GetComponent<HealthComponent>(enemy1)->currentHealth = entityManager.GetComponent<HealthComponent>(enemy1)->currentHealth;
+					entityManager.GetComponent<AnimationComponent>(hero1)->SetAnimation("idle");
+					entityManager.GetComponent<AnimationComponent>(hero2)->SetAnimation("idle");
+				}
+				timeSinceLastCheck = 0.0f;
+			}
+		}
+		else
+		{
+			timeSinceLastCheck = 0.0f;
 		}
 
 		window.clear();

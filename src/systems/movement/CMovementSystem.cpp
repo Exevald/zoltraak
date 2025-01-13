@@ -82,6 +82,10 @@ void CMovementSystem::HandleEntityMoved(EntityId movedEntityId, const std::strin
 		newY = std::clamp(newY, 314.f, 314.f + 141.f * 2 - 28.f);
 	}
 
+	if (newX > 160 && newX + 30 < 580 && newY > 590 && newY < 880) {
+		return;
+	}
+
 	positionComponent->x = newX;
 	positionComponent->y = newY;
 }

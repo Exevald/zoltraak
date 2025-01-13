@@ -755,6 +755,17 @@ void CEventSystem::HandleKeyPress(sf::Keyboard::Key key)
 			CGameController::SetGameState(CurrentState::Skills);
 			break;
 		}
+		case sf::Keyboard::E: {
+			auto hero1PositionComp = entityManager.GetComponent<PositionComponent>(1);
+			auto boxPosition = entityManager.GetComponent<PositionComponent>(3);
+
+			if (hero1PositionComp->x > 880 && hero1PositionComp->x < 1060 && hero1PositionComp->y > 70 && hero1PositionComp->y < 90 && boxPosition->x > 110 && boxPosition->x < 130 && boxPosition->y > 640 && boxPosition->y < 670)
+			{
+				exit(0);
+			}
+
+			break;
+		}
 		default: {
 			break;
 		}
